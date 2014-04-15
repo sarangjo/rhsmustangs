@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">"RHS Mustangs"</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">"Welcome to the RHS App!"</string>
+    <string name="enter_URL">Please enter a URL.</string>
+    <string name="http_name">"RHS Mustangs HTTP"</string>
+    <string name="links_name">"RHS Mustangs Links"</string>
+    <string name="twitter_name">"Twitter"</string>
+
+</resources>
