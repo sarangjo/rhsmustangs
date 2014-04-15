@@ -21,17 +21,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class TwitterActivity extends Activity {
-	Button loginButton, showTweetsButton;
+	Button loginButton, showTweetsButton, logoutButton;
 	TextView usernameText;
 	WebView loginWebView;
 	ListView tweetsList;
 	
+	enum TwitterStage { LOGGED_OUT, LOGGED_IN, SHOW_TWEETS };
+	TwitterStage appTwitterStage = TwitterStage.LOGGED_OUT;
+	
+	ArrayList<String> tweets = new ArrayList<String>();
 	ArrayAdapter tweetsAdapter;
 	
-	ArrayList<String> tweets;
-
 	private TwitterAuthorization tAuth;
 	private TwitterDataParse tData;
+	
+	public static Twitter twitter;
 
 	public static final String REDMONDASB_USERNAME = "RedmondASB";
 	
@@ -44,12 +48,20 @@ public class TwitterActivity extends Activity {
 
 		tAuth = new TwitterAuthorization(this);
 		tData = new TwitterDataParse(this);
-		tweetsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tweets);
-
-		setViewVariables();
-
-		setupViews();
 		
+		setupViewVariables();
+
+		updateViews();
+		
+		setupClickListeners();
+		
+		loginWebView.setWebViewClient(new WatcherWebClient());
+	}
+	
+	/**
+	 * Sets up the individual click listeners for the buttons.
+	 */
+	private void setupClickListeners() {
 		loginButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -66,45 +78,80 @@ public class TwitterActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				setContentView(R.layout.activity_twitter);
+				setContentView(R.layout.twitter_tweets);
+				tweetsList = (ListView) findViewById(R.id.tweetsListView);
 				loadTweets();
 			}
 			
 		});
-		loginWebView.setWebViewClient(new WatcherWebClient());
+
+		logoutButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if(tAuth.isTwitterLoggedIn()) {
+					logoutFromTwitter();
+					updateViews();
+				}
+			}
+			
+		});
+	}
+	
+	/**
+	 * Logs out of Twitter.
+	 */
+
+	private void logoutFromTwitter() {
+		tAuth.logout();
+		appTwitterStage = TwitterStage.LOGGED_OUT;
 	}
 
+	/**
+	 * The function to get Tweets from the Data Parser and load them into a ListView.
+	 */
 	private void loadTweets() {
+		tweets = tData.getTweets();
 		
-		
+		tweetsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tweets);
 		tweetsList.setAdapter(tweetsAdapter);
 	}
 
 	/**
 	 * This sets up the views depending on whether the user is logged in or not.
 	 */
-	private void setupViews() {
-		// First, check to see if the user is logged in.
-		// If the user is logged in, then display the username and a welcome sign.
+	private void updateViews() {
 		if (tAuth.isTwitterLoggedIn()){
+			appTwitterStage = TwitterStage.LOGGED_IN;
+			// GONE: Login Button
 			loginButton.setVisibility(View.GONE);
+			// VISIBLE: Username Text, Show Tweets, Logout
+			usernameText.setVisibility(View.VISIBLE);
+			showTweetsButton.setVisibility(View.VISIBLE);
+			logoutButton.setVisibility(View.VISIBLE);
+			
 			usernameText.setText("Welcome " + tAuth.getUserId() + "!");
 		} else {
-			loginButton.setVisibility(View.VISIBLE);
+			appTwitterStage = TwitterStage.LOGGED_OUT;
+			// GONE: Show Tweets Button, Username Text, Logout
+			showTweetsButton.setVisibility(View.GONE);
 			usernameText.setVisibility(View.GONE);
+			logoutButton.setVisibility(View.GONE);
+			// VISIBLE: 
+			loginButton.setVisibility(View.VISIBLE);
 		}
-		// If not, then display the Please Log In and button
 	}
 
 	/**
 	 * Initializes all the view variables.
 	 */
-	private void setViewVariables() {
+	private void setupViewVariables() {
 		loginButton = (Button) findViewById(R.id.loginTwitterBtn);
 		usernameText = (TextView) findViewById(R.id.usernameText);
 		loginWebView = (WebView) findViewById(R.id.loginWebView);
 		showTweetsButton = (Button) findViewById(R.id.showTweetsBtn);
 		tweetsList = (ListView) findViewById(R.id.tweetsListView);
+		logoutButton = (Button) findViewById(R.id.logoutBtn);
 	}
 
 	/**
@@ -117,6 +164,7 @@ public class TwitterActivity extends Activity {
 		// Hides other views
 		loginButton.setVisibility(View.GONE);
 		usernameText.setVisibility(View.GONE);
+		showTweetsButton.setVisibility(View.GONE);
 
 		// Load the authorization URL
 		webUrl = tAuth.getAppAuthorizeUrl();

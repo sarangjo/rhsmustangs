@@ -3,6 +3,7 @@ package com.sarangjoshi.rhsmustangs.twitter;
 import java.util.concurrent.ExecutionException;
 
 import twitter4j.ResponseList;
+import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -68,7 +69,7 @@ public class TwitterNetwork {
 
 			try {
 				String callbackUrl = params[0];
-				rToken = TwitterAuthorization.twitter
+				rToken = TwitterActivity.twitter
 						.getOAuthRequestToken(callbackUrl);
 			} catch (TwitterException e) {
 				// TODO Auto-generated catch block
@@ -112,7 +113,7 @@ public class TwitterNetwork {
 
 			AccessToken aToken = null;
 			try {
-				aToken = TwitterAuthorization.twitter.getOAuthAccessToken(
+				aToken = TwitterActivity.twitter.getOAuthAccessToken(
 						TwitterAuthorization.appRequestToken, verifier);
 			} catch (TwitterException e) {
 				// TODO Auto-generated catch block
@@ -126,22 +127,28 @@ public class TwitterNetwork {
 		}
 	}
 	
-	private class GetTweetsTask extends AsyncTask<Void, Void, Void> {
+	public ResponseList<twitter4j.Status> getTweets() {
+		try {
+			return new GetTweetsTask().execute().get();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	private class GetTweetsTask extends AsyncTask<Void, Void, ResponseList<twitter4j.Status>> {
 
 		@Override
-		protected Void doInBackground(Void... arg0) {
-			ResponseList<twitter4j.Status> statuses;
+		protected ResponseList<twitter4j.Status> doInBackground(Void... arg0) {
+			ResponseList<twitter4j.Status> statuses = null;
 			
 			try {
-				statuses = TwitterAuthorization.twitter.getUserTimeline(TwitterActivity.REDMONDASB_USERNAME);
-			} catch (TwitterException e) {
+				statuses = TwitterActivity.twitter.getUserTimeline(TwitterActivity.REDMONDASB_USERNAME);
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 			// TODO Auto-generated method stub
-			return null;
-		}
-		
+			return statuses;
+		}		
 	}
 }

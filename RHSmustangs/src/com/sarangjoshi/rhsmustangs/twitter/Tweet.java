@@ -1,13 +1,18 @@
 package com.sarangjoshi.rhsmustangs.twitter;
 
 public class Tweet {
-	public Tweet(String newAuthor, String newContent) {
-		author = newAuthor;
-		content = newContent;
+	private String username;
+	private String text;
+	
+	public Tweet(String newUser, String newText) {
+		username = newUser;
+		text = newText;
 	}
-	public Tweet() {
-		// TODO Auto-generated constructor stub
+	
+	public String getUsername() {
+		return username;
 	}
-	public String author;
-	public String content;
+	public String getText() {
+		return text;
+	}
 }
