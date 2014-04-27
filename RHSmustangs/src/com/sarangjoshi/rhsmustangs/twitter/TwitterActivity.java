@@ -23,22 +23,27 @@ import android.widget.Toast;
 public class TwitterActivity extends Activity {
 	Button loginButton, showTweetsButton, logoutButton;
 	TextView usernameText;
-	WebView loginWebView;
+	WebView webView;
 	ListView tweetsList;
-	
-	enum TwitterStage { LOGGED_OUT, LOGGED_IN, SHOW_TWEETS };
-	TwitterStage appTwitterStage = TwitterStage.LOGGED_OUT;
-	
+
+	ArrayList<View> views = new ArrayList<View>();
+
+	enum TwitterStage {
+		LOGGED_OUT, LOGGING_IN, LOGGED_IN, SHOW_TWEETS, LOGGING_OUT
+	};
+
+	public static TwitterStage appTwitterStage = TwitterStage.LOGGED_OUT;
+
 	ArrayList<String> tweets = new ArrayList<String>();
-	ArrayAdapter tweetsAdapter;
-	
+	ArrayAdapter<String> tweetsAdapter;
+
 	private TwitterAuthorization tAuth;
 	private TwitterDataParse tData;
-	
+
 	public static Twitter twitter;
 
 	public static final String REDMONDASB_USERNAME = "RedmondASB";
-	
+
 	private String webUrl = "";
 
 	@Override
@@ -46,18 +51,35 @@ public class TwitterActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.twitter_login);
 
+		setupVariables();
+
 		tAuth = new TwitterAuthorization(this);
 		tData = new TwitterDataParse(this);
+
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
 		
-		setupViewVariables();
+		tAuth.setupTwitterLogin();
 
 		updateViews();
-		
 		setupClickListeners();
-		
-		loginWebView.setWebViewClient(new WatcherWebClient());
 	}
-	
+
+	/**
+	 * Initializes all the view variables.
+	 */
+	private void setupVariables() {
+		loginButton = (Button) findViewById(R.id.loginTwitterBtn);
+		usernameText = (TextView) findViewById(R.id.usernameText);
+		webView = (WebView) findViewById(R.id.loginWebView);
+		showTweetsButton = (Button) findViewById(R.id.showTweetsBtn);
+		tweetsList = (ListView) findViewById(R.id.tweetsListView);
+		logoutButton = (Button) findViewById(R.id.logoutBtn);
+	}
+
 	/**
 	 * Sets up the individual click listeners for the buttons.
 	 */
@@ -65,8 +87,9 @@ public class TwitterActivity extends Activity {
 		loginButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (tAuth.tNetwork.isConnectedToInternet() && !tAuth.isTwitterLoggedIn())
-					startAppAuthorization();
+				if (tAuth.tNetwork.isConnectedToInternet()
+						&& !tAuth.isTwitterLoggedIn())
+					loginToTwitter();
 				else {
 					Toast t = Toast.makeText(TwitterActivity.this,
 							"Not connected to Internet.", Toast.LENGTH_LONG);
@@ -82,38 +105,55 @@ public class TwitterActivity extends Activity {
 				tweetsList = (ListView) findViewById(R.id.tweetsListView);
 				loadTweets();
 			}
-			
+
 		});
 
 		logoutButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(tAuth.isTwitterLoggedIn()) {
+				if (tAuth.isTwitterLoggedIn()) {
 					logoutFromTwitter();
-					updateViews();
 				}
 			}
-			
+
 		});
 	}
-	
+
 	/**
 	 * Logs out of Twitter.
 	 */
-
 	private void logoutFromTwitter() {
-		tAuth.logout();
-		appTwitterStage = TwitterStage.LOGGED_OUT;
+		// Step 1: Logout from the Web View.
+		appTwitterStage = TwitterStage.LOGGING_OUT;
+
+		// Attaching Logout WebViewClient to monitor when the logout button was
+		// clicked.
+		webView.setWebViewClient(new LogoutWebClient());
+
+		updateViews();
+		// Load the logout URL (stored in TwitterAuthorization)
+		webView.loadUrl(TwitterAuthorization.LOGOUT_URL);
 	}
 
 	/**
-	 * The function to get Tweets from the Data Parser and load them into a ListView.
+	 * After the WebView has registered the logout button click.
+	 */
+	private void logoutPart2() {
+		tAuth.logout();
+		appTwitterStage = TwitterStage.LOGGED_OUT;
+		updateViews();
+	}
+
+	/**
+	 * The function to get Tweets from the Data Parser and load them into a
+	 * ListView.
 	 */
 	private void loadTweets() {
 		tweets = tData.getTweets();
-		
-		tweetsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tweets);
+
+		tweetsAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, tweets);
 		tweetsList.setAdapter(tweetsAdapter);
 	}
 
@@ -121,55 +161,50 @@ public class TwitterActivity extends Activity {
 	 * This sets up the views depending on whether the user is logged in or not.
 	 */
 	private void updateViews() {
-		if (tAuth.isTwitterLoggedIn()){
-			appTwitterStage = TwitterStage.LOGGED_IN;
-			// GONE: Login Button
-			loginButton.setVisibility(View.GONE);
-			// VISIBLE: Username Text, Show Tweets, Logout
-			usernameText.setVisibility(View.VISIBLE);
-			showTweetsButton.setVisibility(View.VISIBLE);
-			logoutButton.setVisibility(View.VISIBLE);
-			
+		switch (appTwitterStage) {
+		case LOGGED_IN:
+			setViewsVis(View.VISIBLE, usernameText, showTweetsButton, logoutButton);
+			setViewsVis(View.GONE, loginButton, webView);
 			usernameText.setText("Welcome " + tAuth.getUserId() + "!");
-		} else {
-			appTwitterStage = TwitterStage.LOGGED_OUT;
-			// GONE: Show Tweets Button, Username Text, Logout
-			showTweetsButton.setVisibility(View.GONE);
-			usernameText.setVisibility(View.GONE);
-			logoutButton.setVisibility(View.GONE);
-			// VISIBLE: 
-			loginButton.setVisibility(View.VISIBLE);
+			break;
+		case LOGGED_OUT:
+			setViewsVis(View.VISIBLE, loginButton);
+			setViewsVis(View.GONE, showTweetsButton, usernameText, logoutButton, webView);
+			break;
+		case LOGGING_IN:
+			setViewsVis(View.VISIBLE, webView);
+			setViewsVis(View.GONE, showTweetsButton, usernameText, logoutButton, loginButton);
+			break;
+		case LOGGING_OUT:
+			setViewsVis(View.VISIBLE, webView);
+			setViewsVis(View.GONE, showTweetsButton, usernameText, logoutButton, loginButton);
+			break;
 		}
 	}
 
-	/**
-	 * Initializes all the view variables.
-	 */
-	private void setupViewVariables() {
-		loginButton = (Button) findViewById(R.id.loginTwitterBtn);
-		usernameText = (TextView) findViewById(R.id.usernameText);
-		loginWebView = (WebView) findViewById(R.id.loginWebView);
-		showTweetsButton = (Button) findViewById(R.id.showTweetsBtn);
-		tweetsList = (ListView) findViewById(R.id.tweetsListView);
-		logoutButton = (Button) findViewById(R.id.logoutBtn);
+	private void setViewsVis(int visibility, View... views) {
+		for (int i = 0; i < views.length; i++) {
+			views[i].setVisibility(visibility);
+		}
 	}
 
 	/**
 	 * Starts the authorization process by showing the Web View with the login
 	 * screen.
 	 */
-	private void startAppAuthorization() {
-		// Shows Web view
-		loginWebView.setVisibility(View.VISIBLE);
-		// Hides other views
-		loginButton.setVisibility(View.GONE);
-		usernameText.setVisibility(View.GONE);
-		showTweetsButton.setVisibility(View.GONE);
+	private void loginToTwitter() {
+		// Attach Login WebViewClient to the WebView.
+		webView.setWebViewClient(new LoginWebClient());
+
+		appTwitterStage = TwitterStage.LOGGING_IN;
+		updateViews();
+		
+		tAuth.setupTwitterLogin();
 
 		// Load the authorization URL
 		webUrl = tAuth.getAppAuthorizeUrl();
 
-		loginWebView.loadUrl(webUrl);
+		webView.loadUrl(webUrl);
 
 		// At this point, waits for the User to load the callback URL.
 	}
@@ -178,38 +213,53 @@ public class TwitterActivity extends Activity {
 	 * Once the user has authorized the app, this method extracts the user's
 	 * access token from the token and verifier.
 	 * 
-	 * @param url the authorization URL
+	 * @param url
+	 *            the authorization URL
 	 */
-	private void userAuthorization(String url) {
+	private void loginPart2Auth(String url) {
 		// We are done with the WebView.
-		loginWebView.setVisibility(View.GONE);
-		loginButton.setVisibility(View.GONE);
-		usernameText.setVisibility(View.VISIBLE);
+		webView.setVisibility(View.GONE);
 
 		// Obtaining the user's access token + secret
 		tAuth.setUserAuth(url);
 
-		// User has logged in!
-		this.usernameText.setText(tAuth.getUsername());
+		if (tAuth.isTwitterLoggedIn())
+			appTwitterStage = TwitterStage.LOGGED_IN;
+
+		updateViews();
 	}
 
-	private class WatcherWebClient extends WebViewClient {
-		@Override
-		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-			if (url.contains(TwitterAuthorization.TWITTER_CALLBACK_TAG)) {
-				loginWebView.setVisibility(View.GONE);
-			}
-		}
-
+	private class LoginWebClient extends WebViewClient {
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			if (url.contains(TwitterAuthorization.TWITTER_CALLBACK_TAG)) {
-				userAuthorization(url);
+				loginPart2Auth(url);
 
 				return true;
 			}
 			return false;
 
+		}
+	}
+
+	private class LogoutWebClient extends WebViewClient {
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			if (!url.contains("logout")) {
+				logoutPart2();
+
+			}
+		}
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			if (!url.contains("logout")) {
+				logoutPart2();
+
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

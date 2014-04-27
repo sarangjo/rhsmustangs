@@ -40,6 +40,8 @@ public class TwitterAuthorization {
 	static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
 	static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
 
+	public static String LOGOUT_URL = "https://mobile.twitter.com/logout";
+
 	public static RequestToken appRequestToken;
 	public static AccessToken userAccessToken;
 	public User user;
@@ -60,7 +62,7 @@ public class TwitterAuthorization {
 
 		// reset();
 
-		setupTwitterLogin(true);
+		// setupTwitterLogin();
 	}
 
 	public boolean areApiKeysValid() {
@@ -70,27 +72,32 @@ public class TwitterAuthorization {
 	/**
 	 * Sets up the Twitter configuration.
 	 */
-	private void setupTwitterLogin(boolean isLogin) {
-		if (isLogin) {
-			if (isTwitterLoggedIn()) {
-				TwitterActivity.twitter = TwitterFactory.getSingleton();
-				try {
-					TwitterActivity.twitter.setOAuthConsumer(APP_KEY, APP_SECRET);
-				} catch (IllegalStateException e) {
-					
-				}
-				
-				String oauth_token = mySP.getString(PREF_KEY_OAUTH_TOKEN, "");
-				String oauth_secret = mySP.getString(PREF_KEY_OAUTH_SECRET, "");
-				userAccessToken = new AccessToken(oauth_token, oauth_secret);
-				TwitterActivity.twitter.setOAuthAccessToken(userAccessToken);
-			} else {
-				// Configures a Twitter login setup with the App's key and secret.
-				TwitterActivity.twitter = TwitterFactory.getSingleton();
-				TwitterActivity.twitter.setOAuthConsumer(APP_KEY, APP_SECRET);
-			}
-		} else {
+	public void setupTwitterLogin() {
+		if (isTwitterLoggedIn()) {
+			// Credentials are already available in the form of the AccessToken
 			TwitterActivity.twitter = TwitterFactory.getSingleton();
+			try {
+				// First, sets the app details, in case they haven't been set
+				// yet.
+				TwitterActivity.twitter.setOAuthConsumer(APP_KEY, APP_SECRET);
+			} catch (IllegalStateException e) {
+				// OAuth already set
+				// OR
+				// Instance using basic auth
+			}
+			// Gets previously stored user OAuth details
+			String oauth_token = mySP.getString(PREF_KEY_OAUTH_TOKEN, "");
+			String oauth_secret = mySP.getString(PREF_KEY_OAUTH_SECRET, "");
+			userAccessToken = new AccessToken(oauth_token, oauth_secret);
+			TwitterActivity.twitter.setOAuthAccessToken(userAccessToken);
+		} else {
+			// Configures a Twitter login setup with the App's key and
+			// secret.
+			ConfigurationBuilder cb = new ConfigurationBuilder();
+			cb.setDebugEnabled(true).setOAuthConsumerKey(APP_KEY)
+					.setOAuthConsumerSecret(APP_SECRET);
+			TwitterFactory tf = new TwitterFactory(cb.build());
+			TwitterActivity.twitter = tf.getInstance();
 		}
 	}
 
@@ -134,12 +141,12 @@ public class TwitterAuthorization {
 	}
 
 	/**
-	 * Given the authorization URL, returns the user ID.
+	 * Given the authorization URL.
 	 * 
 	 * @param url
 	 *            the URL navigated to, containing the access token and verifier
 	 *            strings
-	 * @return the corresponding user ID
+	 * 
 	 */
 	public void setUserAuth(String url) {
 		if (!isTwitterLoggedIn()) {
@@ -179,7 +186,8 @@ public class TwitterAuthorization {
 	 * @return if the user is logged into Twitter
 	 */
 	public boolean isTwitterLoggedIn() {
-		return mySP.getBoolean(PREF_KEY_TWITTER_LOGIN, false);
+		boolean isL = mySP.getBoolean(PREF_KEY_TWITTER_LOGIN, false);
+		return isL;
 	}
 
 	private void updateUserAccessToken() {
@@ -210,12 +218,18 @@ public class TwitterAuthorization {
 		edit.commit();
 	}
 
-
+	/**
+	 * Deletes all the SharedPreferences data, and nullifies the AccessToken.
+	 */
 	public void logout() {
 		Editor edit = mySP.edit();
 		edit.putString(PREF_KEY_OAUTH_TOKEN, "");
 		edit.putString(PREF_KEY_OAUTH_SECRET, "");
 		edit.putBoolean(PREF_KEY_TWITTER_LOGIN, false);
 		edit.commit();
+
+		userAccessToken = null;
+		appRequestToken = null;
+		TwitterActivity.twitter = null;
 	}
 }

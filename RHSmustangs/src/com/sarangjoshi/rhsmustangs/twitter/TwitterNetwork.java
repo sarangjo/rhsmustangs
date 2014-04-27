@@ -23,7 +23,7 @@ public class TwitterNetwork {
 	/**
 	 * Checks for connection.
 	 * 
-	 * @return if it is connected to the internet
+	 * @return if it is connected to the Internet
 	 */
 	public boolean isConnectedToInternet() {
 		ConnectivityManager manager = (ConnectivityManager) context
@@ -53,7 +53,7 @@ public class TwitterNetwork {
 	/**
 	 * Gets the app Request Token, given a callback URL. 
 	 */
-	private class GetRequestTokenTask extends
+	private class GetRequestTokenTask extends 
 			AsyncTask<String, Void, RequestToken> {
 		ProgressDialog pDialog;
 
@@ -64,14 +64,14 @@ public class TwitterNetwork {
 		}
 
 		@Override
-		protected RequestToken doInBackground(String... params) {
-			RequestToken rToken = null;
+		protected RequestToken doInBackground(String... params) { 
+			RequestToken rToken = TwitterAuthorization.appRequestToken;
 
 			try {
 				String callbackUrl = params[0];
 				rToken = TwitterActivity.twitter
 						.getOAuthRequestToken(callbackUrl);
-			} catch (TwitterException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
