@@ -41,7 +41,7 @@ public class TwitterNetwork {
 		}
 		return false;
 	}
-	
+
 	public RequestToken getRequestToken(String callbackUrl) {
 		try {
 			return new GetRequestTokenTask().execute(callbackUrl).get();
@@ -51,9 +51,9 @@ public class TwitterNetwork {
 		}
 	}
 	/**
-	 * Gets the app Request Token, given a callback URL. 
+	 * Gets the app Request Token, given a callback URL.
 	 */
-	private class GetRequestTokenTask extends 
+	private class GetRequestTokenTask extends
 			AsyncTask<String, Void, RequestToken> {
 		ProgressDialog pDialog;
 
@@ -64,7 +64,7 @@ public class TwitterNetwork {
 		}
 
 		@Override
-		protected RequestToken doInBackground(String... params) { 
+		protected RequestToken doInBackground(String... params) {
 			RequestToken rToken = TwitterAuthorization.appRequestToken;
 
 			try {
@@ -93,6 +93,7 @@ public class TwitterNetwork {
 			return null;
 		}
 	}
+
 	/**
 	 * Gets the user Access Token, given a verifier. Accesses the static
 	 * RequestToken in TwitterAuthorization.
@@ -126,7 +127,7 @@ public class TwitterNetwork {
 			TwitterAuthorization.userAccessToken = result;
 		}
 	}
-	
+
 	public ResponseList<twitter4j.Status> getTweets() {
 		try {
 			return new GetTweetsTask().execute().get();
@@ -134,21 +135,64 @@ public class TwitterNetwork {
 			return null;
 		}
 	}
-	private class GetTweetsTask extends AsyncTask<Void, Void, ResponseList<twitter4j.Status>> {
-
+	private class GetTweetsTask extends
+			AsyncTask<Void, Void, ResponseList<twitter4j.Status>> {
+		ProgressDialog pDialog;
+		
+		public void onPreExecute() {
+			pDialog = ProgressDialog.show(context, "", "Getting tweets...");
+		}
+		
 		@Override
 		protected ResponseList<twitter4j.Status> doInBackground(Void... arg0) {
 			ResponseList<twitter4j.Status> statuses = null;
-			
+
 			try {
-				statuses = TwitterActivity.twitter.getUserTimeline(TwitterActivity.REDMONDASB_USERNAME);
+				statuses = TwitterActivity.twitter
+						.getUserTimeline(TwitterActivity.REDMONDASB_USERNAME);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			// TODO Auto-generated method stub
 			return statuses;
-		}		
+		}
+	
+		public void onPostExecute(ResponseList<twitter4j.Status> result) {
+			pDialog.dismiss();
+		}
 	}
+
+	public String getUserName() {
+		try {
+			return new GetUserNameTask().execute().get();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	private class GetUserNameTask extends AsyncTask<Void, Void, String> {
+		ProgressDialog pDialog;
+		
+		public void onPreExecute() {
+			pDialog = ProgressDialog.show(context, "", "Getting username...");
+		}
+		
+		@Override
+		protected String doInBackground(Void... params) {
+			String s = "";
+			try {
+				s = TwitterActivity.twitter.getScreenName();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return s;
+		}
+		
+		public void onPostExecute(String result) {
+			pDialog.dismiss();
+		}
+	}
+	
 }

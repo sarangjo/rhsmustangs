@@ -46,16 +46,17 @@
             android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="come.sarangjoshi.rhsmustangs.MainActivity" />
+                android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
         <activity
-            android:name="com.sarangjoshi.rhsmustangs.DemoActivity"
+            android:name="com.sarangjoshi.rhsmustangs.twitter.TwitterTweetsActivity"
             android:label="@string/twitter_name"
-            android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="come.sarangjoshi.rhsmustangs.MainActivity" />
+                android:value="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity" />
         </activity>
+
     </application>
 
 </manifest>

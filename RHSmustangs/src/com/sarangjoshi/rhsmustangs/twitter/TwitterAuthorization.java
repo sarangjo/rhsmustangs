@@ -60,9 +60,6 @@ public class TwitterAuthorization {
 		tNetwork = new TwitterNetwork(newContext);
 		mySP = context.getSharedPreferences("TwitterPref", 0);
 
-		// reset();
-
-		// setupTwitterLogin();
 	}
 
 	public boolean areApiKeysValid() {
@@ -204,9 +201,7 @@ public class TwitterAuthorization {
 	}
 
 	public String getUsername() {
-		String username = userAccessToken.getScreenName();
-		return username;
-
+		return tNetwork.getUserName();
 	}
 
 	/**
