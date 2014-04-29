@@ -187,15 +187,6 @@ public class TwitterAuthorization {
 		return isL;
 	}
 
-	private void updateUserAccessToken() {
-		try {
-			userAccessToken = TwitterActivity.twitter.getOAuthAccessToken();
-		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public long getUserId() {
 		return userAccessToken.getUserId();
 	}

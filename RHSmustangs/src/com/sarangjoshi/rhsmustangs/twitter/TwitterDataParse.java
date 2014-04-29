@@ -20,8 +20,18 @@ public class TwitterDataParse {
 		tNetwork = new TwitterNetwork(context);
 	}
 
-	public ArrayList<String> getTweets() {
+	public ArrayList<twitter4j.Status> getTweetStatuses() {
 		ResponseList<twitter4j.Status> statuses = tNetwork.getTweets();
+		ArrayList<twitter4j.Status> statusList = new ArrayList<twitter4j.Status>();
+		
+		for(Status s : statuses) {
+			statusList.add(s);
+		}
+		
+		return statusList;
+	}
+	
+	public ArrayList<String> getTweets(ArrayList<twitter4j.Status> statuses) {
 		String user, text;
 		
 		for(Status s : statuses) {

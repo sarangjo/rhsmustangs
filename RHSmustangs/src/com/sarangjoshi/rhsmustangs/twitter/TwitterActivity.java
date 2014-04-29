@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
@@ -25,7 +26,7 @@ public class TwitterActivity extends Activity {
 	Button loginButton, showTweetsButton, logoutButton;
 	TextView usernameText;
 	WebView webView;
-	
+
 	enum TwitterStage {
 		LOGGED_OUT, LOGGING_IN, LOGGED_IN, SHOW_TWEETS, LOGGING_OUT
 	};
@@ -33,7 +34,7 @@ public class TwitterActivity extends Activity {
 	public static TwitterStage appTwitterStage = TwitterStage.LOGGED_OUT;
 	public static Toast t;
 
-		private TwitterAuthorization tAuth;
+	private TwitterAuthorization tAuth;
 	private TwitterDataParse tData;
 
 	public static Twitter twitter;
@@ -45,13 +46,13 @@ public class TwitterActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.twitter_login);
+		setContentView(R.layout.activity_twitter_login);
 
 		setupVariables();
 
 		tAuth = new TwitterAuthorization(this);
 		tData = new TwitterDataParse(this);
-		
+
 		setupClickListeners();
 	}
 
@@ -60,8 +61,8 @@ public class TwitterActivity extends Activity {
 		super.onStart();
 
 		tAuth.setupTwitterLogin();
-		
-		if(tAuth.isTwitterLoggedIn())
+
+		if (tAuth.isTwitterLoggedIn())
 			appTwitterStage = TwitterStage.LOGGED_IN;
 
 		updateViews();
@@ -114,8 +115,10 @@ public class TwitterActivity extends Activity {
 			public void onClick(View v) {
 				if (tAuth.isTwitterLoggedIn()) {
 					logoutFromTwitter();
+					//logoutPart2();
 				} else {
-					t = Toast.makeText(TwitterActivity.this, "Already logged out.", Toast.LENGTH_SHORT);
+					t = Toast.makeText(TwitterActivity.this,
+							"Already logged out.", Toast.LENGTH_SHORT);
 					t.show();
 				}
 			}
@@ -127,7 +130,13 @@ public class TwitterActivity extends Activity {
 	 * Starts the activity to show the tweets.
 	 */
 	private void showTweets() {
-		startActivity(new Intent(TwitterActivity.this, TwitterTweetsActivity.class));
+		if (tAuth.isTwitterLoggedIn())
+			startActivity(new Intent(TwitterActivity.this,
+					TwitterTweetsActivity.class));
+		else {
+			t = Toast.makeText(this, "Please login first.", Toast.LENGTH_SHORT);
+			t.show();
+		}
 	}
 
 	/**
@@ -168,8 +177,7 @@ public class TwitterActivity extends Activity {
 			break;
 		case LOGGED_OUT:
 			setViewsVis(View.VISIBLE, loginButton, logoutButton);
-			setViewsVis(View.GONE, showTweetsButton, usernameText,
-					webView);
+			setViewsVis(View.GONE, showTweetsButton, usernameText, webView);
 			break;
 		case LOGGING_IN:
 			setViewsVis(View.VISIBLE, webView);
@@ -185,10 +193,13 @@ public class TwitterActivity extends Activity {
 	}
 
 	/**
-	 * Sets the visibility of the given collection of views to the given visibility.
+	 * Sets the visibility of the given collection of views to the given
+	 * visibility.
 	 * 
-	 * @param visibility	chosen visibility for all the views
-	 * @param views	all the views to have the visibility set
+	 * @param visibility
+	 *            chosen visibility for all the views
+	 * @param views
+	 *            all the views to have the visibility set
 	 */
 	private void setViewsVis(int visibility, View... views) {
 		for (int i = 0; i < views.length; i++) {
@@ -237,7 +248,17 @@ public class TwitterActivity extends Activity {
 		updateViews();
 	}
 
+	
 	private class LoginWebClient extends WebViewClient {
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			/*if (url.equals("https://api.twitter.com/oauth/authorize")) {
+				appTwitterStage = TwitterStage.LOGGED_OUT;
+				updateViews();
+				((WebView) view).stopLoading(); 
+			}*/
+		}
+
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			if (url.contains(TwitterAuthorization.TWITTER_CALLBACK_TAG)) {

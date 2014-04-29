@@ -42,17 +42,21 @@ public class TwitterNetwork {
 		return false;
 	}
 
+	/**
+	 * Gets the app Request Token, given a callback URL.
+	 * 
+	 * @param callbackUrl
+	 *            the callback URL
+	 * @return the app's request token
+	 */
 	public RequestToken getRequestToken(String callbackUrl) {
 		try {
 			return new GetRequestTokenTask().execute(callbackUrl).get();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			return null;
 		}
 	}
-	/**
-	 * Gets the app Request Token, given a callback URL.
-	 */
+
 	private class GetRequestTokenTask extends
 			AsyncTask<String, Void, RequestToken> {
 		ProgressDialog pDialog;
@@ -72,8 +76,6 @@ public class TwitterNetwork {
 				rToken = TwitterActivity.twitter
 						.getOAuthRequestToken(callbackUrl);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 
 			return rToken;
@@ -135,14 +137,15 @@ public class TwitterNetwork {
 			return null;
 		}
 	}
+
 	private class GetTweetsTask extends
 			AsyncTask<Void, Void, ResponseList<twitter4j.Status>> {
 		ProgressDialog pDialog;
-		
+
 		public void onPreExecute() {
 			pDialog = ProgressDialog.show(context, "", "Getting tweets...");
 		}
-		
+
 		@Override
 		protected ResponseList<twitter4j.Status> doInBackground(Void... arg0) {
 			ResponseList<twitter4j.Status> statuses = null;
@@ -158,7 +161,7 @@ public class TwitterNetwork {
 			// TODO Auto-generated method stub
 			return statuses;
 		}
-	
+
 		public void onPostExecute(ResponseList<twitter4j.Status> result) {
 			pDialog.dismiss();
 		}
@@ -171,13 +174,14 @@ public class TwitterNetwork {
 			return null;
 		}
 	}
+
 	private class GetUserNameTask extends AsyncTask<Void, Void, String> {
 		ProgressDialog pDialog;
-		
+
 		public void onPreExecute() {
 			pDialog = ProgressDialog.show(context, "", "Getting username...");
 		}
-		
+
 		@Override
 		protected String doInBackground(Void... params) {
 			String s = "";
@@ -189,10 +193,33 @@ public class TwitterNetwork {
 			}
 			return s;
 		}
-		
+
 		public void onPostExecute(String result) {
 			pDialog.dismiss();
 		}
 	}
-	
+
+	public twitter4j.Status favorite(long tweetId) {
+		try {
+			return new FavoriteTweetTask().execute(tweetId).get();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private class FavoriteTweetTask extends AsyncTask<Long, Void, twitter4j.Status> {
+
+		@Override
+		protected twitter4j.Status doInBackground(Long... tweetId) {
+			try {
+				twitter4j.Status status = TwitterActivity.twitter
+						.createFavorite(tweetId[0].longValue());
+				return status;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+	}
 }
