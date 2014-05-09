@@ -8,5 +8,6 @@
     <string name="http_name">"RHS Mustangs HTTP"</string>
     <string name="links_name">"RHS Mustangs Links"</string>
     <string name="twitter_name">"Twitter"</string>
+    <string name="refresh_tweets">Refresh Tweets</string>
 
 </resources>

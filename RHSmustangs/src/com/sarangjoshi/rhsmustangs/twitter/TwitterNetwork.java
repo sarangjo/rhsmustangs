@@ -1,9 +1,6 @@
 package com.sarangjoshi.rhsmustangs.twitter;
 
-import java.util.concurrent.ExecutionException;
-
 import twitter4j.ResponseList;
-import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -208,18 +205,27 @@ public class TwitterNetwork {
 	}
 
 	private class FavoriteTweetTask extends AsyncTask<Long, Void, twitter4j.Status> {
-
+		ProgressDialog pDialog;
+		
+		public void onPreExecute() {
+			pDialog = ProgressDialog.show(context, "", "Favoriting...");
+		}
+		
 		@Override
 		protected twitter4j.Status doInBackground(Long... tweetId) {
 			try {
+				// TODO: Solve this shit
 				twitter4j.Status status = TwitterActivity.twitter
 						.createFavorite(tweetId[0].longValue());
 				return status;
-			} catch (Exception e) {
+			} catch (TwitterException e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 
+		public void onPostExecute(twitter4j.Status result) {
+			pDialog.dismiss();
+		}
 	}
 }

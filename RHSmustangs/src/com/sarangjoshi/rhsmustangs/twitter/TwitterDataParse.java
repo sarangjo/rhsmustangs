@@ -37,6 +37,7 @@ public class TwitterDataParse {
 		for(Status s : statuses) {
 			user = s.getUser().getScreenName();
 			text = s.getText();
+			boolean x = s.isFavorited(); 
 			
 			tweets.add(user + ": " + text);
 		}
