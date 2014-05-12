@@ -10,13 +10,12 @@ import twitter4j.Status;
 import android.content.Context;
 
 public class TwitterDataParse {
-	private ArrayList<String> tweets;
+	//private ArrayList<String> tweets;
 	Context context;
 	TwitterNetwork tNetwork;
 	
 	public TwitterDataParse(Context newContext) {
 		context = newContext;
-		tweets = new ArrayList<String>();
 		tNetwork = new TwitterNetwork(context);
 	}
 
@@ -33,11 +32,11 @@ public class TwitterDataParse {
 	
 	public ArrayList<String> getTweets(ArrayList<twitter4j.Status> statuses) {
 		String user, text;
+		ArrayList<String> tweets = new ArrayList<String>();
 		
 		for(Status s : statuses) {
 			user = s.getUser().getScreenName();
 			text = s.getText();
-			boolean x = s.isFavorited(); 
 			
 			tweets.add(user + ": " + text);
 		}

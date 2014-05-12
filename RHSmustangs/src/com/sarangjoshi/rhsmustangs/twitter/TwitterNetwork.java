@@ -1,3 +1,9 @@
+/**
+ * TwitterNetwork.java
+ * 10 Apr 14
+ * Sarang Joshi
+ */
+
 package com.sarangjoshi.rhsmustangs.twitter;
 
 import twitter4j.ResponseList;
@@ -196,6 +202,13 @@ public class TwitterNetwork {
 		}
 	}
 
+	/**
+	 * Favorites the given tweet id.
+	 * 
+	 * @param tweetId
+	 *            a particular tweet's unique ID.
+	 * @return the favorited status
+	 */
 	public twitter4j.Status favorite(long tweetId) {
 		try {
 			return new FavoriteTweetTask().execute(tweetId).get();
@@ -204,19 +217,61 @@ public class TwitterNetwork {
 		}
 	}
 
-	private class FavoriteTweetTask extends AsyncTask<Long, Void, twitter4j.Status> {
+	private class FavoriteTweetTask extends
+			AsyncTask<Long, Void, twitter4j.Status> {
 		ProgressDialog pDialog;
-		
+
 		public void onPreExecute() {
 			pDialog = ProgressDialog.show(context, "", "Favoriting...");
 		}
-		
+
 		@Override
 		protected twitter4j.Status doInBackground(Long... tweetId) {
 			try {
 				// TODO: Solve this shit
 				twitter4j.Status status = TwitterActivity.twitter
 						.createFavorite(tweetId[0].longValue());
+				return status;
+			} catch (TwitterException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		public void onPostExecute(twitter4j.Status result) {
+			pDialog.dismiss();
+		}
+	}
+
+	/**
+	 * Unavorites the given tweet id.
+	 * 
+	 * @param tweetId
+	 *            a particular tweet's unique ID.
+	 * @return the unfavorited status
+	 */
+	public twitter4j.Status unfavorite(long tweetId) {
+		try {
+			return new UnfavoriteTweetTask().execute(tweetId).get();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private class UnfavoriteTweetTask extends
+			AsyncTask<Long, Void, twitter4j.Status> {
+		ProgressDialog pDialog;
+
+		public void onPreExecute() {
+			pDialog = ProgressDialog.show(context, "", "Favoriting...");
+		}
+
+		@Override
+		protected twitter4j.Status doInBackground(Long... tweetId) {
+			try {
+				// TODO: Solve this shit
+				twitter4j.Status status = TwitterActivity.twitter
+						.destroyFavorite(tweetId[0].longValue());
 				return status;
 			} catch (TwitterException e) {
 				e.printStackTrace();
