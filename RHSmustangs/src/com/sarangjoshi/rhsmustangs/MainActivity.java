@@ -10,13 +10,14 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.sarangjoshi.rhsmustangs.schedule.ScheduleActivity;
 import com.sarangjoshi.rhsmustangs.twitter.TwitterActivity;
 
 public class MainActivity extends Activity {
 	WebParser parse;
 	ListView listView;
 	
-	String[] viewNames = { "Links", "Twitter" };
+	String[] viewNames = { "Links", "Twitter", "Schedule" };
 	ArrayAdapter<String> adapter;
 
 	public final static String EXTRA_MESSAGE = "com.sarangjoshi.rhsmustangs.MESSAGE";
@@ -66,6 +67,9 @@ public class MainActivity extends Activity {
 			break;
 		case 1:
 			intent = new Intent(this, TwitterActivity.class);
+			break;
+		case 2:
+			intent = new Intent(this, ScheduleActivity.class);
 			break;
 		}
 		if(intent != null) startActivity(intent);

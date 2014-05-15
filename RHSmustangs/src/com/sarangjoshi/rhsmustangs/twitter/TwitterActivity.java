@@ -1,3 +1,9 @@
+/**
+ * TwitterActivity.java
+ * Apr 1, 2014
+ * Sarang Joshi
+ */
+
 package com.sarangjoshi.rhsmustangs.twitter;
 
 import java.util.ArrayList;
@@ -5,6 +11,7 @@ import java.util.ArrayList;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 
+import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.R;
 
 import android.app.Activity;
@@ -86,7 +93,7 @@ public class TwitterActivity extends Activity {
 		loginButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (tAuth.tNetwork.isConnectedToInternet())
+				if (Network.isConnectedToInternet(TwitterActivity.this))
 					if (!tAuth.isTwitterLoggedIn())
 						loginToTwitter();
 					else {

@@ -30,7 +30,8 @@ public class TwitterAuthorization {
 	static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
 	static final String PREF_KEY_OAUTH_SECRET = "oauth_token_secret";
 	static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLoggedIn";
-
+	static final String PREF_FILE_NAME = "TwitterPref";
+	
 	static final String TWITTER_CALLBACK_TAG = "rhsmustangs";
 	static final String TWITTER_CALLBACK_URL = "http://" + TWITTER_CALLBACK_TAG
 			+ ".com";
@@ -41,6 +42,7 @@ public class TwitterAuthorization {
 	static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
 
 	public static String LOGOUT_URL = "https://mobile.twitter.com/logout";
+	
 
 	public static RequestToken appRequestToken;
 	public static AccessToken userAccessToken;
@@ -58,7 +60,7 @@ public class TwitterAuthorization {
 		context = newContext;
 
 		tNetwork = new TwitterNetwork(newContext);
-		mySP = context.getSharedPreferences("TwitterPref", 0);
+		mySP = context.getSharedPreferences(PREF_FILE_NAME, 0);
 
 	}
 

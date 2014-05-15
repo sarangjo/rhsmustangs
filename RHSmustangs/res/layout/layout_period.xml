@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:padding="5dp" >
+
+    <TextView
+        android:id="@+id/periodNum"
+        android:layout_width="70dip"
+        android:layout_height="match_parent"
+        android:text="P1"
+        android:textSize="50sp" />
+
+    <TextView
+        android:id="@+id/startTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dip"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="Start Time"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/endTime"
+        android:layout_width="wrap_content"
+        android:layout_height="30dip"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/startTime"
+        android:text="End Time"
+       	android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/className"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignTop="@+id/periodNum"
+        android:layout_marginLeft="5dp"
+        android:layout_toRightOf="@+id/periodNum"
+        android:text="Class Name"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</RelativeLayout>

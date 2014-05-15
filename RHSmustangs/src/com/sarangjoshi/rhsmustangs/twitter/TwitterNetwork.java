@@ -23,27 +23,7 @@ public class TwitterNetwork {
 		context = newContext;
 	}
 
-	/**
-	 * Checks for connection.
-	 * 
-	 * @return if it is connected to the Internet
-	 */
-	public boolean isConnectedToInternet() {
-		ConnectivityManager manager = (ConnectivityManager) context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-		if (manager != null) {
-			NetworkInfo[] info = manager.getAllNetworkInfo();
-
-			if (info != null) {
-				for (int i = 0; i < info.length; i++) {
-					if (info[i].getState() == NetworkInfo.State.CONNECTED) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
+	
 
 	/**
 	 * Gets the app Request Token, given a callback URL.

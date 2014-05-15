@@ -7,6 +7,7 @@
 package com.sarangjoshi.rhsmustangs.twitter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import twitter4j.Status;
 import android.app.Activity;
@@ -29,7 +30,7 @@ public class TwitterTweetsActivity extends Activity {
 
 	private ArrayList<String> tweets = new ArrayList<String>();
 	private ArrayList<Status> statuses = new ArrayList<Status>();
-	private Status[] statusArray;
+	//private Status[] statusArray;
 
 	private ArrayList<Boolean> favorites;
 
@@ -89,45 +90,47 @@ public class TwitterTweetsActivity extends Activity {
 		pd.dismiss();
 
 		// This array is what the ArrayAdapter uses as its values
-		statusArray = new Status[statuses.size()];
+		//statusArray = new Status[statuses.size()];
 		favorites = new ArrayList<Boolean>();
 		for (int i = 0; i < statuses.size(); i++) {
-			statusArray[i] = statuses.get(i);
+			//statusArray[i] = statuses.get(i);
 			// As the statuses are parsed into the array, the parallel boolean
 			// ArrayList favorites is also filled up.
 			favorites.add(statuses.get(i).isFavorited());
 		}
-		tweetsAdapter = new TweetsAdapter(this, statusArray);
+		tweetsAdapter = new TweetsAdapter(this, statuses);
 		tweetsList.setAdapter(tweetsAdapter);
 		// updateFavorites();
 	}
 
 	private class TweetsAdapter extends ArrayAdapter<Status> {
-		private final Context context;
+		private final Context mContext;
 
 		// private final Status[] values;
 
-		public TweetsAdapter(Context newContext, Status[] newValues) {
-			super(newContext, R.layout.layout_tweet, newValues);
+		public TweetsAdapter(Context context, List<Status> newValues) {
+			super(context, R.layout.layout_tweet, newValues);
 
-			context = newContext;
+			mContext = context;
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater inflater = (LayoutInflater) context
+			LayoutInflater inflater = (LayoutInflater) mContext
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 			View rowView = inflater.inflate(R.layout.layout_tweet, parent,
 					false);
+			
+			// Individual views
 			TextView topView = (TextView) rowView.findViewById(R.id.toptext);
 			TextView bottomView = (TextView) rowView
 					.findViewById(R.id.bottomtext);
 			ImageView favoriteButton = (ImageView) rowView
 					.findViewById(R.id.favoriteImage);
 
-			// View data
-			Status s = statusArray[position];
+			// Setting view data
+			Status s = statuses.get(position);
 
 			topView.setText(s.getUser().getScreenName());
 			bottomView.setText(s.getText());
@@ -147,10 +150,10 @@ public class TwitterTweetsActivity extends Activity {
 		 */
 		private void updateIsFav(int i, ImageView favoriteButton) {
 			if (favorites.get(i))
-				favoriteButton.setImageDrawable(context.getResources()
+				favoriteButton.setImageDrawable(mContext.getResources()
 						.getDrawable(R.drawable.star_gold));
 			else
-				favoriteButton.setImageDrawable(context.getResources()
+				favoriteButton.setImageDrawable(mContext.getResources()
 						.getDrawable(R.drawable.star));
 
 		}
@@ -159,13 +162,13 @@ public class TwitterTweetsActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				int position = tweetsList.getPositionForView(v);
-				Status s = statusArray[position];
+				Status s = statuses.get(position);
 				ImageView imageV = (ImageView) v;
 
 				// if the tweet is not favorited,
 				if (!favorites.get(position)) {
 					// Set the image to the gold favorited star drawable
-					imageV.setImageDrawable(context.getResources().getDrawable(
+					imageV.setImageDrawable(mContext.getResources().getDrawable(
 							R.drawable.star_gold));
 
 					// Favorite it on the server
@@ -175,7 +178,7 @@ public class TwitterTweetsActivity extends Activity {
 				} else {
 					// basically the reverse of the above if block.
 					// Set the image to the unfavorited star drawable
-					imageV.setImageDrawable(context.getResources().getDrawable(
+					imageV.setImageDrawable(mContext.getResources().getDrawable(
 							R.drawable.star));
 
 					// Unfavorite it on the server
