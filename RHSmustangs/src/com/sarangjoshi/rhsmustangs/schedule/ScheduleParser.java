@@ -6,16 +6,16 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
 import android.content.Context;
+import android.text.format.Time;
 
 public class ScheduleParser {
 	private String currentSchedule = null;
-	private char lunch = 'a';
+	private char lunch = 'c';
 
 	/*
 	 * public void createAndSaveFiles() { FileOutputStream stream; try { stream
@@ -41,35 +41,22 @@ public class ScheduleParser {
 	 * Gets the current day and sets the local variable
 	 */
 	public void updateCurrentDay() {
-		Calendar cal = Calendar.getInstance();
 		// Sunday = 1
-		int day = cal.get(Calendar.DAY_OF_WEEK);
+		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);;
 		
-		android.text.format.Time now = new android.text.format.Time();
-		now.setToNow();
+		ScheduleData.now = new Time();
+		ScheduleData.now.setToNow();
 		
-		int hour = now.hour;
+		int hour = ScheduleData.now.hour;
 		
 		if(day == Calendar.SATURDAY || day == Calendar.SUNDAY)
 			currentSchedule = ScheduleData.getScheduleByDay(Calendar.MONDAY, lunch);			
-		else if (hour >= 2 + getEndHour(day)) 
-			currentSchedule = ScheduleData.wed;
+		else if (hour >= 2 + ScheduleData.getEndHour(day)) 
+			currentSchedule = ScheduleData.getScheduleByDay(day + 1, lunch);
 		else
 			currentSchedule = ScheduleData.getScheduleByDay(day, lunch);
 	}
 	
-	/**
-	 * Gets the end time given a day of the week
-	 * @param day the day of the week
-	 * @return the hour at which school ends
-	 */
-	public int getEndHour(int day) {
-		if(day == Calendar.WEDNESDAY)
-			return 12;
-		else
-			return 14;		
-	}
-
 	/**
 	 * Based on the local string {@link s}, parses and returns a set of Periods.
 	 * 
@@ -104,11 +91,11 @@ public class ScheduleParser {
 			// Start Time
 			int sHours = Integer.parseInt(result[1]);
 			int sMin = Integer.parseInt(result[2]);
-			p.mStartTime = new Time(sHours, sMin, 0);
+			p.mStartTime = new ScheduleTime(sHours, sMin);
 			// End Time
 			int eHours = Integer.parseInt(result[3]);
 			int eMin = Integer.parseInt(result[4]);
-			p.mEndTime = new Time(eHours, eMin, 0);
+			p.mEndTime = new ScheduleTime(eHours, eMin);
 		} catch (ArrayIndexOutOfBoundsException e) {
 
 		}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/action_refresh_schedule"
+        android:icon="@drawable/ic_action_refresh"
+        android:title="@string/refresh"
+        android:showAsAction="always"
+        />
+
+    <item android:id="@+id/action_change_lunch"
+        android:icon="@drawable/ic_action_event"
+        android:title="Change Lunch"
+        android:showAsAction="always"
+        />
+    
+</menu>

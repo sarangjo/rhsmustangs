@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/action_refresh_tweets"
         android:icon="@drawable/ic_action_refresh"
-        android:title="@string/refresh_tweets"
+        android:title="@string/refresh"
         android:showAsAction="always"
         />
 

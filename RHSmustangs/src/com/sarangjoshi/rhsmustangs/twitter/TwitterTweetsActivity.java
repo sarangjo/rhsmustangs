@@ -56,7 +56,7 @@ public class TwitterTweetsActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.my_action_bar, menu);
+		inflater.inflate(R.menu.tweets_action_bar, menu);
 
 		return super.onCreateOptionsMenu(menu);
 	}

@@ -6,48 +6,45 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.sql.Time;
-
 public class Period {
 	public String mPeriodNum = "1";
-	public String mClassName = "COMP SCI YO";
-	public Time mStartTime;
-	public Time mEndTime;
+	public String mClassName = "Period";
+	public ScheduleTime mStartTime;
+	public ScheduleTime mEndTime;
 
-	public Period(String periodNum, String periodName, Time startTime,
-			Time endTime) {
+	public Period(String periodNum, String periodName, int sh, int sm, 
+			int eh, int em) {
 		mPeriodNum = periodNum;
 		mClassName = periodName;
-		mStartTime = startTime;
-		mEndTime = endTime;
+		mStartTime = new ScheduleTime(sh, sm);
+		mEndTime = new ScheduleTime(eh, em);
 	}
 
 	public Period() {
-		// TODO Auto-generated constructor stub
 	}
 
-	public String getStartTime() {
+	public String getStartTimeAsString() {
 		return parseTime(mStartTime);
 	}
 
-	public String getEndTime() {
+	public String getEndTimeAsString() {
 		return parseTime(mEndTime);
 	}
 
-	private String parseTime(Time t) {
-		int minutes = t.getMinutes();
+	private String parseTime(ScheduleTime t) {
+		int minutes = t.minute;// getMinutes();
 		if (minutes < 10)
-			return t.getHours() + ":0" + t.getMinutes();
+			return t.hour + ":0" + t.minute;
 		else
-			return t.getHours() + ":" + t.getMinutes();
+			return t.hour + ":" + t.minute;
 	}
 
 	@Override
 	public String toString() {
 		String s = new String(mPeriodNum);
 		s += " " + mClassName;
-		s += ", " + getStartTime();
-		s += "-" + getEndTime();
+		s += ", " + getStartTimeAsString();
+		s += "-" + getEndTimeAsString();
 		return s;
 	}
 }

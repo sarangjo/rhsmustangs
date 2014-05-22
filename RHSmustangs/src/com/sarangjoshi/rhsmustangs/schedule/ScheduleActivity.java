@@ -8,16 +8,21 @@ package com.sarangjoshi.rhsmustangs.schedule;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import com.sarangjoshi.rhsmustangs.R;
@@ -30,6 +35,10 @@ public class ScheduleActivity extends Activity {
 
 	private PeriodsAdapter periodsAdapter;
 	private ScheduleParser sp;
+	
+	public static enum PeriodStyle {
+		PAST, PRESENT, FUTURE
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -37,11 +46,6 @@ public class ScheduleActivity extends Activity {
 		setContentView(R.layout.activity_schedule);
 
 		sp = new ScheduleParser();
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
 
 		periodList = (ListView) findViewById(R.id.periodsListView);
 		// loadPeriods();
@@ -49,28 +53,46 @@ public class ScheduleActivity extends Activity {
 		loadPeriods();
 	}
 
+	@Override
+	public void onStart() {
+		super.onStart();
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.schedule_action_bar, menu);
+
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_refresh_schedule:
+			periods = sp.getPeriods();
+			loadPeriods();
+			return true;
+		case R.id.action_change_lunch:
+			
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
 	/**
 	 * Preset schedule, for testing.
 	 */
-	@SuppressWarnings({ "deprecation", "unused" })
-	private void setPeriods() {
-		periods = new ArrayList<Period>();
-
-		periods.add(new Period("P1", "Sp 3", new Time(7, 30, 0), new Time(8,
-				24, 0)));
-		periods.add(new Period("P2", "AP Lit", new Time(8, 30, 0), new Time(9,
-				24, 0)));
-		periods.add(new Period("P3", "AP Gov", new Time(9, 30, 0), new Time(10,
-				24, 0)));
-		periods.add(new Period("P4", "Lead", new Time(10, 30, 0), new Time(11,
-				24, 0)));
-		periods.add(new Period("LC", "LUNCH", new Time(11, 30, 0), new Time(12,
-				0, 0)));
-		periods.add(new Period("P5", "CSE", new Time(12, 06, 0), new Time(1, 0,
-				0)));
-		periods.add(new Period("P6", "AP Calc", new Time(1, 06, 0), new Time(2,
-				0, 0)));
-
+	private void setPresetPeriods() {
+		periods.add(new Period("P1", "Sp 3", 7, 30, 8, 24));
+		periods.add(new Period("P2", "AP Lit", 8, 30, 9, 24));
+		periods.add(new Period("P3", "AP Gov", 9, 30, 10, 24));
+		periods.add(new Period("P4", "Lead", 10, 30, 11, 24));
+		periods.add(new Period("LC", "LUNCH", 11, 30, 12, 0));
+		periods.add(new Period("P5", "CSE", 12, 06, 1, 0));
+		periods.add(new Period("P6", "AP Calc", 1, 06, 2, 0));
 	}
 
 	/**
@@ -115,10 +137,39 @@ public class ScheduleActivity extends Activity {
 
 			periodNumView.setText(new String(p.mPeriodNum));
 			classNameView.setText(p.mClassName);
-			startTimeView.setText(p.getStartTime());
-			endTimeView.setText(p.getEndTime());
+			startTimeView.setText(p.getStartTimeAsString());
+			endTimeView.setText(p.getEndTimeAsString());
+
+			PeriodStyle style = getPeriodStyle(p);
+			
+			if (style == PeriodStyle.PAST) {
+				periodNumView.setTextColor(Color.GRAY);
+			} else if (style == PeriodStyle.PRESENT) {
+				periodNumView.setTextColor(Color.GREEN);
+			} else if (style == PeriodStyle.FUTURE) {
+				periodNumView.setTextColor(Color.BLACK);
+			}
 
 			return rowView;
+		}
+
+		private PeriodStyle getPeriodStyle(Period p) {
+			int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+			ScheduleData.now = new Time();
+			ScheduleData.now.setToNow();
+			
+			ScheduleTime schedNow = new ScheduleTime(ScheduleData.now);
+
+			if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
+				if (schedNow.isAfter(p.mEndTime)) {
+					return PeriodStyle.PAST;
+				} else if (schedNow.isAfter(p.mStartTime) && schedNow.isBefore(p.mEndTime)) {
+					return PeriodStyle.PRESENT;
+				} else {
+					return PeriodStyle.FUTURE;
+				}
+			}
+			return PeriodStyle.PAST;
 		}
 	}
 }

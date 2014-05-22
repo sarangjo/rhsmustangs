@@ -9,6 +9,6 @@
     <string name="links_name">"RHS Mustangs Links"</string>
     <string name="twitter_name">"Twitter"</string>
     <string name="schedule_name">"Schedule"</string>
-    <string name="refresh_tweets">Refresh Tweets</string>
+    <string name="refresh">Refresh</string>
 
 </resources>
