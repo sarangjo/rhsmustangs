@@ -10,7 +10,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.sarangjoshi.rhsmustangs.schedule.ScheduleActivity;
+import com.sarangjoshi.rhsmustangs.schedule.SActivity;
 import com.sarangjoshi.rhsmustangs.twitter.TwitterActivity;
 
 public class MainActivity extends Activity {
@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
 			intent = new Intent(this, TwitterActivity.class);
 			break;
 		case 2:
-			intent = new Intent(this, ScheduleActivity.class);
+			intent = new Intent(this, SActivity.class);
 			break;
 		}
 		if(intent != null) startActivity(intent);

@@ -58,7 +58,7 @@
                 android:value="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity" />
         </activity>
         <activity
-            android:name="com.sarangjoshi.rhsmustangs.schedule.ScheduleActivity"
+            android:name="com.sarangjoshi.rhsmustangs.schedule.SActivity"
             android:label="@string/schedule_name"
             android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
             <meta-data

@@ -1,8 +1,8 @@
 /**
- * ScheduleData.java
- * May 14, 2014
+ * ScheduleStaticData.java
+ * May 23, 2014
  * Sarang Joshi
- */
+*/
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
@@ -10,7 +10,7 @@ import java.util.Calendar;
 
 import android.text.format.Time;
 
-public class ScheduleData {
+public class SSData {
 	public static String a = "P1 07 30 08 24\nP2 08 30 09 24\nP3 09 30 10 24\nLA 10 30 11 00\nP4 11 06 12 00\nP5 12 06 13 00\nP6 13 06 14 00\n";
 	public static String b = "P1 07 30 08 24\nP2 08 30 09 24\nP3 09 30 10 24\n4A 10 30 11 00\nLB 11 00 11 30\n4B 11 36 12 00\nP5 12 06 13 00\nP6 13 06 14 00\n";
 	public static String c = "P1 07 30 08 24\nP2 08 30 09 24\nP3 09 30 10 24\nP4 10 30 11 24\nLC 11 30 12 00\nP5 12 06 13 00\nP6 13 06 14 00\n";
@@ -26,6 +26,9 @@ public class ScheduleData {
 	public static int start_minutes = 30;
 	
 	public static Time now;
+	public static int hour;
+	public static int day;
+	public static int minute;
 	
 	/**
 	 * Given the current day and lunch type, returns the appropriate schedule string.
@@ -34,14 +37,14 @@ public class ScheduleData {
 	 * @param lType the lunch type
 	 * @return the schedule string
 	 */
-	public static String getScheduleByDay(int day, char lType) {
+	public static String getScheduleByDay(int day, char lunch) {
 		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
 			day = Calendar.MONDAY;
 
 		if (day == Calendar.WEDNESDAY)
 			return wed;
 		else if (day == Calendar.THURSDAY)
-			switch (lType) {
+			switch (lunch) {
 			case ('b'):
 				return tb;
 			case ('c'):
@@ -50,7 +53,7 @@ public class ScheduleData {
 				return ta;
 			}
 		else
-			switch (lType) {
+			switch (lunch) {
 			case ('b'):
 				return b;
 			case ('c'):
@@ -82,5 +85,38 @@ public class ScheduleData {
 			return 30;
 		else
 			return 0;
+	}
+
+	/**
+	 * Updates the current day in local variable day and returns it.
+	 * 
+	 * @return the current day, 1 = Sunday
+	 */
+	public static int getCurrentDay() {
+		day = Calendar.TUESDAY;//Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+		return day;
+	}
+
+	/**
+	 * Updates the current time in local variables {@link now}, {@link hour}, and {@link minute}.
+	 * 
+	 * @return the Time object that is the current time.
+	 */
+	public static Time updateCurrentTime() {
+		now = new Time();
+		now.setToNow();
+		hour = 10;//now.hour;
+		minute = 13;//now.minute;
+		return now;
+	}
+
+	/**
+	 * Updates the current time and returns a {@code ScheduleTime} object of the current time.
+	 * 
+	 * @return a ScheduleTime object of the current time
+	 */
+	public static ScheduleTime getCurrentTime() {
+		updateCurrentTime();
+		return new ScheduleTime(hour, minute);
 	}
 }

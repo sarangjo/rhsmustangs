@@ -8,6 +8,7 @@ package com.sarangjoshi.rhsmustangs.schedule;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -17,8 +18,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -27,14 +33,14 @@ import java.util.List;
 
 import com.sarangjoshi.rhsmustangs.R;
 
-public class ScheduleActivity extends Activity {
+public class SActivity extends Activity {
 
 	private ListView periodList;
 
 	public ArrayList<Period> periods;
 
 	private PeriodsAdapter periodsAdapter;
-	private ScheduleParser sp;
+	private SParser sParser;
 	
 	public static enum PeriodStyle {
 		PAST, PRESENT, FUTURE
@@ -45,42 +51,66 @@ public class ScheduleActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_schedule);
 
-		sp = new ScheduleParser();
+		sParser = new SParser(this);
 
 		periodList = (ListView) findViewById(R.id.periodsListView);
-		// loadPeriods();
-		periods = sp.getPeriods();
+
 		loadPeriods();
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-
 	}
 
-	@Override
+	
+@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.schedule_action_bar, menu);
+		
+		View item = menu.findItem(R.id.lunches_spinner).getActionView();
+		
+		Spinner spin = (Spinner) item;
+		
+		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.lunches_list, R.layout.lunch_dropdown_item);
+		spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
+		spin.setAdapter(spinAdapter);
+		
+		spin.setOnItemSelectedListener(new LunchSelectedListener());
 
+		int pos = spinAdapter.getPosition(sParser.getLunchForAdapter());
+		spin.setSelection(pos);
+		
 		return super.onCreateOptionsMenu(menu);
+	}
+
+	private class LunchSelectedListener implements OnItemSelectedListener {
+
+		@Override
+		public void onItemSelected(AdapterView<?> parent, View view, int position,
+				long id) {
+			sParser.lunchSelected(position);
+			loadPeriods();
+		}
+
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {
+			// do nothing...?		
+		}
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
-			periods = sp.getPeriods();
+			periods = sParser.getPeriods();
 			loadPeriods();
-			return true;
-		case R.id.action_change_lunch:
-			
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}
+	}	
 
 	/**
 	 * Preset schedule, for testing.
@@ -96,15 +126,23 @@ public class ScheduleActivity extends Activity {
 	}
 
 	/**
-	 * Actually loads the periods into the adapter.
+	 * Loads the periods into the adapter.
 	 */
 	private void loadPeriods() {
+		periods = sParser.getPeriods();
+		
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
 			periodList.setAdapter(periodsAdapter);
 		}
 	}
 
+	private void setColor(int c, TextView... views) {
+		for(TextView v : views) {
+			v.setTextColor(c);
+		}
+	}
+	
 	private class PeriodsAdapter extends ArrayAdapter<Period> {
 		private final Context mContext;
 
@@ -145,7 +183,7 @@ public class ScheduleActivity extends Activity {
 			if (style == PeriodStyle.PAST) {
 				periodNumView.setTextColor(Color.GRAY);
 			} else if (style == PeriodStyle.PRESENT) {
-				periodNumView.setTextColor(Color.GREEN);
+				setColor(Color.rgb(255, 215, 0), periodNumView, classNameView);
 			} else if (style == PeriodStyle.FUTURE) {
 				periodNumView.setTextColor(Color.BLACK);
 			}
@@ -154,11 +192,8 @@ public class ScheduleActivity extends Activity {
 		}
 
 		private PeriodStyle getPeriodStyle(Period p) {
-			int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-			ScheduleData.now = new Time();
-			ScheduleData.now.setToNow();
-			
-			ScheduleTime schedNow = new ScheduleTime(ScheduleData.now);
+			ScheduleTime schedNow = SSData.getCurrentTime();
+			int day = SSData.getCurrentDay();
 
 			if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {

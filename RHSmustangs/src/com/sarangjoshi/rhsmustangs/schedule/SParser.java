@@ -11,52 +11,42 @@ import java.util.Calendar;
 import java.util.StringTokenizer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.text.format.Time;
 
-public class ScheduleParser {
+public class SParser {
 	private String currentSchedule = null;
-	private char lunch = 'c';
+	private Context context;
 
-	/*
-	 * public void createAndSaveFiles() { FileOutputStream stream; try { stream
-	 * = mContext.openFileOutput(filenames[0], Context.MODE_PRIVATE); try {
-	 * stream.write(s.getBytes()); stream.close(); } catch (IOException e) { //
-	 * TODO solve } } catch (FileNotFoundException e) { // TODO Auto-generated
-	 * catch block e.printStackTrace(); }
-	 * 
-	 * }
-	 * 
-	 * public void loadFromFile() { FileInputStream stream; byte[] buffer; try {
-	 * stream = mContext.openFileInput(filenames[0]); try { stream.read(buffer,
-	 * 0, );
-	 * 
-	 * } catch (IOException e) {
-	 * 
-	 * } } catch (FileNotFoundException e) {
-	 * 
-	 * } }
-	 */
+	private SData sData;
+
+	public SParser(Context newContext) {
+		context = newContext;
+		sData = new SData(context);
+	}
 
 	/**
-	 * Gets the current day and sets the local variable
+	 * Gets the current day and sets the local variable.
 	 */
-	public void updateCurrentDay() {
+	public void setSchedule() {
 		// Sunday = 1
-		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);;
-		
-		ScheduleData.now = new Time();
-		ScheduleData.now.setToNow();
-		
-		int hour = ScheduleData.now.hour;
-		
-		if(day == Calendar.SATURDAY || day == Calendar.SUNDAY)
-			currentSchedule = ScheduleData.getScheduleByDay(Calendar.MONDAY, lunch);			
-		else if (hour >= 2 + ScheduleData.getEndHour(day)) 
-			currentSchedule = ScheduleData.getScheduleByDay(day + 1, lunch);
+		SSData.updateCurrentTime();
+
+		int day = SSData.getCurrentDay();
+		int hour = SSData.hour;
+
+		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
+			currentSchedule = SSData.getScheduleByDay(
+					Calendar.MONDAY, sData.getLunch());
+		else if (hour >= 2 + SSData.getEndHour(day))
+			currentSchedule = SSData.getScheduleByDay(day + 1,
+					sData.getLunch());
 		else
-			currentSchedule = ScheduleData.getScheduleByDay(day, lunch);
+			currentSchedule = SSData.getScheduleByDay(day,
+					sData.getLunch());
 	}
-	
+
 	/**
 	 * Based on the local string {@link s}, parses and returns a set of Periods.
 	 * 
@@ -64,8 +54,7 @@ public class ScheduleParser {
 	 */
 	public ArrayList<Period> getPeriods() {
 		ArrayList<Period> periods = new ArrayList<Period>();
-		if (currentSchedule == null)
-			updateCurrentDay();
+		setSchedule();
 
 		String[] result = currentSchedule.split("\n");
 
@@ -140,5 +129,30 @@ public class ScheduleParser {
 	 */
 	private static String getDuetAt(String x, int index) {
 		return x.substring(index, index + 2);
+	}
+
+	/**
+	 * Based on {@link SData}'s lunch character, returns a string for th
+	 * spinner adapter.
+	 * 
+	 * E.g. if lunch was 'a' then this returns "Lunch A".
+	 * 
+	 * @return the string for the spinner adapter
+	 */
+	public String getLunchForAdapter() {
+		int x = (int) sData.getLunch();
+		String s = "Lunch " + (char) (x - 32);
+		return s;
+	}
+	
+	/**
+	 * Sets the lunch in SData to the selected lunch based on the position of the click
+	 * 
+	 * @param position the position of the click, 0 = a, 1 = b, 2 = c
+	 * @return whether the lunch was successfully selected
+	 */
+	public boolean lunchSelected(int position) {
+		sData.setLunch((char)(97 + position));
+		return true;
 	}
 }

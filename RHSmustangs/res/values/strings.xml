@@ -10,5 +10,12 @@
     <string name="twitter_name">"Twitter"</string>
     <string name="schedule_name">"Schedule"</string>
     <string name="refresh">Refresh</string>
+    
+    <string-array name="lunches_list">
+        <item>Lunch A</item>
+        <item>Lunch B</item>
+        <item>Lunch C</item>
+    </string-array>
+        
 
 </resources>

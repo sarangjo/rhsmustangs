@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/action_refresh_schedule"
-        android:icon="@drawable/ic_action_refresh"
-        android:title="@string/refresh"
-        android:showAsAction="always"
-        />
 
-    <item android:id="@+id/action_change_lunch"
-        android:icon="@drawable/ic_action_event"
-        android:title="Change Lunch"
+    <item
+        android:id="@+id/action_refresh_schedule"
+        android:icon="@drawable/ic_action_refresh"
         android:showAsAction="always"
-        />
+        android:title="@string/refresh"/>
     
+    <item
+        android:id="@+id/lunches_spinner"
+        android:actionViewClass="android.widget.Spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:showAsAction="always"
+        android:title="Choose Lunch" />
+
 </menu>
