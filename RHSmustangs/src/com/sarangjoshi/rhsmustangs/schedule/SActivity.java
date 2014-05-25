@@ -73,7 +73,9 @@ public class SActivity extends Activity {
 		
 		Spinner spin = (Spinner) item;
 		
-		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.lunches_list, R.layout.lunch_dropdown_item);
+		// The third parameter is defined for the selected view
+		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.lunches_list, R.layout.lunch_dropdown_default);
+		// This is for all the drop down resources
 		spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
 		spin.setAdapter(spinAdapter);
 		
