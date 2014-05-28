@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.StringTokenizer;
 
+import com.sarangjoshi.rhsmustangs.schedule.Period.PeriodStyle;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -37,14 +39,13 @@ public class SParser {
 		int hour = SSData.hour;
 
 		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
-			currentSchedule = SSData.getScheduleByDay(
-					Calendar.MONDAY, sData.getLunch());
+			currentSchedule = SSData.getScheduleByDay(Calendar.MONDAY,
+					sData.getLunch());
 		else if (hour >= 2 + SSData.getEndHour(day))
-			currentSchedule = SSData.getScheduleByDay(day + 1,
-					sData.getLunch());
+			currentSchedule = SSData
+					.getScheduleByDay(day + 1, sData.getLunch());
 		else
-			currentSchedule = SSData.getScheduleByDay(day,
-					sData.getLunch());
+			currentSchedule = SSData.getScheduleByDay(day, sData.getLunch());
 	}
 
 	/**
@@ -77,6 +78,10 @@ public class SParser {
 		try {
 			// Period Number
 			p.mPeriodNum = result[0];
+
+			// Period Name
+			p.mClassName = sData.getPeriodName(p);
+
 			// Start Time
 			int sHours = Integer.parseInt(result[1]);
 			int sMin = Integer.parseInt(result[2]);
@@ -132,8 +137,8 @@ public class SParser {
 	}
 
 	/**
-	 * Based on {@link SData}'s lunch character, returns a string for th
-	 * spinner adapter.
+	 * Based on {@link SData}'s lunch character, returns a string for th spinner
+	 * adapter.
 	 * 
 	 * E.g. if lunch was 'a' then this returns "Lunch A".
 	 * 
@@ -144,15 +149,21 @@ public class SParser {
 		String s = "Lunch " + (char) (x - 32);
 		return s;
 	}
-	
+
 	/**
-	 * Sets the lunch in SData to the selected lunch based on the position of the click
+	 * Sets the lunch in SData to the selected lunch based on the position of
+	 * the click
 	 * 
-	 * @param position the position of the click, 0 = a, 1 = b, 2 = c
+	 * @param position
+	 *            the position of the click, 0 = a, 1 = b, 2 = c
 	 * @return whether the lunch was successfully selected
 	 */
 	public boolean lunchSelected(int position) {
-		sData.setLunch((char)(97 + position));
+		sData.setLunch((char) (97 + position));
 		return true;
+	}
+
+	public SData getSData() {
+		return sData;
 	}
 }

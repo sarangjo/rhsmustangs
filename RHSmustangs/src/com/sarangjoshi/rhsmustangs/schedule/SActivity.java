@@ -6,34 +6,36 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.format.Time;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 
 import com.sarangjoshi.rhsmustangs.R;
 
-public class SActivity extends Activity {
+public class SActivity extends FragmentActivity implements
+		EditPDFragment.EditPeriodDialogListener {
 
 	private ListView periodList;
 
@@ -41,10 +43,12 @@ public class SActivity extends Activity {
 
 	private PeriodsAdapter periodsAdapter;
 	private SParser sParser;
-	
-	public static enum PeriodStyle {
+
+	public static enum PeriodTime {
 		PAST, PRESENT, FUTURE
 	}
+
+	private int index = -1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +58,22 @@ public class SActivity extends Activity {
 		sParser = new SParser(this);
 
 		periodList = (ListView) findViewById(R.id.periodsListView);
+		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
 
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View v,
+					int pos, long id) {
+				// Sets the local variable to the currently selected list index
+				index = pos;
+				// Initializes DialogFragment and sets the default text
+				EditPDFragment dialog = new EditPDFragment();
+				dialog.hintText = periods.get(pos).mClassName;
+				dialog.show(getSupportFragmentManager(),
+						"EditPeriodDialogFragment");
+				return true;
+			}
+
+		});
 		loadPeriods();
 	}
 
@@ -63,42 +82,42 @@ public class SActivity extends Activity {
 		super.onStart();
 	}
 
-	
-@Override
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.schedule_action_bar, menu);
-		
+
 		View item = menu.findItem(R.id.lunches_spinner).getActionView();
-		
+
 		Spinner spin = (Spinner) item;
-		
-		// The third parameter is defined for the selected view
-		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.lunches_list, R.layout.lunch_dropdown_default);
+
+		// The third parameter is defined for the selected view (default)
+		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter
+				.createFromResource(this, R.array.lunches_list,
+						R.layout.lunch_dropdown_default);
 		// This is for all the drop down resources
 		spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
 		spin.setAdapter(spinAdapter);
-		
+
 		spin.setOnItemSelectedListener(new LunchSelectedListener());
 
 		int pos = spinAdapter.getPosition(sParser.getLunchForAdapter());
 		spin.setSelection(pos);
-		
+
 		return super.onCreateOptionsMenu(menu);
 	}
 
 	private class LunchSelectedListener implements OnItemSelectedListener {
-
 		@Override
-		public void onItemSelected(AdapterView<?> parent, View view, int position,
-				long id) {
+		public void onItemSelected(AdapterView<?> parent, View view,
+				int position, long id) {
 			sParser.lunchSelected(position);
 			loadPeriods();
 		}
 
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
-			// do nothing...?		
+			// do nothing...?
 		}
 	}
 
@@ -112,7 +131,7 @@ public class SActivity extends Activity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}	
+	}
 
 	/**
 	 * Preset schedule, for testing.
@@ -128,11 +147,12 @@ public class SActivity extends Activity {
 	}
 
 	/**
-	 * Loads the periods into the adapter.
+	 * Loads the periods into the adapter and attaches the adapter to the
+	 * ListView.
 	 */
 	private void loadPeriods() {
 		periods = sParser.getPeriods();
-		
+
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
 			periodList.setAdapter(periodsAdapter);
@@ -140,11 +160,11 @@ public class SActivity extends Activity {
 	}
 
 	private void setColor(int c, TextView... views) {
-		for(TextView v : views) {
+		for (TextView v : views) {
 			v.setTextColor(c);
 		}
 	}
-	
+
 	private class PeriodsAdapter extends ArrayAdapter<Period> {
 		private final Context mContext;
 
@@ -180,33 +200,52 @@ public class SActivity extends Activity {
 			startTimeView.setText(p.getStartTimeAsString());
 			endTimeView.setText(p.getEndTimeAsString());
 
-			PeriodStyle style = getPeriodStyle(p);
-			
-			if (style == PeriodStyle.PAST) {
+			PeriodTime style = getPeriodStyle(p);
+
+			if (style == PeriodTime.PAST) {
 				periodNumView.setTextColor(Color.GRAY);
-			} else if (style == PeriodStyle.PRESENT) {
-				setColor(Color.rgb(255, 215, 0), periodNumView, classNameView);
-			} else if (style == PeriodStyle.FUTURE) {
+			} else if (style == PeriodTime.PRESENT) {
+				int gold = Color.rgb(255, 215, 0);
+				setColor(gold, periodNumView, classNameView, startTimeView, endTimeView);
+			} else if (style == PeriodTime.FUTURE) {
 				periodNumView.setTextColor(Color.BLACK);
 			}
 
 			return rowView;
 		}
 
-		private PeriodStyle getPeriodStyle(Period p) {
+		private PeriodTime getPeriodStyle(Period p) {
 			ScheduleTime schedNow = SSData.getCurrentTime();
 			int day = SSData.getCurrentDay();
 
 			if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {
-					return PeriodStyle.PAST;
-				} else if (schedNow.isAfter(p.mStartTime) && schedNow.isBefore(p.mEndTime)) {
-					return PeriodStyle.PRESENT;
+					return PeriodTime.PAST;
+				} else if (schedNow.isAfter(p.mStartTime)
+						&& schedNow.isBefore(p.mEndTime)) {
+					return PeriodTime.PRESENT;
 				} else {
-					return PeriodStyle.FUTURE;
+					return PeriodTime.FUTURE;
 				}
 			}
-			return PeriodStyle.PAST;
+			return PeriodTime.PAST;
 		}
+	}
+
+	@Override
+	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
+		Period p = periods.get(index);
+		p.mClassName = savedName;
+		sParser.getSData().setPeriodName(p.mPeriodNum, savedName);
+		loadPeriods();
+	}
+
+	@Override
+	public void onDialogNeutralClick(DialogFragment dialog) {
+		Period p = periods.get(index);
+		p.mClassName = sParser.getSData().getDefaultPeriodName(
+				periods.get(index));
+		sParser.getSData().deletePeriodName(p.mPeriodNum);
+		loadPeriods();
 	}
 }

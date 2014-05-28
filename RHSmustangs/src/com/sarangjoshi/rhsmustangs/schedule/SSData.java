@@ -20,7 +20,7 @@ public class SSData {
 	public static String ta = "P1 07 30 08 20\nP2 08 26 09 16\nHR 09 22 09 46\nP3 09 46 10 36\nLA 10 42 11 12\nP4 11 18 12 08\nP5 12 14 13 04\nP6 13 10 14 00\n";
 	public static String tb = "P1 07 30 08 20\nP2 08 26 09 16\nHR 09 22 09 46\nP3 09 46 10 36\n4A 10 42 11 07\nLB 11 07 11 37\n4B 11 43 12 08\nP5 12 14 13 04\nP6 13 10 14 00\n";
 	public static String tc = "P1 07 30 08 20\nP2 08 26 09 16\nHR 09 22 09 46\nP3 09 46 10 36\nP4 10 42 11 32\nLC 11 38 12 08\nP5 12 14 13 04\nP6 13 10 14 00\n";
-
+		
 	public static int passing_period = 6;
 	public static int start_hour = 7;
 	public static int start_minutes = 30;
@@ -93,7 +93,7 @@ public class SSData {
 	 * @return the current day, 1 = Sunday
 	 */
 	public static int getCurrentDay() {
-		day = Calendar.TUESDAY;//Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+		day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 		return day;
 	}
 
@@ -105,8 +105,8 @@ public class SSData {
 	public static Time updateCurrentTime() {
 		now = new Time();
 		now.setToNow();
-		hour = 10;//now.hour;
-		minute = 13;//now.minute;
+		hour = now.hour;
+		minute = now.minute;
 		return now;
 	}
 

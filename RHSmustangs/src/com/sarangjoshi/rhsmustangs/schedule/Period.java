@@ -12,8 +12,12 @@ public class Period {
 	public ScheduleTime mStartTime;
 	public ScheduleTime mEndTime;
 
-	public Period(String periodNum, String periodName, int sh, int sm, 
-			int eh, int em) {
+	public static enum PeriodStyle {
+		HOMEROOM, LUNCH, CLASS
+	}
+
+	public Period(String periodNum, String periodName, int sh, int sm, int eh,
+			int em) {
 		mPeriodNum = periodNum;
 		mClassName = periodName;
 		mStartTime = new ScheduleTime(sh, sm);
@@ -46,5 +50,25 @@ public class Period {
 		s += ", " + getStartTimeAsString();
 		s += "-" + getEndTimeAsString();
 		return s;
+	}
+
+	public PeriodStyle getPeriodStyle() {
+		if (mPeriodNum.charAt(0) == 'L')
+			return PeriodStyle.LUNCH;
+		else if (mPeriodNum.equals("HR"))
+			return PeriodStyle.HOMEROOM;
+		else
+			return PeriodStyle.CLASS;
+	}
+
+	public int getPeriodNumber() {
+		int periodN = -1;
+
+		if (getPeriodStyle() == PeriodStyle.CLASS)
+			periodN = Integer.parseInt(""
+					+ ((mPeriodNum.charAt(0) == 'P') ? mPeriodNum.charAt(1)
+							: mPeriodNum.charAt(0)));
+
+		return periodN;
 	}
 }
