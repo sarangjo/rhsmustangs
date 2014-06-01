@@ -33,19 +33,19 @@ public class SParser {
 	 */
 	public void setSchedule() {
 		// Sunday = 1
-		SSData.updateCurrentTime();
+		SStaticData.updateCurrentTime();
 
-		int day = SSData.getCurrentDay();
-		int hour = SSData.hour;
+		int day = SStaticData.getCurrentDay();
+		int hour = SStaticData.hour;
 
 		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
-			currentSchedule = SSData.getScheduleByDay(Calendar.MONDAY,
+			currentSchedule = SStaticData.getScheduleByDay(Calendar.MONDAY,
 					sData.getLunch());
-		else if (hour >= 2 + SSData.getEndHour(day))
-			currentSchedule = SSData
+		else if (hour >= 2 + SStaticData.getEndHour(day))
+			currentSchedule = SStaticData
 					.getScheduleByDay(day + 1, sData.getLunch());
 		else
-			currentSchedule = SSData.getScheduleByDay(day, sData.getLunch());
+			currentSchedule = SStaticData.getScheduleByDay(day, sData.getLunch());
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class SParser {
 		String[] result = str.split(" ");
 		try {
 			// Period Number
-			p.mPeriodNum = result[0];
+			p.mPeriodShort = result[0];
 
 			// Period Name
 			p.mClassName = sData.getPeriodName(p);

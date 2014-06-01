@@ -195,7 +195,7 @@ public class SActivity extends FragmentActivity implements
 			// Setting view data
 			Period p = periods.get(position);
 
-			periodNumView.setText(new String(p.mPeriodNum));
+			periodNumView.setText(new String(p.mPeriodShort));
 			classNameView.setText(p.mClassName);
 			startTimeView.setText(p.getStartTimeAsString());
 			endTimeView.setText(p.getEndTimeAsString());
@@ -215,8 +215,8 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		private PeriodTime getPeriodStyle(Period p) {
-			ScheduleTime schedNow = SSData.getCurrentTime();
-			int day = SSData.getCurrentDay();
+			ScheduleTime schedNow = SStaticData.getCurrentTime();
+			int day = SStaticData.getCurrentDay();
 
 			if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {
@@ -235,17 +235,17 @@ public class SActivity extends FragmentActivity implements
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
 		Period p = periods.get(index);
+		// Setting the period's class name
 		p.mClassName = savedName;
-		sParser.getSData().setPeriodName(p.mPeriodNum, savedName);
+		sParser.getSData().setPeriodName(p, savedName);
 		loadPeriods();
 	}
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
 		Period p = periods.get(index);
-		p.mClassName = sParser.getSData().getDefaultPeriodName(
-				periods.get(index));
-		sParser.getSData().deletePeriodName(p.mPeriodNum);
+		p.mClassName = periods.get(index).getDefaultPeriodName();
+		sParser.getSData().deletePeriodName(p);
 		loadPeriods();
 	}
 }

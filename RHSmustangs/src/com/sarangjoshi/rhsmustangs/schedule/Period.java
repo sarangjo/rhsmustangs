@@ -7,7 +7,7 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 public class Period {
-	public String mPeriodNum = "1";
+	public String mPeriodShort = "P0";
 	public String mClassName = "Period";
 	public ScheduleTime mStartTime;
 	public ScheduleTime mEndTime;
@@ -18,7 +18,7 @@ public class Period {
 
 	public Period(String periodNum, String periodName, int sh, int sm, int eh,
 			int em) {
-		mPeriodNum = periodNum;
+		mPeriodShort = periodNum;
 		mClassName = periodName;
 		mStartTime = new ScheduleTime(sh, sm);
 		mEndTime = new ScheduleTime(eh, em);
@@ -45,7 +45,7 @@ public class Period {
 
 	@Override
 	public String toString() {
-		String s = new String(mPeriodNum);
+		String s = new String(mPeriodShort);
 		s += " " + mClassName;
 		s += ", " + getStartTimeAsString();
 		s += "-" + getEndTimeAsString();
@@ -53,9 +53,9 @@ public class Period {
 	}
 
 	public PeriodStyle getPeriodStyle() {
-		if (mPeriodNum.charAt(0) == 'L')
+		if (mPeriodShort.charAt(0) == 'L')
 			return PeriodStyle.LUNCH;
-		else if (mPeriodNum.equals("HR"))
+		else if (mPeriodShort.equals("HR"))
 			return PeriodStyle.HOMEROOM;
 		else
 			return PeriodStyle.CLASS;
@@ -66,9 +66,27 @@ public class Period {
 
 		if (getPeriodStyle() == PeriodStyle.CLASS)
 			periodN = Integer.parseInt(""
-					+ ((mPeriodNum.charAt(0) == 'P') ? mPeriodNum.charAt(1)
-							: mPeriodNum.charAt(0)));
+					+ ((mPeriodShort.charAt(0) == 'P') ? mPeriodShort.charAt(1)
+							: mPeriodShort.charAt(0)));
 
 		return periodN;
+	}
+
+	/**
+	 * Gets the default period name to display regardless of user settings.
+	 * 
+	 * @param p the period 
+	 * @return the period name
+	 */
+	public String getDefaultPeriodName() {
+		switch (getPeriodStyle()) {
+		case CLASS:
+			return "Period " + getPeriodNumber();
+		case HOMEROOM:
+			return "Homeroom";
+		case LUNCH:
+			return "Lunch";
+		}
+		return "";
 	}
 }

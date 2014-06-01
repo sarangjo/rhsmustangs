@@ -6,6 +6,8 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import com.sarangjoshi.rhsmustangs.schedule.Period.PeriodStyle;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -50,7 +52,7 @@ public class SData {
 	/**
 	 * Gets the lunch from the shared preference.
 	 * 
-	 * @return
+	 * @return the lunch char
 	 */
 	public char getLunch() {
 		setupPref();
@@ -61,15 +63,15 @@ public class SData {
 	/**
 	 * Saves the new period name to the shared preference.
 	 * 
-	 * @param periodNum
-	 *            the period number tag which corresponds to the SharedPref key
+	 * @param p
+	 *            the period which corresponds to the SharedPref key
 	 * @param newName
 	 *            the new period name
 	 */
-	public void setPeriodName(String periodNum, String newName) {
+	public void setPeriodName(Period p, String newName) {
 		setupPref();
 		Editor e = mPref.edit();
-		e.putString(PERIOD_BASE_KEY + periodNum, newName);
+		e.putString(getKey(p), newName);
 		e.commit();
 	}
 
@@ -85,33 +87,33 @@ public class SData {
 	 */
 	public String getPeriodName(Period p) {
 		setupPref();
-		String defaultName = getDefaultPeriodName(p);
-		// The KEY has the periodNum, but the actual VALUE returned involves
-		// getPeriodNumber()
-		return mPref.getString(PERIOD_BASE_KEY + p.mPeriodNum, defaultName);
+		String defaultName = p.getDefaultPeriodName();
+		return mPref.getString(getKey(p), defaultName);
 	}
 	
 	/**
-	 * Gets the default period name regardless of user settings.
+	 * Deletes the custom name of the given period.
 	 * 
-	 * @param p the period 
-	 * @return the period name
+	 * @param p
 	 */
-	public String getDefaultPeriodName(Period p) {
-		switch (p.getPeriodStyle()) {
-		case CLASS:
-			return "Period " + p.getPeriodNumber();
-		case HOMEROOM:
-			return "Homeroom";
-		case LUNCH:
-			return "Lunch";
-		}
-		return "";
-	}
-
-	public void deletePeriodName(String periodNum) {
+	public void deletePeriodName(Period p) {
 		Editor e = mPref.edit();
-		e.remove(PERIOD_BASE_KEY + periodNum);
+		e.remove(getKey(p));
 		e.commit();
+	}
+	
+	/**
+	 * Gets the SharedPreferences key for the given Period.
+	 * 
+	 * @param p the given period
+	 * @return the SharedPreferences key
+	 */
+	public String getKey(Period p) {
+		// The KEY is dependent on whether it's a class or not.
+		if(p.getPeriodStyle() == PeriodStyle.CLASS)
+			return PERIOD_BASE_KEY + p.getPeriodNumber();
+		else
+			return PERIOD_BASE_KEY + p.mPeriodShort;
+		
 	}
 }
