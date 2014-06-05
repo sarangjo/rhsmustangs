@@ -17,6 +17,8 @@ public class SParser {
 
 	private SData sData;
 
+	private Time scheduleDay;
+
 	public SParser(Context newContext) {
 		context = newContext;
 		sData = new SData(context);
@@ -26,20 +28,36 @@ public class SParser {
 	 * Gets the current day and sets the local variable.
 	 */
 	public void setSchedule() {
-		// Sunday = 1
-		SStaticData.updateCurrentTime();
+		scheduleDay = new Time();
+		scheduleDay.set(SStaticData.updateCurrentTime());
 
-		int day = SStaticData.day;
-		int hour = SStaticData.hour;
-		
-		int dayToShow = day;
+		// These are current day and hour
+		int day = SStaticData.nowDay;
+		int hour = SStaticData.nowHour;
 
-		if (day == Time.SATURDAY || day == Time.SUNDAY)
-			dayToShow = Time.MONDAY;
-		else if (hour >= 2 + SStaticData.getEndHour(day))
-			dayToShow = day + 1;
-		
-		currentSchedule = SStaticData.getScheduleByDay(dayToShow, sData.getLunch());
+		// Updated "day" to compare against for whether to shift forward for the
+		// weekend
+		day = scheduleDay.weekDay;
+
+		// If the time is more than 2 hours after the current time, and it's a
+		// weekday, it shifts forward one day.
+		if (day > Time.SUNDAY && day < Time.SATURDAY
+				&& hour >= 2 + SStaticData.getEndHour(day)) {
+			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
+		}
+
+		// Both Saturday and Sunday go to the next Monday
+		if (day == Time.SATURDAY) {
+			scheduleDay = SStaticData.shiftDay(scheduleDay, 2);
+		} else if (day == Time.SUNDAY) {
+			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
+		}
+
+		scheduleDay.normalize(false);
+		int dayToShow = scheduleDay.weekDay;
+
+		currentSchedule = SStaticData.getScheduleByDay(dayToShow,
+				sData.getLunch());
 	}
 
 	/**
@@ -118,19 +136,6 @@ public class SParser {
 	}
 
 	/**
-	 * Returns a pair of characters at a given index.
-	 * 
-	 * @param x
-	 *            the String
-	 * @param index
-	 *            the starting index
-	 * @return the pair of characters
-	 */
-	private static String getDuetAt(String x, int index) {
-		return x.substring(index, index + 2);
-	}
-
-	/**
 	 * Based on {@link SData}'s lunch character, returns a string for th spinner
 	 * adapter.
 	 * 
@@ -157,7 +162,33 @@ public class SParser {
 		return true;
 	}
 
+	/**
+	 * Returns the SData object.
+	 * 
+	 * @return the SData object
+	 */
 	public SData getSData() {
 		return sData;
+	}
+
+	/**
+	 * Lolz
+	 * 
+	 * @return
+	 */
+	public String getScheduleTitle() {
+		int diff = SStaticData.dayDifference(scheduleDay, SStaticData.now);
+		// Today
+		if (diff == 0) {
+			return "Today";
+		}
+		// Tomorrow
+		else if (diff == -1)
+			return "Tomorrow";
+		// Yesterday
+		else if (diff == 1)
+			return "Yesterday";
+		// Else
+		return SStaticData.getDateString(scheduleDay);
 	}
 }

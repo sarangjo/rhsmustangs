@@ -152,6 +152,8 @@ public class SActivity extends FragmentActivity implements
 	 */
 	private void loadPeriods() {
 		periods = sParser.getPeriods();
+		TextView title = (TextView) findViewById(R.id.title);
+		title.setText(sParser.getScheduleTitle());
 
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
@@ -217,7 +219,7 @@ public class SActivity extends FragmentActivity implements
 		private PeriodTime getPeriodStyle(Period p) {
 			SStaticData.updateCurrentTime();
 			ScheduleTime schedNow = SStaticData.getCurrentScheduleTime();
-			int day = SStaticData.day;
+			int day = SStaticData.nowDay;
 
 			if (day != Time.SATURDAY && day != Time.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {
