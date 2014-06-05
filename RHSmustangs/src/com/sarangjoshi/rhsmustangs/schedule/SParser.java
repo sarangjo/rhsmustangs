@@ -7,14 +7,8 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.StringTokenizer;
-
-import com.sarangjoshi.rhsmustangs.schedule.Period.PeriodStyle;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.text.format.Time;
 
 public class SParser {
@@ -35,17 +29,17 @@ public class SParser {
 		// Sunday = 1
 		SStaticData.updateCurrentTime();
 
-		int day = SStaticData.getCurrentDay();
+		int day = SStaticData.day;
 		int hour = SStaticData.hour;
+		
+		int dayToShow = day;
 
-		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
-			currentSchedule = SStaticData.getScheduleByDay(Calendar.MONDAY,
-					sData.getLunch());
+		if (day == Time.SATURDAY || day == Time.SUNDAY)
+			dayToShow = Time.MONDAY;
 		else if (hour >= 2 + SStaticData.getEndHour(day))
-			currentSchedule = SStaticData
-					.getScheduleByDay(day + 1, sData.getLunch());
-		else
-			currentSchedule = SStaticData.getScheduleByDay(day, sData.getLunch());
+			dayToShow = day + 1;
+		
+		currentSchedule = SStaticData.getScheduleByDay(dayToShow, sData.getLunch());
 	}
 
 	/**

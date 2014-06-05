@@ -5,29 +5,34 @@
     android:orientation="vertical" >
 
     <RelativeLayout
+        android:id="@+id/daySelector"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-        
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp" >
+
         <ImageButton
-		    android:id="@+id/previousDay"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_alignParentLeft="true" />
+            android:id="@+id/previousDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_action_back_dark" />
 
-		<TextView
-		    android:id="@+id/dayName"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_centerInParent="true"
-		    android:text="Today"
-		    android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView
+            android:id="@+id/dayName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Today"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-		<ImageButton
-		    android:id="@+id/nextDay"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_alignParentRight="true" />
-        
+        <ImageButton
+            android:id="@+id/nextDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_action_forward_dark" />
     </RelativeLayout>
 
     <ListView
@@ -37,7 +42,6 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:orientation="vertical" >
-        
     </ListView>
-    
+
 </LinearLayout>

@@ -6,8 +6,6 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.util.Calendar;
-
 import android.text.format.Time;
 
 public class SStaticData {
@@ -26,6 +24,7 @@ public class SStaticData {
 	public static int start_minutes = 30;
 	
 	public static Time now;
+	// All sub-variables of {@link now}
 	public static int hour;
 	public static int day;
 	public static int minute;
@@ -38,12 +37,12 @@ public class SStaticData {
 	 * @return the schedule string
 	 */
 	public static String getScheduleByDay(int day, char lunch) {
-		if (day == Calendar.SATURDAY || day == Calendar.SUNDAY)
-			day = Calendar.MONDAY;
+		if (day == Time.SATURDAY || day == Time.SUNDAY)
+			day = Time.MONDAY;
 
-		if (day == Calendar.WEDNESDAY)
+		if (day == Time.WEDNESDAY)
 			return wed;
-		else if (day == Calendar.THURSDAY)
+		else if (day == Time.THURSDAY)
 			switch (lunch) {
 			case ('b'):
 				return tb;
@@ -69,7 +68,7 @@ public class SStaticData {
 	 * @return the hour at which school ends
 	 */
 	public static int getEndHour(int day) {
-		if(day == Calendar.WEDNESDAY)
+		if(day == Time.WEDNESDAY)
 			return 12;
 		else
 			return 14;
@@ -81,20 +80,10 @@ public class SStaticData {
 	 * @return the hour at which school ends
 	 */
 	public static int getEndMinutes(int day) {
-		if(day == Calendar.WEDNESDAY)
+		if(day == Time.WEDNESDAY)
 			return 30;
 		else
 			return 0;
-	}
-
-	/**
-	 * Updates the current day in local variable day and returns it.
-	 * 
-	 * @return the current day, 1 = Sunday
-	 */
-	public static int getCurrentDay() {
-		day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-		return day;
 	}
 
 	/**
@@ -107,6 +96,7 @@ public class SStaticData {
 		now.setToNow();
 		hour = now.hour;
 		minute = now.minute;
+		day = now.weekDay;
 		return now;
 	}
 
@@ -115,8 +105,7 @@ public class SStaticData {
 	 * 
 	 * @return a ScheduleTime object of the current time
 	 */
-	public static ScheduleTime getCurrentTime() {
-		updateCurrentTime();
+	public static ScheduleTime getCurrentScheduleTime() {
 		return new ScheduleTime(hour, minute);
 	}
 }

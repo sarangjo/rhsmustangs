@@ -7,7 +7,6 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import android.app.Activity;
@@ -17,6 +16,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -53,7 +53,7 @@ public class SActivity extends FragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_schedule);
+		setContentView(R.layout.activity_schedule2);
 
 		sParser = new SParser(this);
 
@@ -215,10 +215,11 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		private PeriodTime getPeriodStyle(Period p) {
-			ScheduleTime schedNow = SStaticData.getCurrentTime();
-			int day = SStaticData.getCurrentDay();
+			SStaticData.updateCurrentTime();
+			ScheduleTime schedNow = SStaticData.getCurrentScheduleTime();
+			int day = SStaticData.day;
 
-			if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
+			if (day != Time.SATURDAY && day != Time.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {
 					return PeriodTime.PAST;
 				} else if (schedNow.isAfter(p.mStartTime)
