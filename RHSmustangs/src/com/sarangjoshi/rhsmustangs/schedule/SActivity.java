@@ -41,6 +41,7 @@ public class SActivity extends FragmentActivity implements
 
 	private ListView periodList;
 	ImageButton nextDay, previousDay;
+	TextView scheduleTitle;
 
 	public ArrayList<Period> periods;
 
@@ -79,16 +80,20 @@ public class SActivity extends FragmentActivity implements
 		});
 
 		// Sets up the click listeners of the next and previous day buttons
-		setupNextPrev();
+		setupDayChangeControls();
 		
 		// Initially, shows current schedule
 		SStaticData.updateCurrentTime();
 		mParser.updateScheduleDay(SStaticData.now, true);
 	}
 
-	private void setupNextPrev() {
+	/**
+	 * Sets up onClickListeners for day change buttons.
+	 */
+	private void setupDayChangeControls() {
 		previousDay = (ImageButton) findViewById(R.id.previousDay);
 		nextDay = (ImageButton) findViewById(R.id.nextDay);
+		scheduleTitle = (TextView) findViewById(R.id.title);
 
 		previousDay.setOnClickListener(new OnClickListener() {
 			@Override
@@ -102,7 +107,16 @@ public class SActivity extends FragmentActivity implements
 				changeSchedule(1);
 			}
 		});
-
+		scheduleTitle.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// Reset to today
+				SStaticData.updateCurrentTime();
+				mParser.updateScheduleDay(SStaticData.now, true);
+				updatePeriods();
+			}
+			
+		});
 	}
 	
 
