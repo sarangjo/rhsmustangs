@@ -22,12 +22,11 @@ public class SStaticData {
 	public static int passing_period = 6;
 	public static int start_hour = 7;
 	public static int start_minutes = 30;
+	
+	public static int shifted_hour = 9;
+	public static int shifted_min = 15;
 
 	public static Time now;
-	// All sub-variables of {@link now}
-	public static int nowHour;
-	public static int nowDay;
-	public static int nowMinute;
 
 	public static String[] months = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
@@ -98,19 +97,15 @@ public class SStaticData {
 	}
 
 	/**
-	 * Updates the current time in local variables {@link now}, {@link hour},
-	 * and {@link minute}.
+	 * Updates the current time in local variables {@link now}.
 	 * 
 	 * @return the Time object that is the current time.
 	 */
 	public static Time updateCurrentTime() {
 		now = new Time();
 		now.setToNow();
-		now.set(0, 10, 4, 8, 5, 2014);
+		//now.set(0, 10, 4, 8, 5, 2014);
 		now.normalize(false);
-		nowHour = now.hour;
-		nowMinute = now.minute;
-		nowDay = now.weekDay;
 		return now;
 	}
 
@@ -121,7 +116,7 @@ public class SStaticData {
 	 * @return a ScheduleTime object of the current time
 	 */
 	public static ScheduleTime getCurrentScheduleTime() {
-		return new ScheduleTime(nowHour, nowMinute);
+		return new ScheduleTime(now.hour, now.minute);
 	}
 
 	/**
@@ -146,7 +141,7 @@ public class SStaticData {
 	 * @return shifted time
 	 */
 	public static Time shiftDay(Time time, int dayChange) {
-		time.set(time.second, time.minute, time.hour,
+		time.set(0, shifted_min, shifted_hour,
 				time.monthDay + dayChange, time.month, time.year);
 		time.normalize(false);
 		return time;

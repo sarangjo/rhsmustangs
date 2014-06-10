@@ -25,57 +25,62 @@ public class SParser {
 	}
 
 	/**
-	 * Gets the current day and sets the local variable.
+	 * Parses and returns a set of Periods, based on the current value of
+	 * {@link scheduleDay}.
+	 * 
+	 * @return the timetable
 	 */
-	public void setSchedule() {
-		scheduleDay = new Time();
-		scheduleDay.set(SStaticData.updateCurrentTime());
+	public ArrayList<Period> getPeriods() {
+		ArrayList<Period> periods = new ArrayList<Period>();
 
-		// These are current day and hour
-		int day = SStaticData.nowDay;
-		int hour = SStaticData.nowHour;
+		// Pulls appropriate schedule based on hardcoded values
+		currentSchedule = SStaticData.getScheduleByDay(scheduleDay.weekDay,
+				sData.getLunch());
 
-		// Updated "day" to compare against for whether to shift forward for the
-		// weekend
-		day = scheduleDay.weekDay;
+		// Parses out individual period strings
+		String[] result = currentSchedule.split("\n");
+
+		// Loads individual strings into the ArrayList
+		for (int i = 0; i < result.length; i++) {
+			periods.add(getPeriodFromString(result[i]));
+		}
+
+		return periods;
+	}
+
+	/**
+	 * Updates the local scheduleDay variable to the appropriate time, given the
+	 * desired time.
+	 * 
+	 * @param now
+	 *            the day to set scheduleDay. Default: SStaticData.now
+	 * @param direction
+	 *            the direction in which the user is navigating
+	 */
+	public void updateScheduleDay(Time now, boolean isForward) {
+		// scheduleDay reflects whatever schedule is being shown
+		scheduleDay = now;
+
+		// Get day and hour based on the given Time object
+		int day = scheduleDay.weekDay;
+		int hour = scheduleDay.hour;
 
 		// If the time is more than 2 hours after the current time, and it's a
 		// weekday, it shifts forward one day.
-		if (day > Time.SUNDAY && day < Time.SATURDAY
+		if (isForward && day > Time.SUNDAY && day < Time.SATURDAY
 				&& hour >= 2 + SStaticData.getEndHour(day)) {
 			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
 		}
 
 		// Both Saturday and Sunday go to the next Monday
 		if (day == Time.SATURDAY) {
-			scheduleDay = SStaticData.shiftDay(scheduleDay, 2);
+			scheduleDay = SStaticData.shiftDay(scheduleDay, (isForward ? 2 : -1));
 		} else if (day == Time.SUNDAY) {
-			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
+			scheduleDay = SStaticData.shiftDay(scheduleDay, (isForward ? 1 : -2));
 		}
 
+		// Adjusts the other variables in the time object
 		scheduleDay.normalize(false);
-		int dayToShow = scheduleDay.weekDay;
-
-		currentSchedule = SStaticData.getScheduleByDay(dayToShow,
-				sData.getLunch());
-	}
-
-	/**
-	 * Based on the local string {@link s}, parses and returns a set of Periods.
-	 * 
-	 * @return the timetable
-	 */
-	public ArrayList<Period> getPeriods() {
-		ArrayList<Period> periods = new ArrayList<Period>();
-		setSchedule();
-
-		String[] result = currentSchedule.split("\n");
-
-		for (int i = 0; i < result.length; i++) {
-			periods.add(getPeriodFromString(result[i]));
-		}
-
-		return periods;
 	}
 
 	/**
@@ -106,33 +111,6 @@ public class SParser {
 
 		}
 		return p;
-	}
-
-	/**
-	 * The old method of parsing using iteration and String.charAt(int);.
-	 * 
-	 * @return the list of parsed periods.
-	 */
-	private ArrayList<Period> oldParseMethod() {
-		int i = 0;
-		ArrayList<Period> periods = new ArrayList<Period>();
-
-		while (i < currentSchedule.length()) {
-			String currentString = "";
-			char c = currentSchedule.charAt(i);
-			do {
-				currentString += c;
-				i++;
-				c = currentSchedule.charAt(i);
-			} while (c != '\n');
-			i++;
-
-			Period p = getPeriodFromString(currentString);
-
-			periods.add(p);
-		}
-
-		return periods;
 	}
 
 	/**
@@ -172,9 +150,8 @@ public class SParser {
 	}
 
 	/**
-	 * Lolz
+	 * Gets schedule title, based on SStaticDay.now
 	 * 
-	 * @return
 	 */
 	public String getScheduleTitle() {
 		int diff = SStaticData.dayDifference(scheduleDay, SStaticData.now);
@@ -191,4 +168,20 @@ public class SParser {
 		// Else
 		return SStaticData.getDateString(scheduleDay);
 	}
+
+	/**
+	 * Updates the local {@link scheduleDay} variable by shifting it by
+	 * {@link d} days
+	 * 
+	 * @param d
+	 *            the change in days
+	 */
+	public void shiftDay(int d) {
+		updateScheduleDay(SStaticData.shiftDay(scheduleDay, d), (d >= 0));
+	}
+
+	public Time getScheduleDay() {
+		return scheduleDay;
+	}
+
 }

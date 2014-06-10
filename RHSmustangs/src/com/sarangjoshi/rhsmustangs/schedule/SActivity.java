@@ -22,12 +22,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -38,24 +40,25 @@ public class SActivity extends FragmentActivity implements
 		EditPDFragment.EditPeriodDialogListener {
 
 	private ListView periodList;
+	ImageButton nextDay, previousDay;
 
 	public ArrayList<Period> periods;
 
 	private PeriodsAdapter periodsAdapter;
-	private SParser sParser;
+	private SParser mParser;
 
 	public static enum PeriodTime {
 		PAST, PRESENT, FUTURE
 	}
 
-	private int index = -1;
+	private int chosenIndex = -1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_schedule2);
 
-		sParser = new SParser(this);
+		mParser = new SParser(this);
 
 		periodList = (ListView) findViewById(R.id.periodsListView);
 		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -64,7 +67,7 @@ public class SActivity extends FragmentActivity implements
 			public boolean onItemLongClick(AdapterView<?> parent, View v,
 					int pos, long id) {
 				// Sets the local variable to the currently selected list index
-				index = pos;
+				chosenIndex = pos;
 				// Initializes DialogFragment and sets the default text
 				EditPDFragment dialog = new EditPDFragment();
 				dialog.hintText = periods.get(pos).mClassName;
@@ -74,7 +77,46 @@ public class SActivity extends FragmentActivity implements
 			}
 
 		});
-		loadPeriods();
+
+		// Sets up the click listeners of the next and previous day buttons
+		setupNextPrev();
+		
+		// Initially, shows current schedule
+		SStaticData.updateCurrentTime();
+		mParser.updateScheduleDay(SStaticData.now, true);
+	}
+
+	private void setupNextPrev() {
+		previousDay = (ImageButton) findViewById(R.id.previousDay);
+		nextDay = (ImageButton) findViewById(R.id.nextDay);
+
+		previousDay.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				changeSchedule(-1);
+			}
+		});
+		nextDay.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				changeSchedule(1);
+			}
+		});
+
+	}
+	
+
+	/**
+	 * Changes the schedule by the given number of days.
+	 * 
+	 * @param d
+	 *            the number of days forwards or backwards to change schedule by
+	 */
+	public void changeSchedule(int d) {
+		// Step one is to move the scheduleDay according to d
+		mParser.shiftDay(d);
+		// Now that scheduleDay is updated, the 
+		updatePeriods();
 	}
 
 	@Override
@@ -101,7 +143,7 @@ public class SActivity extends FragmentActivity implements
 
 		spin.setOnItemSelectedListener(new LunchSelectedListener());
 
-		int pos = spinAdapter.getPosition(sParser.getLunchForAdapter());
+		int pos = spinAdapter.getPosition(mParser.getLunchForAdapter());
 		spin.setSelection(pos);
 
 		return super.onCreateOptionsMenu(menu);
@@ -111,8 +153,8 @@ public class SActivity extends FragmentActivity implements
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view,
 				int position, long id) {
-			sParser.lunchSelected(position);
-			loadPeriods();
+			mParser.lunchSelected(position);
+			updatePeriods();
 		}
 
 		@Override
@@ -125,8 +167,7 @@ public class SActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
-			periods = sParser.getPeriods();
-			loadPeriods();
+			updatePeriods();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -134,27 +175,19 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	/**
-	 * Preset schedule, for testing.
-	 */
-	private void setPresetPeriods() {
-		periods.add(new Period("P1", "Sp 3", 7, 30, 8, 24));
-		periods.add(new Period("P2", "AP Lit", 8, 30, 9, 24));
-		periods.add(new Period("P3", "AP Gov", 9, 30, 10, 24));
-		periods.add(new Period("P4", "Lead", 10, 30, 11, 24));
-		periods.add(new Period("LC", "LUNCH", 11, 30, 12, 0));
-		periods.add(new Period("P5", "CSE", 12, 06, 1, 0));
-		periods.add(new Period("P6", "AP Calc", 1, 06, 2, 0));
-	}
-
-	/**
-	 * Loads the periods into the adapter and attaches the adapter to the
+	 * Loads the current day's periods into the adapter and attaches the adapter to the
 	 * ListView.
+	 *
 	 */
-	private void loadPeriods() {
-		periods = sParser.getPeriods();
-		TextView title = (TextView) findViewById(R.id.title);
-		title.setText(sParser.getScheduleTitle());
+	private void updatePeriods() {
+		// Gets the periods from parser
+		periods = mParser.getPeriods();
 
+		// Sets the title depending on the current day
+		TextView title = (TextView) findViewById(R.id.title);
+		title.setText(mParser.getScheduleTitle());
+
+		// Loads adapter
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
 			periodList.setAdapter(periodsAdapter);
@@ -202,24 +235,32 @@ public class SActivity extends FragmentActivity implements
 			startTimeView.setText(p.getStartTimeAsString());
 			endTimeView.setText(p.getEndTimeAsString());
 
-			PeriodTime style = getPeriodStyle(p);
+			PeriodTime relTime = getPeriodRelativeTime(p);
 
-			if (style == PeriodTime.PAST) {
+			// Colors stuff based on time
+			if (relTime == PeriodTime.PAST) {
 				periodNumView.setTextColor(Color.GRAY);
-			} else if (style == PeriodTime.PRESENT) {
+			} else if (relTime == PeriodTime.PRESENT) {
 				int gold = Color.rgb(255, 215, 0);
-				setColor(gold, periodNumView, classNameView, startTimeView, endTimeView);
-			} else if (style == PeriodTime.FUTURE) {
+				setColor(gold, periodNumView, classNameView, startTimeView,
+						endTimeView);
+			} else if (relTime == PeriodTime.FUTURE) {
 				periodNumView.setTextColor(Color.BLACK);
 			}
 
 			return rowView;
 		}
 
-		private PeriodTime getPeriodStyle(Period p) {
+		/**
+		 * Given the time and current time, gets the relative time style.
+		 * 
+		 * @param p
+		 *            the chosen period
+		 */
+		private PeriodTime getPeriodRelativeTime(Period p) {
 			SStaticData.updateCurrentTime();
 			ScheduleTime schedNow = SStaticData.getCurrentScheduleTime();
-			int day = SStaticData.nowDay;
+			int day = SStaticData.now.weekDay;
 
 			if (day != Time.SATURDAY && day != Time.SUNDAY) {
 				if (schedNow.isAfter(p.mEndTime)) {
@@ -235,20 +276,22 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
+	// NAME CHANGE DIALOGS
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
-		Period p = periods.get(index);
+		Period p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
-		sParser.getSData().setPeriodName(p, savedName);
-		loadPeriods();
+		mParser.getSData().setPeriodName(p, savedName);
+		updatePeriods();
 	}
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
-		Period p = periods.get(index);
-		p.mClassName = periods.get(index).getDefaultPeriodName();
-		sParser.getSData().deletePeriodName(p);
-		loadPeriods();
+		Period p = periods.get(chosenIndex);
+		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
+		mParser.getSData().deletePeriodName(p);
+		updatePeriods();
 	}
+
 }
