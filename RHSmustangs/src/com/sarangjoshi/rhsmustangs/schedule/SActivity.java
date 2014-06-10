@@ -42,7 +42,7 @@ public class SActivity extends FragmentActivity implements
 
 	private ListView periodList;
 	ImageButton nextDay, previousDay;
-	TextView scheduleTitle, scheduleDay;
+	TextView scheduleTitle, scheduleWeekDay;
 
 	public ArrayList<Period> periods;
 
@@ -109,6 +109,13 @@ public class SActivity extends FragmentActivity implements
 			}
 		});
 		scheduleTitle.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				resetToToday();
+			}
+			
+		});
+		scheduleWeekDay.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				resetToToday();
@@ -206,8 +213,8 @@ public class SActivity extends FragmentActivity implements
 		scheduleTitle = (TextView) findViewById(R.id.title);
 		scheduleTitle.setText(mParser.getScheduleTitle());
 		
-		scheduleDay = (TextView) findViewById(R.id.scheduleDay);
-		scheduleDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
+		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
+		scheduleWeekDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
 
 		// Loads adapter
 		if (periods != null) {
