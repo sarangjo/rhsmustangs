@@ -22,7 +22,7 @@ public class SStaticData {
 	public static int passing_period = 6;
 	public static int start_hour = 7;
 	public static int start_minutes = 30;
-	
+
 	public static int shifted_hour = 9;
 	public static int shifted_min = 15;
 
@@ -31,6 +31,8 @@ public class SStaticData {
 	public static String[] months = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
 			"November", "December" };
+	public static String[] days = { "Sunday", "Monday", "Tuesday", "Wednesday",
+			"Thursday", "Friday", "Saturday" };
 
 	/**
 	 * Given the current day and lunch type, returns the appropriate schedule
@@ -104,7 +106,7 @@ public class SStaticData {
 	public static Time updateCurrentTime() {
 		now = new Time();
 		now.setToNow();
-		//now.set(0, 10, 4, 8, 5, 2014);
+		// now.set(0, 10, 4, 8, 5, 2014);
 		now.normalize(false);
 		return now;
 	}
@@ -136,13 +138,15 @@ public class SStaticData {
 	/**
 	 * Shifts the day of the given time by the number of days to shift
 	 * 
-	 * @param time given time
-	 * @param dayChange number of days to shift time
+	 * @param time
+	 *            given time
+	 * @param dayChange
+	 *            number of days to shift time
 	 * @return shifted time
 	 */
 	public static Time shiftDay(Time time, int dayChange) {
-		time.set(0, shifted_min, shifted_hour,
-				time.monthDay + dayChange, time.month, time.year);
+		time.set(0, shifted_min, shifted_hour, time.monthDay + dayChange,
+				time.month, time.year);
 		time.normalize(false);
 		return time;
 	}
@@ -151,7 +155,16 @@ public class SStaticData {
 	 * Returns the standard String form of the given time.
 	 */
 	public static String getDateString(Time t) {
-		String s =  months[t.month] + " " + t.monthDay + ", " + t.year;
+		String s = months[t.month] + " " + t.monthDay + ", " + t.year;
 		return s;
+	}
+
+	/**
+	 * Returns the day of the week of the given time as a String.
+	 * 
+	 * @return the day of the week ex. "Monday"
+	 */
+	public static String getDay(Time scheduleDay) {
+		return days[scheduleDay.weekDay];
 	}
 }

@@ -22,10 +22,17 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/previousDay"
+            android:layout_alignTop="@+id/previousDay"
             android:layout_centerHorizontal="true"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
+        <TextView
+            android:id="@+id/scheduleDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
+            android:layout_centerHorizontal="true" />
+        
         <ImageButton
             android:id="@+id/nextDay"
             android:layout_width="wrap_content"
@@ -33,6 +40,7 @@
             android:layout_alignParentRight="true"
             android:background="?android:selectableItemBackground"
             android:src="@drawable/ic_action_forward_dark" />
+
     </RelativeLayout>
 
     <ListView

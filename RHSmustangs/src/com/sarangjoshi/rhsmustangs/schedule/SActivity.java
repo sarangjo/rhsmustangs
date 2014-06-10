@@ -7,6 +7,7 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import android.app.Activity;
@@ -41,7 +42,7 @@ public class SActivity extends FragmentActivity implements
 
 	private ListView periodList;
 	ImageButton nextDay, previousDay;
-	TextView scheduleTitle;
+	TextView scheduleTitle, scheduleDay;
 
 	public ArrayList<Period> periods;
 
@@ -110,13 +111,17 @@ public class SActivity extends FragmentActivity implements
 		scheduleTitle.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// Reset to today
-				SStaticData.updateCurrentTime();
-				mParser.updateScheduleDay(SStaticData.now, true);
-				updatePeriods();
+				resetToToday();
 			}
 			
 		});
+	}
+	
+	public void resetToToday() {
+		// Reset to today
+		SStaticData.updateCurrentTime();
+		mParser.updateScheduleDay(SStaticData.now, true);
+		updatePeriods();
 	}
 	
 
@@ -198,8 +203,11 @@ public class SActivity extends FragmentActivity implements
 		periods = mParser.getPeriods();
 
 		// Sets the title depending on the current day
-		TextView title = (TextView) findViewById(R.id.title);
-		title.setText(mParser.getScheduleTitle());
+		scheduleTitle = (TextView) findViewById(R.id.title);
+		scheduleTitle.setText(mParser.getScheduleTitle());
+		
+		scheduleDay = (TextView) findViewById(R.id.scheduleDay);
+		scheduleDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
 
 		// Loads adapter
 		if (periods != null) {
