@@ -49,10 +49,6 @@ public class SActivity extends FragmentActivity implements
 	private PeriodsAdapter periodsAdapter;
 	private SParser mParser;
 
-	public static enum PeriodTime {
-		PAST, PRESENT, FUTURE
-	}
-
 	private int chosenIndex = -1;
 
 	@Override
@@ -82,10 +78,9 @@ public class SActivity extends FragmentActivity implements
 
 		// Sets up the click listeners of the next and previous day buttons
 		setupDayChangeControls();
-		
+
 		// Initially, shows current schedule
-		SStaticData.updateCurrentTime();
-		mParser.updateScheduleDay(SStaticData.now, true);
+		setToToday();
 	}
 
 	/**
@@ -95,6 +90,7 @@ public class SActivity extends FragmentActivity implements
 		previousDay = (ImageButton) findViewById(R.id.previousDay);
 		nextDay = (ImageButton) findViewById(R.id.nextDay);
 		scheduleTitle = (TextView) findViewById(R.id.title);
+		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 
 		previousDay.setOnClickListener(new OnClickListener() {
 			@Override
@@ -111,26 +107,25 @@ public class SActivity extends FragmentActivity implements
 		scheduleTitle.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				resetToToday();
+				setToToday();
 			}
-			
+
 		});
 		scheduleWeekDay.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				resetToToday();
+				setToToday();
 			}
-			
+
 		});
 	}
-	
-	public void resetToToday() {
+
+	public void setToToday() {
 		// Reset to today
 		SStaticData.updateCurrentTime();
 		mParser.updateScheduleDay(SStaticData.now, true);
 		updatePeriods();
 	}
-	
 
 	/**
 	 * Changes the schedule by the given number of days.
@@ -141,7 +136,7 @@ public class SActivity extends FragmentActivity implements
 	public void changeSchedule(int d) {
 		// Step one is to move the scheduleDay according to d
 		mParser.shiftDay(d);
-		// Now that scheduleDay is updated, the 
+		// Now that scheduleDay is updated, the
 		updatePeriods();
 	}
 
@@ -201,9 +196,9 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	/**
-	 * Loads the current day's periods into the adapter and attaches the adapter to the
-	 * ListView.
-	 *
+	 * Loads the current day's periods into the adapter and attaches the adapter
+	 * to the ListView.
+	 * 
 	 */
 	private void updatePeriods() {
 		// Gets the periods from parser
@@ -212,7 +207,7 @@ public class SActivity extends FragmentActivity implements
 		// Sets the title depending on the current day
 		scheduleTitle = (TextView) findViewById(R.id.title);
 		scheduleTitle.setText(mParser.getScheduleTitle());
-		
+
 		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 		scheduleWeekDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
 
@@ -223,7 +218,11 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	private void setColor(int c, TextView... views) {
+	/**
+	 * Sets the text color of the given views.
+	 * 
+	 */
+	private void setTextColor(int c, TextView... views) {
 		for (TextView v : views) {
 			v.setTextColor(c);
 		}
@@ -264,16 +263,16 @@ public class SActivity extends FragmentActivity implements
 			startTimeView.setText(p.getStartTimeAsString());
 			endTimeView.setText(p.getEndTimeAsString());
 
-			PeriodTime relTime = getPeriodRelativeTime(p);
+			int relTime = getPeriodRelativeTime(p);
 
 			// Colors stuff based on time
-			if (relTime == PeriodTime.PAST) {
+			if (relTime < 0) {
 				periodNumView.setTextColor(Color.GRAY);
-			} else if (relTime == PeriodTime.PRESENT) {
+			} else if (relTime == 0) {
 				int gold = Color.rgb(255, 215, 0);
-				setColor(gold, periodNumView, classNameView, startTimeView,
+				setTextColor(gold, periodNumView, classNameView, startTimeView,
 						endTimeView);
-			} else if (relTime == PeriodTime.FUTURE) {
+			} else if (relTime > 0) {
 				periodNumView.setTextColor(Color.BLACK);
 			}
 
@@ -286,22 +285,30 @@ public class SActivity extends FragmentActivity implements
 		 * @param p
 		 *            the chosen period
 		 */
-		private PeriodTime getPeriodRelativeTime(Period p) {
+		private int getPeriodRelativeTime(Period p) {
 			SStaticData.updateCurrentTime();
 			ScheduleTime schedNow = SStaticData.getCurrentScheduleTime();
-			int day = SStaticData.now.weekDay;
+			int day = mParser.getScheduleDay().weekDay;
+			int julian = SStaticData.getJulianDay(mParser.getScheduleDay())
+					- SStaticData.getJulianDay(SStaticData.now);
 
-			if (day != Time.SATURDAY && day != Time.SUNDAY) {
-				if (schedNow.isAfter(p.mEndTime)) {
-					return PeriodTime.PAST;
-				} else if (schedNow.isAfter(p.mStartTime)
-						&& schedNow.isBefore(p.mEndTime)) {
-					return PeriodTime.PRESENT;
-				} else {
-					return PeriodTime.FUTURE;
+			if (julian != 0) {
+				// Past day
+				return julian;
+			} else {
+				// Present day
+				if (day != Time.SATURDAY && day != Time.SUNDAY) {
+					if (schedNow.isAfter(p.mEndTime)) {
+						return -1;
+					} else if (schedNow.isAfter(p.mStartTime)
+							&& schedNow.isBefore(p.mEndTime)) {
+						return 0;
+					} else {
+						return 1;
+					}
 				}
+				return -1;
 			}
-			return PeriodTime.PAST;
 		}
 	}
 

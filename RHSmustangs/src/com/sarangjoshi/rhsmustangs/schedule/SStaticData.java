@@ -106,7 +106,6 @@ public class SStaticData {
 	public static Time updateCurrentTime() {
 		now = new Time();
 		now.setToNow();
-		// now.set(0, 10, 4, 8, 5, 2014);
 		now.normalize(false);
 		return now;
 	}
@@ -166,5 +165,15 @@ public class SStaticData {
 	 */
 	public static String getDay(Time scheduleDay) {
 		return days[scheduleDay.weekDay];
+	}
+
+	/**
+	 * Gets Julian Day of the given Time.
+	 * @return Julian Day
+	 */
+	public static int getJulianDay(Time t) {
+		long m = t.toMillis(false);
+		long g = t.gmtoff;
+		return Time.getJulianDay(m, g);
 	}
 }
