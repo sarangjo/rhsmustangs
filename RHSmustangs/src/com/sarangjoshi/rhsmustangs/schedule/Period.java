@@ -7,21 +7,23 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 public class Period {
-	public String mPeriodShort = "P0";
+	public String mPeriodShort = "0";
 	public String mClassName = "Period";
-	public ScheduleTime mStartTime;
-	public ScheduleTime mEndTime;
+	public ScheduleTime mStartTime = new ScheduleTime(6, 30);
+	public ScheduleTime mEndTime = new ScheduleTime(7, 24);
+	public char lunchStyle = '0';
 
 	public static enum PeriodStyle {
 		HOMEROOM, LUNCH, CLASS
 	}
 
 	public Period(String periodNum, String periodName, int sh, int sm, int eh,
-			int em) {
+			int em, char ls) {
 		mPeriodShort = periodNum;
 		mClassName = periodName;
 		mStartTime = new ScheduleTime(sh, sm);
 		mEndTime = new ScheduleTime(eh, em);
+		lunchStyle = ls;
 	}
 
 	public Period() {

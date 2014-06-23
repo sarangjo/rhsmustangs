@@ -6,6 +6,7 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -48,7 +49,7 @@ public class SActivity extends FragmentActivity implements
 
 	private PeriodsAdapter periodsAdapter;
 	private SParser mParser;
-
+	
 	private int chosenIndex = -1;
 
 	@Override
@@ -57,7 +58,7 @@ public class SActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_schedule2);
 
 		mParser = new SParser(this);
-
+		
 		periodList = (ListView) findViewById(R.id.periodsListView);
 		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -120,8 +121,10 @@ public class SActivity extends FragmentActivity implements
 		});
 	}
 
+	/**
+	 * Sets current schedule based on current time, 
+	 */
 	public void setToToday() {
-		// Reset to today
 		SStaticData.updateCurrentTime();
 		mParser.updateScheduleDay(SStaticData.now, true);
 		updatePeriods();
@@ -136,7 +139,7 @@ public class SActivity extends FragmentActivity implements
 	public void changeSchedule(int d) {
 		// Step one is to move the scheduleDay according to d
 		mParser.shiftDay(d);
-		// Now that scheduleDay is updated, the
+		// Now that scheduleDay is updated, the periods can be updated
 		updatePeriods();
 	}
 
@@ -164,7 +167,7 @@ public class SActivity extends FragmentActivity implements
 
 		spin.setOnItemSelectedListener(new LunchSelectedListener());
 
-		int pos = spinAdapter.getPosition(mParser.getLunchForAdapter());
+		int pos = spinAdapter.getPosition(mParser.getSpinnerLunch());
 		spin.setSelection(pos);
 
 		return super.onCreateOptionsMenu(menu);
@@ -194,6 +197,7 @@ public class SActivity extends FragmentActivity implements
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
 
 	/**
 	 * Loads the current day's periods into the adapter and attaches the adapter

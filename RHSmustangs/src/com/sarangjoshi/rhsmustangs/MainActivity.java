@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.sarangjoshi.rhsmustangs.schedule.SActivity;
-import com.sarangjoshi.rhsmustangs.twitter.TwitterActivity;
+import com.sarangjoshi.rhsmustangs.twitter.TActivity;
 
 public class MainActivity extends Activity {
 	WebParser parse;
@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 			intent = new Intent(this, LinksActivity.class);
 			break;
 		case 1:
-			intent = new Intent(this, TwitterActivity.class);
+			intent = new Intent(this, TActivity.class);
 			break;
 		case 2:
 			intent = new Intent(this, SActivity.class);

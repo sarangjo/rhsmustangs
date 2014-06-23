@@ -42,7 +42,7 @@
                 android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
         <activity
-            android:name="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity"
+            android:name="com.sarangjoshi.rhsmustangs.twitter.TActivity"
             android:label="@string/twitter_name"
             android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
             <meta-data
@@ -50,9 +50,9 @@
                 android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
         <activity
-            android:name="com.sarangjoshi.rhsmustangs.twitter.TwitterTweetsActivity"
+            android:name="com.sarangjoshi.rhsmustangs.twitter.TTweetsActivity"
             android:label="@string/twitter_name"
-            android:parentActivityName="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity" >
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.twitter.TActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sarangjoshi.rhsmustangs.twitter.TwitterActivity" />
