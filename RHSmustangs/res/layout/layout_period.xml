@@ -27,7 +27,7 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/startTime"
         android:text="End Time"
-       	android:textSize="20sp" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/className"
@@ -35,7 +35,13 @@
         android:layout_height="match_parent"
         android:layout_alignTop="@+id/periodNum"
         android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/startTime"
         android:layout_toRightOf="@+id/periodNum"
+        android:layout_weight="1"
+        android:ellipsize="none"
+        android:maxLines="100"
+        android:scrollHorizontally="false"
         android:text="Class Name"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 

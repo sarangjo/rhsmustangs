@@ -9,6 +9,7 @@ package com.sarangjoshi.rhsmustangs.schedule;
 public class Period {
 	public String mPeriodShort = "0";
 	public String mClassName = "Period";
+	public boolean isCustomizable = true;
 	public ScheduleTime mStartTime = new ScheduleTime(6, 30);
 	public ScheduleTime mEndTime = new ScheduleTime(7, 24);
 	public char lunchStyle = '0';
@@ -63,21 +64,27 @@ public class Period {
 			return PeriodStyle.CLASS;
 	}
 
-	public int getPeriodNumber() {
-		int periodN = -1;
+	public String getPeriodNumber() {
+		if (getPeriodStyle() == PeriodStyle.CLASS) {
+			// If the first character is a number, "3" "4B" "6" then the period
+			// number is the first character.
+			try {
+				return "" + Integer.parseInt(mPeriodShort.charAt(0) + "");
+			} catch (NumberFormatException e) {
+				// In this case the first character is not a number, so just
+				// returns the whole damn mPeriodShort.
+				return mPeriodShort;
+			}
+		}
 
-		if (getPeriodStyle() == PeriodStyle.CLASS)
-			periodN = Integer.parseInt(""
-					+ ((mPeriodShort.charAt(0) == 'P') ? mPeriodShort.charAt(1)
-							: mPeriodShort.charAt(0)));
-
-		return periodN;
+		return "-1";
 	}
 
 	/**
 	 * Gets the default period name to display regardless of user settings.
 	 * 
-	 * @param p the period 
+	 * @param p
+	 *            the period
 	 * @return the period name
 	 */
 	public String getDefaultPeriodName() {

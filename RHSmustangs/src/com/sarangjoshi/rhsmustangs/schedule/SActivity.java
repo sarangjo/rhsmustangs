@@ -198,7 +198,6 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-
 	/**
 	 * Loads the current day's periods into the adapter and attaches the adapter
 	 * to the ListView.
@@ -214,6 +213,14 @@ public class SActivity extends FragmentActivity implements
 
 		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 		scheduleWeekDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
+		
+		// Sets color based on if the schedule is adjusted or not
+		if(mParser.isScheduleAdjusted()) {
+			this.setTextColor(Color.parseColor("#006600"), scheduleTitle, scheduleWeekDay);
+		} else {
+			this.setTextColor(Color.BLACK, scheduleTitle, scheduleWeekDay);
+		}
+			
 
 		// Loads adapter
 		if (periods != null) {

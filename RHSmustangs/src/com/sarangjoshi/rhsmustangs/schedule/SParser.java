@@ -22,15 +22,17 @@ public class SParser {
 
 	private String fileText;
 	private String[] adjustedDaysText;
+	
+	private boolean isAdjusted;
 
 	public SParser(Context newContext) {
 		mContext = newContext;
 		mData = new SData(mContext);
 		mNetwork = new SNetwork(mContext);
-		
+
 		parseFileData();
 	}
-	
+
 	/**
 	 * Downloads and saves the entire online file to a local String variable.
 	 * 
@@ -88,7 +90,7 @@ public class SParser {
 
 		return periods;
 	}
-	
+
 	/**
 	 * Parsing string into Period
 	 * 
@@ -98,24 +100,37 @@ public class SParser {
 	private Period getPeriodFromString(String str) {
 		Period p = new Period();
 		String[] result = str.split(" ");
-		// Period Number
+		// 0 Period Number
 		p.mPeriodShort = result[0];
 
-		// Period Name
-		p.mClassName = mData.getPeriodName(p);
+		// 1 to length - 6 Period Name
+		String overrideName = "";
+		for (int i = 1; i < result.length - 6; i++) {
+			overrideName += result[i] + " ";
+		}
+		overrideName += result[result.length - 6];
+		if (overrideName.equals(SStaticData.defaultOverrideName)) {
+			// no override
+			p.mClassName = mData.getPeriodName(p);
+			p.isCustomizable = true;
+		} else {
+			// yes override
+			p.mClassName = overrideName;
+			p.isCustomizable = false;
+		}
 
-		// Start Time
-		int sHours = Integer.parseInt(result[1]);
-		int sMin = Integer.parseInt(result[2]);
+		// length-5,length-4 Start Time
+		int sHours = Integer.parseInt(result[result.length - 5]);
+		int sMin = Integer.parseInt(result[result.length - 4]);
 		p.mStartTime = new ScheduleTime(sHours, sMin);
 
-		// End Time
-		int eHours = Integer.parseInt(result[3]);
-		int eMin = Integer.parseInt(result[4]);
+		// length-3,length-2 End Time
+		int eHours = Integer.parseInt(result[result.length - 3]);
+		int eMin = Integer.parseInt(result[result.length - 2]);
 		p.mEndTime = new ScheduleTime(eHours, eMin);
 
-		// Lunch Style
-		p.lunchStyle = result[5].charAt(0);
+		// length-1 Lunch Style
+		p.lunchStyle = result[result.length - 1].charAt(0);
 
 		return p;
 	}
@@ -134,14 +149,16 @@ public class SParser {
 		// Checks if the day is adjusted or not
 		int x = dayAdjustedIndex(day);
 		if (x >= 0) {
+			isAdjusted = true;
 			// From the array of adjusted days, gets schedule
 			String sched = adjustedDaysText[x];
 			return sched.substring(sched.indexOf('\n') + 1, sched.length());
-		} else
+		} else {
+			isAdjusted = false;
 			// Pulls appropriate schedule based on current day
 			return SStaticData.getScheduleByDay(scheduleDay.weekDay);
-
-	}	
+		}
+	}
 
 	/**
 	 * <b>Call parseFileData() before this.</b>
@@ -221,8 +238,8 @@ public class SParser {
 	}
 
 	/**
-	 * Based on {@link SData}'s lunch character, returns a string for the spinner
-	 * adapter.
+	 * Based on {@link SData}'s lunch character, returns a string for the
+	 * spinner adapter.
 	 * 
 	 * E.g. if lunch was 'a' then this returns "Lunch A".
 	 * 
@@ -291,4 +308,7 @@ public class SParser {
 		return scheduleDay;
 	}
 
+	public boolean isScheduleAdjusted() {
+		return isAdjusted;
+	}
 }
