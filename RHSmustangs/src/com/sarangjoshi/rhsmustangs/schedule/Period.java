@@ -15,7 +15,7 @@ public class Period {
 	public char lunchStyle = '0';
 
 	public static enum PeriodStyle {
-		HOMEROOM, LUNCH, CLASS
+		HOMEROOM, LUNCH, CLASS, OTHER
 	}
 
 	public Period(String periodNum, String periodName, int sh, int sm, int eh,
@@ -64,22 +64,6 @@ public class Period {
 			return PeriodStyle.CLASS;
 	}
 
-	public String getPeriodNumber() {
-		if (getPeriodStyle() == PeriodStyle.CLASS) {
-			// If the first character is a number, "3" "4B" "6" then the period
-			// number is the first character.
-			try {
-				return "" + Integer.parseInt(mPeriodShort.charAt(0) + "");
-			} catch (NumberFormatException e) {
-				// In this case the first character is not a number, so just
-				// returns the whole damn mPeriodShort.
-				return mPeriodShort;
-			}
-		}
-
-		return "-1";
-	}
-
 	/**
 	 * Gets the default period name to display regardless of user settings.
 	 * 
@@ -90,7 +74,7 @@ public class Period {
 	public String getDefaultPeriodName() {
 		switch (getPeriodStyle()) {
 		case CLASS:
-			return "Period " + getPeriodNumber();
+			return "Period " + mPeriodShort;
 		case HOMEROOM:
 			return "Homeroom";
 		case LUNCH:

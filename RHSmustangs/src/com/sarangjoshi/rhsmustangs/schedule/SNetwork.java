@@ -18,6 +18,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -25,13 +26,12 @@ public class SNetwork {
 	private Context mContext;
 
 	private String fileT = "https://googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/test.txt";
-	//"https://raw.githubusercontent.com/FinalThunder526/rhsmustangs/master/Files/test.txt";
 
 	public SNetwork(Context context) {
 		mContext = context;
 	}
 
-	public String getFileText() {
+	public String getUpdatesFileText() {/*
 		try {
 			return new GetTextTask().execute().get();
 		} catch (Exception e) {
@@ -40,9 +40,15 @@ public class SNetwork {
 	}
 
 	private class GetTextTask extends AsyncTask<Void, Void, String> {
-
+		ProgressDialog pd;
+		
 		@Override
-		protected String doInBackground(Void... args) {
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(mContext, "", "Downloading schedule...");
+		}
+		
+		@Override
+		protected String doInBackground(Void... args) {*/
 			DefaultHttpClient hClient = new DefaultHttpClient();
 
 			HttpGet hGet = new HttpGet(fileT);
@@ -65,8 +71,12 @@ public class SNetwork {
 				return total.toString();
 			} catch (IOException e) {
 				return "";
-			}
-			
+			}/*
 		}
+		
+		@Override
+		protected void onPostExecute(String s) {
+			pd.dismiss();
+		}*/
 	}
 }

@@ -6,7 +6,12 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import com.sarangjoshi.rhsmustangs.schedule.Period.PeriodStyle;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,7 +22,12 @@ public class SData {
 
 	private char mLunch = 'c';
 	private Context mContext;
+
+	private String updatesFileText;
+
 	private static final String PREF_NAME = "schedule_pref";
+	private static final String UPDATES_NAME = "updates_file";
+
 	private static final String LUNCH_KEY = "lunch";
 	private static final String PERIOD_BASE_KEY = "period";
 
@@ -77,8 +87,7 @@ public class SData {
 
 	/**
 	 * Gets the period name from the shared preference. If a custom period name
-	 * is saved, this will be returned. Otherwise, the default will be returned.
-	 * <br> 
+	 * is saved, this will be returned. Otherwise, the default will be returned. <br>
 	 * Ex.: "Period 1", "Homeroom", "Lunch"
 	 * 
 	 * @param p
@@ -90,7 +99,7 @@ public class SData {
 		String defaultName = p.getDefaultPeriodName();
 		return mPref.getString(getKey(p), defaultName);
 	}
-	
+
 	/**
 	 * Deletes the custom name of the given period.
 	 * 
@@ -101,19 +110,60 @@ public class SData {
 		e.remove(getKey(p));
 		e.commit();
 	}
-	
+
 	/**
 	 * Gets the SharedPreferences key for the given Period.
 	 * 
-	 * @param p the given period
+	 * @param p
+	 *            the given period
 	 * @return the SharedPreferences key
 	 */
 	public String getKey(Period p) {
-		// The KEY is dependent on whether it's a class or not.
-		if(p.getPeriodStyle() == PeriodStyle.CLASS)
-			return PERIOD_BASE_KEY + p.getPeriodNumber();
-		else
-			return PERIOD_BASE_KEY + p.mPeriodShort;
-		
+		return PERIOD_BASE_KEY + p.mPeriodShort;
+	}
+
+	/**
+	 * Saves the given string to the updates file.
+	 * 
+	 * @param updates
+	 *            the updates file string
+	 * @return
+	 * @throws IOException
+	 */
+	public boolean saveUpdates(String updates) throws IOException {
+		updatesFileText = updates;
+
+		FileOutputStream fos = mContext.openFileOutput(UPDATES_NAME,
+				Context.MODE_PRIVATE);
+		fos.write(updates.getBytes());
+		fos.close();
+		return true;
+	}
+
+	/**
+	 * If the local variable is null, pulls the String from the file.
+	 * 
+	 * @return the updates string
+	 */
+	public String getUpdatesString() throws IOException {
+		if (updatesFileText == null) {
+			StringBuffer datax = new StringBuffer("");
+			
+			FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader buffreader = new BufferedReader(isr);
+
+			String readString = buffreader.readLine();
+			while (readString != null) {
+				datax.append(readString + "\n");
+				readString = buffreader.readLine();
+			}
+
+			isr.close();
+			
+			updatesFileText = datax.toString();
+		}
+
+		return updatesFileText;
 	}
 }

@@ -13,8 +13,11 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -49,7 +52,7 @@ public class SActivity extends FragmentActivity implements
 
 	private PeriodsAdapter periodsAdapter;
 	private SParser mParser;
-	
+
 	private int chosenIndex = -1;
 
 	@Override
@@ -58,7 +61,8 @@ public class SActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_schedule2);
 
 		mParser = new SParser(this);
-		
+		mParser.initialize();
+
 		periodList = (ListView) findViewById(R.id.periodsListView);
 		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -67,27 +71,20 @@ public class SActivity extends FragmentActivity implements
 					int pos, long id) {
 				// Sets the local variable to the currently selected list index
 				chosenIndex = pos;
-				// Initializes DialogFragment and sets the default text
-				EditPDFragment dialog = new EditPDFragment();
-				dialog.hintText = periods.get(pos).mClassName;
-				dialog.show(getSupportFragmentManager(),
-						"EditPeriodDialogFragment");
+				Period p = periods.get(pos);
+				if (p.isCustomizable) {
+					// Initializes DialogFragment and sets the default text
+					EditPDFragment dialog = new EditPDFragment();
+					dialog.hintText = p.mClassName;
+					dialog.show(getSupportFragmentManager(),
+							"EditPeriodDialogFragment");
+				}
 				return true;
 			}
 
 		});
 
 		// Sets up the click listeners of the next and previous day buttons
-		setupDayChangeControls();
-
-		// Initially, shows current schedule
-		setToToday();
-	}
-
-	/**
-	 * Sets up onClickListeners for day change buttons.
-	 */
-	private void setupDayChangeControls() {
 		previousDay = (ImageButton) findViewById(R.id.previousDay);
 		nextDay = (ImageButton) findViewById(R.id.nextDay);
 		scheduleTitle = (TextView) findViewById(R.id.title);
@@ -119,10 +116,12 @@ public class SActivity extends FragmentActivity implements
 			}
 
 		});
+		// Initially, shows current schedule
+		setToToday();
 	}
 
 	/**
-	 * Sets current schedule based on current time, 
+	 * Sets current schedule based on current time,
 	 */
 	public void setToToday() {
 		SStaticData.updateCurrentTime();
@@ -143,11 +142,7 @@ public class SActivity extends FragmentActivity implements
 		updatePeriods();
 	}
 
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
+	// MENU
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -173,6 +168,18 @@ public class SActivity extends FragmentActivity implements
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_refresh_schedule:
+			// TODO LOL
+			new DownloadScheduleTask().execute();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
 	private class LunchSelectedListener implements OnItemSelectedListener {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view,
@@ -183,18 +190,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {
-			// do nothing...?
-		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_refresh_schedule:
-			updatePeriods();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+			// Do nothing...
 		}
 	}
 
@@ -213,29 +209,21 @@ public class SActivity extends FragmentActivity implements
 
 		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 		scheduleWeekDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
-		
+
 		// Sets color based on if the schedule is adjusted or not
-		if(mParser.isScheduleAdjusted()) {
-			this.setTextColor(Color.parseColor("#006600"), scheduleTitle, scheduleWeekDay);
+		if (mParser.isScheduleAdjusted()) {
+			this.setTextColor(Color.parseColor("#006600"), scheduleTitle,
+					scheduleWeekDay);
+			scheduleTitle.setTypeface(null, Typeface.BOLD);
 		} else {
 			this.setTextColor(Color.BLACK, scheduleTitle, scheduleWeekDay);
+			scheduleTitle.setTypeface(null, Typeface.NORMAL);
 		}
-			
 
 		// Loads adapter
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
 			periodList.setAdapter(periodsAdapter);
-		}
-	}
-
-	/**
-	 * Sets the text color of the given views.
-	 * 
-	 */
-	private void setTextColor(int c, TextView... views) {
-		for (TextView v : views) {
-			v.setTextColor(c);
 		}
 	}
 
@@ -323,6 +311,16 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
+	/**
+	 * Sets the text color of the given views.
+	 * 
+	 */
+	private void setTextColor(int c, TextView... views) {
+		for (TextView v : views) {
+			v.setTextColor(c);
+		}
+	}
+
 	// NAME CHANGE DIALOGS
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
@@ -341,4 +339,32 @@ public class SActivity extends FragmentActivity implements
 		updatePeriods();
 	}
 
+	// ASYNCTASKS
+	/**
+	 * Downloads the schedule from the online file.
+	 * 
+	 * @author Sarang
+	 */
+	private class DownloadScheduleTask extends AsyncTask<Void, Void, Void> {
+		ProgressDialog pd;
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(SActivity.this, "",
+					"Downloading schedule...");
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			mParser.saveUpdatesFile();
+			mParser.parseUpdatesFile();
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void s) {
+			updatePeriods();
+			pd.dismiss();
+		}
+	}
 }

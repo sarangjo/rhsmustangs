@@ -6,6 +6,7 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -13,24 +14,25 @@ import android.text.format.Time;
 
 public class SParser {
 	private String currentSchedule = null;
+	
 	private Context mContext;
 	private SNetwork mNetwork;
-
 	private SData mData;
 
 	private Time scheduleDay;
 
-	private String fileText;
 	private String[] adjustedDaysText;
-	
 	private boolean isAdjusted;
 
 	public SParser(Context newContext) {
 		mContext = newContext;
 		mData = new SData(mContext);
 		mNetwork = new SNetwork(mContext);
+	}
+	
+	public void initialize() {
+		parseUpdatesFile();
 
-		parseFileData();
 	}
 
 	/**
@@ -38,30 +40,37 @@ public class SParser {
 	 * 
 	 * @return whether or not the file had already been saved
 	 */
-	public boolean saveFileData() {
-		if (fileText == null) {
-			fileText = mNetwork.getFileText();
-			return true;
-		} else
+	public boolean saveUpdatesFile() {
+		try {
+			return mData.saveUpdates(mNetwork.getUpdatesFileText());
+		} catch (IOException e) {
 			return false;
+		}
 	}
 
 	/**
-	 * Parses the local variable fileText into blocks of text, and stores in
-	 * {@link adjustedDaysText}.
+	 * Parses the data from the file obtained from mData into blocks of text,
+	 * and stores in {@link adjustedDaysText}.
 	 */
-	public void parseFileData() {
-		saveFileData();
-		// Current method:
-		String s = fileText;
-		// First, removes the beginning < and ending >
+	public void parseUpdatesFile() {
+		// Gets local file's updates string
+		String s = "";
 		try {
-			s = s.substring(2, s.length() - 3);
-			// Now splitting the string into various arrays by "\n>\n<\n"
-			adjustedDaysText = s.split("\n>\n<\n");
-		} catch (IndexOutOfBoundsException e) {
-			adjustedDaysText = null;
+			s = mData.getUpdatesString();
+		} catch (IOException e) {
+			s = "";
 		}
+		if (!(s.contains("<") || s.contains(">")))
+			adjustedDaysText = null;
+		else
+			// First, removes the beginning < and ending >
+			try {
+				s = s.substring(2, s.length() - 3);
+				// Now splitting the string into various arrays by "\n>\n<\n"
+				adjustedDaysText = s.split("\n>\n<\n");
+			} catch (IndexOutOfBoundsException e) {
+				adjustedDaysText = null;
+			}
 	}
 
 	/**
