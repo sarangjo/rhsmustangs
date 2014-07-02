@@ -6,13 +6,9 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -29,7 +25,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.WindowManager.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -38,7 +33,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.R;
 
 public class SActivity extends FragmentActivity implements
@@ -172,8 +169,13 @@ public class SActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
-			// TODO LOL
-			new DownloadScheduleTask().execute();
+			if (!Network.isConnectedToInternet(this)) {
+				Toast t = Toast.makeText(this,
+						"No connection to the Internet.", Toast.LENGTH_LONG);
+				t.show();
+			} else {
+				new DownloadScheduleTask().execute();
+			}
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -345,7 +347,7 @@ public class SActivity extends FragmentActivity implements
 	 * 
 	 * @author Sarang
 	 */
-	private class DownloadScheduleTask extends AsyncTask<Void, Void, Void> {
+	private class DownloadScheduleTask extends AsyncTask<Void, Void, Boolean> {
 		ProgressDialog pd;
 
 		@Override
@@ -355,16 +357,26 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
-			mParser.saveUpdatesFile();
-			mParser.parseUpdatesFile();
-			return null;
+		protected Boolean doInBackground(Void... params) {
+			if (mParser.saveUpdatesFile()) {
+				mParser.parseUpdatesFile();
+				return true;
+			}
+			return false;
 		}
 
 		@Override
-		protected void onPostExecute(Void s) {
-			updatePeriods();
+		protected void onPostExecute(Boolean s) {
+			Toast t;
+			if (s) {
+				updatePeriods();
+				t = Toast.makeText(SActivity.this, "Schedule updated!", Toast.LENGTH_LONG);		
+			} else {
+				t = Toast.makeText(SActivity.this, "No updates!",
+						Toast.LENGTH_SHORT);
+			}
 			pd.dismiss();
+			t.show();
 		}
 	}
 }

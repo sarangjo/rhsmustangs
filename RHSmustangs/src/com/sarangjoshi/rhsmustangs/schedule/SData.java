@@ -8,7 +8,6 @@ package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,8 +27,10 @@ public class SData {
 	private static final String PREF_NAME = "schedule_pref";
 	private static final String UPDATES_NAME = "updates_file";
 
+	// SharedPreference keys
 	private static final String LUNCH_KEY = "lunch";
 	private static final String PERIOD_BASE_KEY = "period";
+	private static final String UPDATETIME_KEY = "update";
 
 	public SData(Context context) {
 		mContext = context;
@@ -130,14 +131,18 @@ public class SData {
 	 * @return
 	 * @throws IOException
 	 */
-	public boolean saveUpdates(String updates) throws IOException {
+	public boolean saveUpdates(String updates) {
 		updatesFileText = updates;
 
-		FileOutputStream fos = mContext.openFileOutput(UPDATES_NAME,
-				Context.MODE_PRIVATE);
-		fos.write(updates.getBytes());
-		fos.close();
-		return true;
+		try {
+			FileOutputStream fos = mContext.openFileOutput(UPDATES_NAME,
+					Context.MODE_PRIVATE);
+			fos.write(updates.getBytes());
+			fos.close();
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -148,7 +153,7 @@ public class SData {
 	public String getUpdatesString() throws IOException {
 		if (updatesFileText == null) {
 			StringBuffer datax = new StringBuffer("");
-			
+
 			FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
 			InputStreamReader isr = new InputStreamReader(fis);
 			BufferedReader buffreader = new BufferedReader(isr);
@@ -160,10 +165,22 @@ public class SData {
 			}
 
 			isr.close();
-			
+
 			updatesFileText = datax.toString();
 		}
 
 		return updatesFileText;
+	}
+
+	public void setUpdateTime(String updateTime) {
+		setupPref();
+		Editor e = mPref.edit();
+		e.putString(UPDATETIME_KEY, updateTime);
+		e.commit();
+	}
+
+	public String getUpdateTime() {
+		setupPref();
+		return mPref.getString(UPDATETIME_KEY, "");
 	}
 }

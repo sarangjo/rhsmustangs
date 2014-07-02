@@ -11,15 +11,18 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.text.format.Time;
+import android.util.TimeFormatException;
 
 public class SParser {
 	private String currentSchedule = null;
-	
+
 	private Context mContext;
 	private SNetwork mNetwork;
 	private SData mData;
 
 	private Time scheduleDay;
+	private String lastUpdateString;
+	private Time lastUpdate;
 
 	private String[] adjustedDaysText;
 	private boolean isAdjusted;
@@ -27,9 +30,9 @@ public class SParser {
 	public SParser(Context newContext) {
 		mContext = newContext;
 		mData = new SData(mContext);
-		mNetwork = new SNetwork(mContext);
+		mNetwork = new SNetwork();
 	}
-	
+
 	public void initialize() {
 		parseUpdatesFile();
 
@@ -38,14 +41,14 @@ public class SParser {
 	/**
 	 * Downloads and saves the entire online file to a local String variable.
 	 * 
-	 * @return whether or not the file had already been saved
+	 * @return whether or not the file has actually been updated
 	 */
 	public boolean saveUpdatesFile() {
-		try {
+		String lTime = mNetwork.getLatestUpdate();
+		if (lTime.equals(lastUpdateString))
+			return false; // no updates
+		else
 			return mData.saveUpdates(mNetwork.getUpdatesFileText());
-		} catch (IOException e) {
-			return false;
-		}
 	}
 
 	/**
@@ -54,23 +57,37 @@ public class SParser {
 	 */
 	public void parseUpdatesFile() {
 		// Gets local file's updates string
-		String s = "";
+		String updateS = "";
 		try {
-			s = mData.getUpdatesString();
+			updateS = mData.getUpdatesString();
 		} catch (IOException e) {
-			s = "";
+			updateS = "";
 		}
-		if (!(s.contains("<") || s.contains(">")))
+		if (!(updateS.contains("<") || updateS.contains(">"))
+				|| updateS.length() == 0)
 			adjustedDaysText = null;
-		else
-			// First, removes the beginning < and ending >
+		else {
 			try {
-				s = s.substring(2, s.length() - 3);
+				// MAIN PARSING OF THE SAVED FILE
+				// Gets update time
+				lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
+				// Saves to SData
+				mData.setUpdateTime(lastUpdateString);
+				lastUpdate = new Time();
+				if (lastUpdateString.length() > 8) {
+					updateS = updateS.substring(updateS.indexOf('\n') + 1);
+					lastUpdate.parse(lastUpdateString);
+				} else
+					lastUpdate.setToNow();
+				lastUpdate.normalize(false);
+				// Removes the beginning < and ending >
+				updateS = updateS.substring(2, updateS.length() - 3);
 				// Now splitting the string into various arrays by "\n>\n<\n"
-				adjustedDaysText = s.split("\n>\n<\n");
-			} catch (IndexOutOfBoundsException e) {
+				adjustedDaysText = updateS.split("\n>\n<\n");
+			} catch (Exception e) {
 				adjustedDaysText = null;
 			}
+		}
 	}
 
 	/**
@@ -287,7 +304,10 @@ public class SParser {
 	 * 
 	 */
 	public String getScheduleTitle() {
-		int diff = SStaticData.dayDifference(scheduleDay, SStaticData.now);
+		SStaticData.updateCurrentTime();
+		int diff = SStaticData.getJulianDay(SStaticData.now)
+				- SStaticData.getJulianDay(scheduleDay);
+		// SStaticData.dayDifference(scheduleDay, SStaticData.now);
 		// Today
 		if (diff == 0) {
 			return "Today";
