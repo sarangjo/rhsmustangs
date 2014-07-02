@@ -6,28 +6,23 @@
 
 package com.sarangjoshi.rhsmustangs.twitter;
 
-import java.util.ArrayList;
-
 import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
-
-import com.sarangjoshi.rhsmustangs.Network;
-import com.sarangjoshi.rhsmustangs.R;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.sarangjoshi.rhsmustangs.Network;
+import com.sarangjoshi.rhsmustangs.R;
 
 public class TActivity extends Activity {
 	Button loginButton, showTweetsButton, logoutButton;
@@ -42,8 +37,6 @@ public class TActivity extends Activity {
 	public static Toast t;
 
 	private TAuthorization tAuth;
-	private TDataParse tData;
-
 	public static Twitter twitter;
 
 	public static final String REDMONDASB_USERNAME = "RedmondASB";
@@ -58,7 +51,7 @@ public class TActivity extends Activity {
 		setupVariables();
 
 		tAuth = new TAuthorization(this);
-		tData = new TDataParse(this);
+		new TDataParse(this);
 
 		setupClickListeners();
 	}
@@ -66,13 +59,8 @@ public class TActivity extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-
-		tAuth.setupTwitterLogin();
-
-		if (tAuth.isTwitterLoggedIn())
-			appTwitterStage = TwitterStage.LOGGED_IN;
-
-		updateViews();
+		
+		new SetupTwitterTask().execute();
 	}
 
 	/**
@@ -90,6 +78,7 @@ public class TActivity extends Activity {
 	 * Sets up the individual click listeners for the buttons.
 	 */
 	private void setupClickListeners() {
+		// Login button
 		loginButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -196,6 +185,8 @@ public class TActivity extends Activity {
 			setViewsVis(View.GONE, showTweetsButton, usernameText,
 					logoutButton, loginButton);
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -255,7 +246,7 @@ public class TActivity extends Activity {
 		updateViews();
 	}
 
-	
+	// WEB CLIENTS
 	private class LoginWebClient extends WebViewClient {
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -297,5 +288,40 @@ public class TActivity extends Activity {
 
 			return false;
 		}
+	}
+
+	// ASYNCTASKS
+	private class SetupTwitterTask extends AsyncTask<Void, Void, Void> {
+		ProgressDialog pd;
+		
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(TActivity.this, "", "Loading...");
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			tAuth.setupTwitterLogin();
+
+			if (tAuth.isTwitterLoggedIn())
+				appTwitterStage = TwitterStage.LOGGED_IN;
+			
+			return null;
+		}
+		
+		protected void onPostExecute(Void result) {
+			updateViews();
+			
+			pd.dismiss();
+		}
+		
+	}
+	private class SetupLoginTask extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
 	}
 }

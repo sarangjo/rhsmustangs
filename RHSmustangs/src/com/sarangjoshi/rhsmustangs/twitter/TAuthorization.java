@@ -1,19 +1,14 @@
 package com.sarangjoshi.rhsmustangs.twitter;
 
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
-import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,7 +38,6 @@ public class TAuthorization {
 
 	public static String LOGOUT_URL = "https://mobile.twitter.com/logout";
 	
-
 	public static RequestToken appRequestToken;
 	public static AccessToken userAccessToken;
 	public User user;
@@ -93,8 +87,9 @@ public class TAuthorization {
 			// Configures a Twitter login setup with the App's key and
 			// secret.
 			ConfigurationBuilder cb = new ConfigurationBuilder();
-			cb.setDebugEnabled(true).setOAuthConsumerKey(APP_KEY)
-					.setOAuthConsumerSecret(APP_SECRET);
+			cb.setDebugEnabled(true)
+				.setOAuthConsumerKey(APP_KEY)
+				.setOAuthConsumerSecret(APP_SECRET);
 			TwitterFactory tf = new TwitterFactory(cb.build());
 			TActivity.twitter = tf.getInstance();
 		}

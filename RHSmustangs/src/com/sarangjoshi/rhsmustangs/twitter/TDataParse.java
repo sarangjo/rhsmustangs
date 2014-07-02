@@ -2,11 +2,8 @@ package com.sarangjoshi.rhsmustangs.twitter;
 
 import java.util.ArrayList;
 
-import org.json.JSONObject;
-
 import twitter4j.ResponseList;
 import twitter4j.Status;
-
 import android.content.Context;
 
 public class TDataParse {

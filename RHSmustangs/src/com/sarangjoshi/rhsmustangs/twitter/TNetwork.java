@@ -12,8 +12,6 @@ import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
 public class TNetwork {
@@ -23,8 +21,6 @@ public class TNetwork {
 		context = newContext;
 	}
 
-	
-
 	/**
 	 * Gets the app Request Token, given a callback URL.
 	 * 
@@ -33,41 +29,14 @@ public class TNetwork {
 	 * @return the app's request token
 	 */
 	public RequestToken getRequestToken(String callbackUrl) {
+		RequestToken rToken = TAuthorization.appRequestToken;
+
 		try {
-			return new GetRequestTokenTask().execute(callbackUrl).get();
+			rToken = TActivity.twitter.getOAuthRequestToken(callbackUrl);
 		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	private class GetRequestTokenTask extends
-			AsyncTask<String, Void, RequestToken> {
-		ProgressDialog pDialog;
-
-		@Override
-		public void onPreExecute() {
-			pDialog = ProgressDialog.show(context, "",
-					"Connecting to Twitter...");
 		}
 
-		@Override
-		protected RequestToken doInBackground(String... params) {
-			RequestToken rToken = TAuthorization.appRequestToken;
-
-			try {
-				String callbackUrl = params[0];
-				rToken = TActivity.twitter
-						.getOAuthRequestToken(callbackUrl);
-			} catch (Exception e) {
-			}
-
-			return rToken;
-		}
-
-		@Override
-		public void onPostExecute(RequestToken result) {
-			pDialog.dismiss();
-		}
+		return rToken;
 	}
 
 	public AccessToken getAccessToken(String verifier) {
