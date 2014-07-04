@@ -102,28 +102,20 @@ public class SActivity extends FragmentActivity implements
 		scheduleTitle.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				setToToday();
+				new LoadScheduleTask().execute();
 			}
 
 		});
 		scheduleWeekDay.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				setToToday();
+				new LoadScheduleTask().execute();
 			}
 
 		});
+		
 		// Initially, shows current schedule
-		setToToday();
-	}
-
-	/**
-	 * Sets current schedule based on current time,
-	 */
-	public void setToToday() {
-		SStaticData.updateCurrentTime();
-		mParser.updateScheduleDay(SStaticData.now, true);
-		updatePeriods();
+		new LoadScheduleTask().execute();
 	}
 
 	/**
@@ -342,6 +334,25 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	// ASYNCTASKS
+	private class LoadScheduleTask extends AsyncTask<Void, Void, Void> {
+		ProgressDialog pd;
+		
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(SActivity.this, "", "Loading schedule...");
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			SStaticData.updateCurrentTime();
+			mParser.updateScheduleDay(SStaticData.now, true);
+			return null;
+		}
+		
+		protected void onPostExecute(Void result) {
+			updatePeriods();
+			pd.dismiss();
+		}
+	}
 	/**
 	 * Downloads the schedule from the online file.
 	 * 
@@ -358,7 +369,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (mParser.saveUpdatesFile()) {
+ 			if (mParser.saveUpdatesFile()) {
 				mParser.parseUpdatesFile();
 				return true;
 			}
@@ -366,9 +377,9 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		@Override
-		protected void onPostExecute(Boolean s) {
+		protected void onPostExecute(Boolean result) {
 			Toast t;
-			if (s) {
+			if (result) {
 				updatePeriods();
 				t = Toast.makeText(SActivity.this, "Schedule updated!", Toast.LENGTH_LONG);		
 			} else {

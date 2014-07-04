@@ -18,13 +18,13 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class SNetwork {
-	private String fileT = "https://googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/test.txt";
+	private String fileT = "http://googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/schedule.txt";
 
 	
 	public String getLatestUpdate() {
 		DefaultHttpClient hClient = new DefaultHttpClient();
-
-		HttpGet hGet = new HttpGet(fileT);
+		
+        HttpGet hGet = new HttpGet(fileT);
 		try {
 			HttpResponse response = hClient.execute(hGet);
 			HttpEntity ht = response.getEntity();

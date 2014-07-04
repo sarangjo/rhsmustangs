@@ -69,19 +69,23 @@ public class SParser {
 		else {
 			try {
 				// MAIN PARSING OF THE SAVED FILE
-				// Gets update time
+				// Gets update time - first line of text file
 				lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
-				// Saves to SData
+				// Saves update time to SData
 				mData.setUpdateTime(lastUpdateString);
+				// Parses string to Time object
 				lastUpdate = new Time();
 				if (lastUpdateString.length() > 8) {
+					// Removes first line
 					updateS = updateS.substring(updateS.indexOf('\n') + 1);
 					lastUpdate.parse(lastUpdateString);
 				} else
 					lastUpdate.setToNow();
 				lastUpdate.normalize(false);
 				// Removes the beginning < and ending >
-				updateS = updateS.substring(2, updateS.length() - 3);
+				// updateS = updateS.substring(2, updateS.length() - 3);
+				updateS = updateS.substring(updateS.indexOf('<') + 2,
+						updateS.lastIndexOf('>') - 1);
 				// Now splitting the string into various arrays by "\n>\n<\n"
 				adjustedDaysText = updateS.split("\n>\n<\n");
 			} catch (Exception e) {
@@ -198,20 +202,29 @@ public class SParser {
 	private int dayAdjustedIndex(Time day) {
 		int i = -1;
 
-		if (adjustedDaysText != null) {
-			// Go through adjustedDaysText to find the correct day
-			for (i = 0; i < adjustedDaysText.length; i++) {
-				String s = adjustedDaysText[i];
-				String l = s.substring(0, s.indexOf('\n'));
-				String[] t = l.split(" ");
-				int d = Integer.parseInt(t[0]);
-				int m = Integer.parseInt(t[1]);
-				int y = Integer.parseInt(t[2]);
-				if (day.monthDay == d)
-					if (day.month == m - 1)
-						if (day.year == y)
-							return i;
+		try {
+			if (adjustedDaysText != null) {
+
+				// Go through adjustedDaysText to find the correct day
+				for (i = 0; i < adjustedDaysText.length; i++) {
+					String s = adjustedDaysText[i];
+					String l = s.substring(0, s.indexOf('\n'));
+
+					Time x = new Time();
+					x.parse(l);
+					if (SStaticData.getJulianDay(x) == SStaticData.getJulianDay(day)) {
+						return i;
+					}
+					/*
+					 * String[] t = l.split(" "); int d =
+					 * Integer.parseInt(t[0]); int m = Integer.parseInt(t[1]);
+					 * int y = Integer.parseInt(t[2]); if (day.monthDay == d) if
+					 * (day.month == m - 1) if (day.year == y) return i;
+					 */
+				}
 			}
+		} catch (Exception e) {
+			return -1;
 		}
 		return -1;
 		/*
@@ -305,19 +318,21 @@ public class SParser {
 	 */
 	public String getScheduleTitle() {
 		SStaticData.updateCurrentTime();
-		int diff = SStaticData.getJulianDay(SStaticData.now)
-				- SStaticData.getJulianDay(scheduleDay);
-		// SStaticData.dayDifference(scheduleDay, SStaticData.now);
-		// Today
-		if (diff == 0) {
-			return "Today";
-		}
-		// Tomorrow
-		else if (diff == -1)
-			return "Tomorrow";
-		// Yesterday
-		else if (diff == 1)
-			return "Yesterday";
+		try {
+			int diff = SStaticData.getJulianDay(SStaticData.now)
+					- SStaticData.getJulianDay(scheduleDay);
+			// SStaticData.dayDifference(scheduleDay, SStaticData.now);
+			// Today
+			if (diff == 0) {
+				return "Today";
+			}
+			// Tomorrow
+			else if (diff == -1)
+				return "Tomorrow";
+			// Yesterday
+			else if (diff == 1)
+				return "Yesterday";
+		} catch (Exception e) { }
 		// Else
 		return SStaticData.getDateString(scheduleDay);
 	}
