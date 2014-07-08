@@ -1,6 +1,5 @@
 package com.sarangjoshi.rhsmustangs;
 
-import java.net.MalformedURLException;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -55,8 +54,6 @@ public class LinksActivity extends Activity {
 	/**
 	 * Sets all the links to be shown.
 	 * 
-	 * @throws MalformedURLException
-	 *             lol
 	 */
 	public void setLinks() {
 		linkmap.put("LWSD Page",

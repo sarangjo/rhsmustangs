@@ -176,12 +176,13 @@ public class SParser {
 	 * @return
 	 */
 	private String getSchedule(Time day) {
+		int adjustedIndex = dayAdjustedIndex(day);
+
 		// Checks if the day is adjusted or not
-		int x = dayAdjustedIndex(day);
-		if (x >= 0) {
+		if (adjustedIndex >= 0) {
 			isAdjusted = true;
 			// From the array of adjusted days, gets schedule
-			String sched = adjustedDaysText[x];
+			String sched = adjustedDaysText[adjustedIndex];
 			return sched.substring(sched.indexOf('\n') + 1, sched.length());
 		} else {
 			isAdjusted = false;
@@ -212,7 +213,8 @@ public class SParser {
 
 					Time x = new Time();
 					x.parse(l);
-					if (SStaticData.getJulianDay(x) == SStaticData.getJulianDay(day)) {
+					if (SStaticData.getJulianDay(x) == SStaticData
+							.getJulianDay(day)) {
 						return i;
 					}
 					/*
@@ -332,7 +334,8 @@ public class SParser {
 			// Yesterday
 			else if (diff == 1)
 				return "Yesterday";
-		} catch (Exception e) { }
+		} catch (Exception e) {
+		}
 		// Else
 		return SStaticData.getDateString(scheduleDay);
 	}
@@ -352,7 +355,38 @@ public class SParser {
 		return scheduleDay;
 	}
 
+	/**
+	 * @return whether or not the current schedule is altered or not.
+	 */
 	public boolean isScheduleAdjusted() {
 		return isAdjusted;
+	}
+
+	/**
+	 * Parses through the local variable {@link adjustedDaysText} and returns an
+	 * array of just the dates of altered schedules.
+	 */
+	public String[] getAlteredDays() {
+		String[] alteredDays = new String[adjustedDaysText.length];
+		for (int i = 0; i < adjustedDaysText.length; i++) {
+			String fullText = adjustedDaysText[i];
+			alteredDays[i] = fullText.substring(0, fullText.indexOf('\n'));
+		}
+		return alteredDays;
+	}
+
+	/**
+	 * Sets the schedule given an index of altered schedules.
+	 * 
+	 * @param index index of the chosen altered schedule
+	 */
+	public void setAltDay(int index) {
+		Time t = new Time();
+		try {
+			t.parse(getAlteredDays()[index]);
+			t.normalize(false);
+			scheduleDay = t;
+		} catch (Exception e) {
+		}
 	}
 }

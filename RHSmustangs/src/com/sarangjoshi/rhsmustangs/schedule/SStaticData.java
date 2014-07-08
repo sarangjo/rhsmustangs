@@ -139,6 +139,16 @@ public class SStaticData {
 		String s = months[t.month] + " " + t.monthDay + ", " + t.year;
 		return s;
 	}
+	
+	/**
+	 * Returns the standard String form of the given time.
+	 */
+	public static String getDateString(String s) {
+		Time x = new Time();
+		x.parse(s);
+		x.normalize(false);
+		return getDateString(x);
+	}
 
 	/**
 	 * Returns the day of the week of the given time as a String.

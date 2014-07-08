@@ -11,6 +11,7 @@ import java.util.List;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -51,6 +52,9 @@ public class SActivity extends FragmentActivity implements
 	private SParser mParser;
 
 	private int chosenIndex = -1;
+	
+	public static final int PICK_SCHEDULE_REQUEST = 0;
+	public static final String SCHEDULE_INDEX_KEY = "si_key";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -91,47 +95,57 @@ public class SActivity extends FragmentActivity implements
 			@Override
 			public void onClick(View arg0) {
 				changeSchedule(-1);
+				updatePeriods();
 			}
 		});
 		nextDay.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				changeSchedule(1);
+				updatePeriods();
 			}
 		});
 		scheduleTitle.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new LoadScheduleTask().execute();
+				SStaticData.updateCurrentTime();
+				mParser.updateScheduleDay(SStaticData.now, true);
+				updatePeriods();
 			}
 
 		});
 		scheduleWeekDay.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new LoadScheduleTask().execute();
+				SStaticData.updateCurrentTime();
+				mParser.updateScheduleDay(SStaticData.now, true);
+				updatePeriods();
 			}
 
 		});
-		
+
 		// Initially, shows current schedule
+		SStaticData.updateCurrentTime();
+		mParser.updateScheduleDay(SStaticData.now, true);
 		new LoadScheduleTask().execute();
 	}
 
-	/**
-	 * Changes the schedule by the given number of days.
-	 * 
-	 * @param d
-	 *            the number of days forwards or backwards to change schedule by
-	 */
-	public void changeSchedule(int d) {
-		// Step one is to move the scheduleDay according to d
-		mParser.shiftDay(d);
-		// Now that scheduleDay is updated, the periods can be updated
-		updatePeriods();
+	@Override
+	public void onActivityResult(int request, int result, Intent data) {
+		if(request == PICK_SCHEDULE_REQUEST) {
+			if(result == RESULT_OK) {
+				// we're good.
+				int n = data.getIntExtra(SCHEDULE_INDEX_KEY, -1);
+				if(n >= 0) {
+					mParser.setAltDay(n - 1);
+					new LoadScheduleTask().execute();
+				}
+			}
+		}
 	}
-
-	// MENU
+	
+	// ACTION BAR
+	// Really only to inflate the spinner programmatically.
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -169,11 +183,17 @@ public class SActivity extends FragmentActivity implements
 				new DownloadScheduleTask().execute();
 			}
 			return true;
+		case R.id.action_alteredDays:
+			SelectAltDayFragment dialog = new SelectAltDayFragment();
+			dialog.setAlteredDays(mParser.getAlteredDays());
+			dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+	// LUNCH SPINNER
 	private class LunchSelectedListener implements OnItemSelectedListener {
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view,
@@ -188,6 +208,7 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
+	// LOADING PERIODS
 	/**
 	 * Loads the current day's periods into the adapter and attaches the adapter
 	 * to the ListView.
@@ -305,16 +326,6 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	/**
-	 * Sets the text color of the given views.
-	 * 
-	 */
-	private void setTextColor(int c, TextView... views) {
-		for (TextView v : views) {
-			v.setTextColor(c);
-		}
-	}
-
 	// NAME CHANGE DIALOGS
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
@@ -336,23 +347,22 @@ public class SActivity extends FragmentActivity implements
 	// ASYNCTASKS
 	private class LoadScheduleTask extends AsyncTask<Void, Void, Void> {
 		ProgressDialog pd;
-		
+
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(SActivity.this, "", "Loading schedule...");
 		}
-		
+
 		@Override
 		protected Void doInBackground(Void... params) {
-			SStaticData.updateCurrentTime();
-			mParser.updateScheduleDay(SStaticData.now, true);
 			return null;
 		}
-		
+
 		protected void onPostExecute(Void result) {
 			updatePeriods();
 			pd.dismiss();
 		}
 	}
+
 	/**
 	 * Downloads the schedule from the online file.
 	 * 
@@ -369,7 +379,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
- 			if (mParser.saveUpdatesFile()) {
+			if (mParser.saveUpdatesFile()) {
 				mParser.parseUpdatesFile();
 				return true;
 			}
@@ -381,13 +391,38 @@ public class SActivity extends FragmentActivity implements
 			Toast t;
 			if (result) {
 				updatePeriods();
-				t = Toast.makeText(SActivity.this, "Schedule updated!", Toast.LENGTH_LONG);		
+				t = Toast.makeText(SActivity.this, "Schedule updated!",
+						Toast.LENGTH_LONG);
 			} else {
 				t = Toast.makeText(SActivity.this, "No updates!",
 						Toast.LENGTH_SHORT);
 			}
 			pd.dismiss();
 			t.show();
+		}
+	}
+
+	// HELPERS
+	/**
+	 * Changes the schedule by the given number of days.
+	 * 
+	 * @param d
+	 *            the number of days forwards or backwards to change schedule by
+	 */
+	public void changeSchedule(int d) {
+		// Step one is to move the scheduleDay according to d
+		mParser.shiftDay(d);
+		// Now that scheduleDay is updated, the periods can be updated
+		// updatePeriods();
+	}
+	
+	/**
+	 * Sets the text color of the given views.
+	 * 
+	 */
+	private void setTextColor(int c, TextView... views) {
+		for (TextView v : views) {
+			v.setTextColor(c);
 		}
 	}
 }
