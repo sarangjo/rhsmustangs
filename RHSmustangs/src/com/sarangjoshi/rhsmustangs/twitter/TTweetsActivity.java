@@ -145,7 +145,7 @@ public class TTweetsActivity extends Activity {
 		 * Updates the image of the favoriteButton based on whether the given
 		 * status is favorited or not.
 		 * 
-		 * @param s
+		 * @param mReceiver
 		 * @param favoriteButton
 		 */
 		private void updateIsFav(int i, ImageView favoriteButton) {

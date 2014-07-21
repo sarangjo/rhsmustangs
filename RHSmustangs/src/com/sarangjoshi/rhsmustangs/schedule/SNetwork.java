@@ -18,13 +18,14 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class SNetwork {
-	private String fileT = //"https://e91cdbe99b3b9c74a0c3c3b13951890ecc0d6353.googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/schedule.txt";
-	"https://raw.githubusercontent.com/FinalThunder526/rhsmustangs/master/files/schedule.txt";
-	
+	public static final String fileT = "https://e91cdbe99b3b9c74a0c3c3b13951890ecc0d6353.googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/schedule.txt";
+
+	// "https://raw.githubusercontent.com/FinalThunder526/rhsmustangs/master/files/schedule.txt";
+
 	public String getLatestUpdate() {
 		DefaultHttpClient hClient = new DefaultHttpClient();
-		
-        HttpGet hGet = new HttpGet(fileT);
+
+		HttpGet hGet = new HttpGet(fileT);
 		try {
 			HttpResponse response = hClient.execute(hGet);
 			HttpEntity ht = response.getEntity();

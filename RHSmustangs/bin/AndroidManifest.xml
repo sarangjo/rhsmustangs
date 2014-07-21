@@ -65,6 +65,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
+        <activity
+            android:name="com.sarangjoshi.rhsmustangs.AlarmActivity"
+            android:label="Alarm Activity"
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
+        </activity>
+
+        <receiver android:name="com.sarangjoshi.rhsmustangs.schedule.AlarmReceiver" >
+        </receiver>
+        <service android:name=".schedule.SService" >
+        </service>
     </application>
 
 </manifest>

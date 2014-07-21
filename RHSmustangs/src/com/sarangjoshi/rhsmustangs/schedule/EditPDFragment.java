@@ -6,8 +6,6 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import com.sarangjoshi.rhsmustangs.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -16,10 +14,9 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager.LayoutParams;
 import android.widget.EditText;
+
+import com.sarangjoshi.rhsmustangs.R;
 
 public class EditPDFragment extends DialogFragment {
 

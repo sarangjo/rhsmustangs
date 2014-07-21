@@ -21,9 +21,9 @@
         android:showAsAction="never" />
     
     <item
-        android:id="@+id/action_alteredDays"
+        android:id="@+id/action_updatedDays"
         android:showAsAction="never"
-        android:title="Altered Days"
+        android:title="Updated Days"
         />
 
 </menu>

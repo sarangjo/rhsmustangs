@@ -79,6 +79,8 @@ public class Period {
 			return "Homeroom";
 		case LUNCH:
 			return "Lunch";
+		default:
+			break;
 		}
 		return "";
 	}

@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
 	WebParser parse;
 	ListView listView;
 	
-	String[] viewNames = { "Links", "Twitter", "Schedule" };
+	String[] viewNames = { "Links", "Twitter", "Schedule", "Alarm" };
 	ArrayAdapter<String> adapter;
 
 	public final static String EXTRA_MESSAGE = "com.sarangjoshi.rhsmustangs.MESSAGE";
@@ -71,6 +71,8 @@ public class MainActivity extends Activity {
 		case 2:
 			intent = new Intent(this, SActivity.class);
 			break;
+		case 3:
+			intent = new Intent(this, AlarmActivity.class);
 		}
 		if(intent != null) startActivity(intent);
 	}

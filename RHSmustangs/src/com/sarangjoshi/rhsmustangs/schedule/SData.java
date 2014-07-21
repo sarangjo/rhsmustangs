@@ -124,7 +124,7 @@ public class SData {
 	}
 
 	/**
-	 * Saves the given string to the updates file.
+	 * Saves the given string to the updates file. Also updates the update time in the preferences.
 	 * 
 	 * @param updates
 	 *            the updates file string
@@ -133,6 +133,9 @@ public class SData {
 	 */
 	public boolean saveUpdates(String updates) {
 		updatesFileText = updates;
+		
+		String updateTime = updates.substring(0, updates.indexOf('\n'));
+		saveUpdateTime(updateTime);
 
 		try {
 			FileOutputStream fos = mContext.openFileOutput(UPDATES_NAME,
@@ -172,7 +175,7 @@ public class SData {
 		return updatesFileText;
 	}
 
-	public void setUpdateTime(String updateTime) {
+	public void saveUpdateTime(String updateTime) {
 		setupPref();
 		Editor e = mPref.edit();
 		e.putString(UPDATETIME_KEY, updateTime);

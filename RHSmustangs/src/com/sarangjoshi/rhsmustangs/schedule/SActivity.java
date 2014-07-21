@@ -7,11 +7,17 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -36,6 +42,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sarangjoshi.rhsmustangs.MyBroadcastReceiver;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.R;
 
@@ -51,11 +58,13 @@ public class SActivity extends FragmentActivity implements
 	private PeriodsAdapter periodsAdapter;
 	private SParser mParser;
 
+	// The index of the periods that has currently been selected
 	private int chosenIndex = -1;
-	
+
 	public static final int PICK_SCHEDULE_REQUEST = 0;
 	public static final String SCHEDULE_INDEX_KEY = "si_key";
 
+	// ACTIVITY BASE METHODS
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -127,23 +136,69 @@ public class SActivity extends FragmentActivity implements
 		// Initially, shows current schedule
 		SStaticData.updateCurrentTime();
 		mParser.updateScheduleDay(SStaticData.now, true);
+
 		new LoadScheduleTask().execute();
+
+		// Service
+		boolean aua = getIntent().getBooleanExtra(
+				SService.UPDATES_AVAILABLE_KEY, false);
+
+		stopAlarm();
+
+		if (aua) {
+			new DownloadScheduleTask().execute();
+		}
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		startAlarm();
 	}
 
 	@Override
 	public void onActivityResult(int request, int result, Intent data) {
-		if(request == PICK_SCHEDULE_REQUEST) {
-			if(result == RESULT_OK) {
+		if (request == PICK_SCHEDULE_REQUEST) {
+			if (result == RESULT_OK) {
 				// we're good.
 				int n = data.getIntExtra(SCHEDULE_INDEX_KEY, -1);
-				if(n >= 0) {
+				if (n >= 0) {
 					mParser.setAltDay(n - 1);
 					new LoadScheduleTask().execute();
 				}
 			}
 		}
 	}
-	
+
+	// SERVICE
+	AlarmManager alarmManager;
+	PendingIntent operation;
+	int timeInSec = 30;
+
+	public void startAlarm() {
+		Calendar cal = Calendar.getInstance();
+
+		Intent broadcastIntent = new Intent(this, AlarmReceiver.class);
+		operation = PendingIntent.getBroadcast(this, 0, broadcastIntent, 0);
+
+		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+				cal.getTimeInMillis(), timeInSec * 1000, operation);
+		// alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
+		// + (10 * 1000), operation);
+
+		Toast.makeText(this, "Alarm started; " + timeInSec + " seconds",
+				Toast.LENGTH_SHORT).show();
+	}
+
+	public void stopAlarm() {
+		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarmManager.cancel(operation);
+
+		Toast.makeText(this, "Alarm stopped.", Toast.LENGTH_SHORT).show();
+	}
+
 	// ACTION BAR
 	// Really only to inflate the spinner programmatically.
 	@Override
@@ -183,14 +238,18 @@ public class SActivity extends FragmentActivity implements
 				new DownloadScheduleTask().execute();
 			}
 			return true;
-		case R.id.action_alteredDays:
-			SelectAltDayFragment dialog = new SelectAltDayFragment();
-			dialog.setAlteredDays(mParser.getAlteredDays());
-			dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
+		case R.id.action_updatedDays:
+			showAlteredDays();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void showAlteredDays() {
+		SelectUpdDayFragment dialog = new SelectUpdDayFragment();
+		dialog.setAlteredDays(mParser.getAlteredDays());
+		dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
 	}
 
 	// LUNCH SPINNER
@@ -374,7 +433,7 @@ public class SActivity extends FragmentActivity implements
 		@Override
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(SActivity.this, "",
-					"Downloading schedule...");
+					"Checking for updates...");
 		}
 
 		@Override
@@ -391,11 +450,12 @@ public class SActivity extends FragmentActivity implements
 			Toast t;
 			if (result) {
 				updatePeriods();
-				t = Toast.makeText(SActivity.this, "Schedule updated!",
-						Toast.LENGTH_LONG);
+				t = Toast.makeText(SActivity.this,
+						"Schedule has been updated!", Toast.LENGTH_LONG);
+				showAlteredDays();
 			} else {
 				t = Toast.makeText(SActivity.this, "No updates!",
-						Toast.LENGTH_SHORT);
+						Toast.LENGTH_LONG);
 			}
 			pd.dismiss();
 			t.show();
@@ -415,7 +475,7 @@ public class SActivity extends FragmentActivity implements
 		// Now that scheduleDay is updated, the periods can be updated
 		// updatePeriods();
 	}
-	
+
 	/**
 	 * Sets the text color of the given views.
 	 * 

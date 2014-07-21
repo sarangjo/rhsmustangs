@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.text.format.Time;
-import android.util.TimeFormatException;
 
 public class SParser {
 	private String currentSchedule = null;
@@ -35,13 +34,12 @@ public class SParser {
 
 	public void initialize() {
 		parseUpdatesFile();
-
 	}
 
 	/**
 	 * Downloads and saves the entire online file to a local String variable.
 	 * 
-	 * @return whether or not the file has actually been updated
+	 * @return whether or not the file has been updated
 	 */
 	public boolean saveUpdatesFile() {
 		String lTime = mNetwork.getLatestUpdate();
@@ -72,7 +70,7 @@ public class SParser {
 				// Gets update time - first line of text file
 				lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
 				// Saves update time to SData
-				mData.setUpdateTime(lastUpdateString);
+				mData.saveUpdateTime(lastUpdateString);
 				// Parses string to Time object
 				lastUpdate = new Time();
 				if (lastUpdateString.length() > 8) {
@@ -149,14 +147,23 @@ public class SParser {
 			p.isCustomizable = false;
 		}
 
-		// length-5,length-4 Start Time
-		int sHours = Integer.parseInt(result[result.length - 5]);
-		int sMin = Integer.parseInt(result[result.length - 4]);
-		p.mStartTime = new ScheduleTime(sHours, sMin);
+		int sHours, sMin, eHours, eMin;
+		try {
+			// length-5,length-4 Start Time
+			sHours = Integer.parseInt(result[result.length - 5]);
+			sMin = Integer.parseInt(result[result.length - 4]);
 
-		// length-3,length-2 End Time
-		int eHours = Integer.parseInt(result[result.length - 3]);
-		int eMin = Integer.parseInt(result[result.length - 2]);
+			// length-3,length-2 End Time
+			eHours = Integer.parseInt(result[result.length - 3]);
+			eMin = Integer.parseInt(result[result.length - 2]);
+		} catch (Exception e) {
+			sHours = 8;
+			sMin = 30;
+			eHours = 9;
+			eMin = 20;
+		}
+
+		p.mStartTime = new ScheduleTime(sHours, sMin);
 		p.mEndTime = new ScheduleTime(eHours, eMin);
 
 		// length-1 Lunch Style
@@ -213,6 +220,7 @@ public class SParser {
 
 					Time x = new Time();
 					x.parse(l);
+					x.normalize(false);
 					if (SStaticData.getJulianDay(x) == SStaticData
 							.getJulianDay(day)) {
 						return i;
@@ -378,7 +386,8 @@ public class SParser {
 	/**
 	 * Sets the schedule given an index of altered schedules.
 	 * 
-	 * @param index index of the chosen altered schedule
+	 * @param index
+	 *            index of the chosen altered schedule
 	 */
 	public void setAltDay(int index) {
 		Time t = new Time();
