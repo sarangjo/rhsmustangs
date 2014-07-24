@@ -19,7 +19,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class SNetwork {
 	public static final String fileT = "https://e91cdbe99b3b9c74a0c3c3b13951890ecc0d6353.googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/schedule.txt";
-
 	// "https://raw.githubusercontent.com/FinalThunder526/rhsmustangs/master/files/schedule.txt";
 
 	public String getLatestUpdate() {
@@ -34,9 +33,9 @@ public class SNetwork {
 			InputStream is = buf.getContent();
 			BufferedReader r = new BufferedReader(new InputStreamReader(is));
 
-			return r.readLine();
+			return r.readLine().trim();
 		} catch (IOException e) {
-			return "";
+			return "NA";
 		}
 	}
 

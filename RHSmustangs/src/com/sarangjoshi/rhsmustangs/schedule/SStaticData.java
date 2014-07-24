@@ -98,8 +98,8 @@ public class SStaticData {
 	 * 
 	 * @return a ScheduleTime object of the current time
 	 */
-	public static ScheduleTime getCurrentScheduleTime() {
-		return new ScheduleTime(now.hour, now.minute);
+	public static STime getCurrentScheduleTime() {
+		return new STime(now.hour, now.minute);
 	}
 
 	/**

@@ -7,7 +7,9 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,12 +21,16 @@ import android.content.SharedPreferences.Editor;
 public class SData {
 	private SharedPreferences mPref;
 
-	private char mLunch = 'c';
 	private Context mContext;
 
 	private String updatesFileText;
 
+	private enum PrefType {
+		DEFAULT, PERIODS
+	}
+
 	private static final String PREF_NAME = "schedule_pref";
+	private static final String PERIODS_PREF_NAME = "periods_pref";
 	private static final String UPDATES_NAME = "updates_file";
 
 	// SharedPreference keys
@@ -39,11 +45,14 @@ public class SData {
 	/**
 	 * Initializes the SharedPreferences object.
 	 */
-	private void setupPref() {
+	private void setupPref(PrefType pt) {
 		if (mPref == null)
-			mPref = mContext.getSharedPreferences(PREF_NAME, 0);
+			mPref = mContext
+					.getSharedPreferences((pt == PrefType.DEFAULT) ? PREF_NAME
+							: PERIODS_PREF_NAME, 0);
 	}
 
+	// LUNCH
 	/**
 	 * Saves the new lunch to the shared preference.
 	 * 
@@ -51,13 +60,10 @@ public class SData {
 	 *            the new lunch
 	 */
 	public void setLunch(char lunch) {
-		setupPref();
-
+		setupPref(PrefType.DEFAULT);
 		Editor e = mPref.edit();
 		e.putString(LUNCH_KEY, lunch + "");
 		e.commit();
-
-		mLunch = lunch;
 	}
 
 	/**
@@ -66,11 +72,11 @@ public class SData {
 	 * @return the lunch char
 	 */
 	public char getLunch() {
-		setupPref();
-		mLunch = mPref.getString(LUNCH_KEY, "c").charAt(0);
-		return mLunch;
+		setupPref(PrefType.DEFAULT);
+		return mPref.getString(LUNCH_KEY, "c").charAt(0);
 	}
 
+	// PERIOD NAMES
 	/**
 	 * Saves the new period name to the shared preference.
 	 * 
@@ -79,11 +85,9 @@ public class SData {
 	 * @param newName
 	 *            the new period name
 	 */
-	public void setPeriodName(Period p, String newName) {
-		setupPref();
-		Editor e = mPref.edit();
-		e.putString(getKey(p), newName);
-		e.commit();
+	public boolean setPeriodName(Period p, String newName) {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().putString(getKey(p), newName).commit();
 	}
 
 	/**
@@ -96,7 +100,7 @@ public class SData {
 	 * @return the period name corresponding to that period
 	 */
 	public String getPeriodName(Period p) {
-		setupPref();
+		setupPref(PrefType.PERIODS);
 		String defaultName = p.getDefaultPeriodName();
 		return mPref.getString(getKey(p), defaultName);
 	}
@@ -106,10 +110,17 @@ public class SData {
 	 * 
 	 * @param p
 	 */
-	public void deletePeriodName(Period p) {
-		Editor e = mPref.edit();
-		e.remove(getKey(p));
-		e.commit();
+	public boolean deletePeriodName(Period p) {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().remove(getKey(p)).commit();
+	}
+
+	/**
+	 * Deletes all custom Period names.
+	 */
+	public boolean resetPeriods() {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().clear().commit();
 	}
 
 	/**
@@ -123,8 +134,10 @@ public class SData {
 		return PERIOD_BASE_KEY + p.mPeriodShort;
 	}
 
+	// SCHEDULE UPDATES
 	/**
-	 * Saves the given string to the updates file. Also updates the update time in the preferences.
+	 * Saves the given string to the updates file. Also updates the update time
+	 * in the preferences.
 	 * 
 	 * @param updates
 	 *            the updates file string
@@ -133,9 +146,14 @@ public class SData {
 	 */
 	public boolean saveUpdates(String updates) {
 		updatesFileText = updates;
-		
-		String updateTime = updates.substring(0, updates.indexOf('\n'));
-		saveUpdateTime(updateTime);
+
+		// Saves update time as well
+		try {
+			String updateTime = updates.substring(0, updates.indexOf('\n'));
+			saveUpdateTime(updateTime);
+		} catch (IndexOutOfBoundsException e) {
+
+		}
 
 		try {
 			FileOutputStream fos = mContext.openFileOutput(UPDATES_NAME,
@@ -154,36 +172,56 @@ public class SData {
 	 * @return the updates string
 	 */
 	public String getUpdatesString() throws IOException {
-		if (updatesFileText == null) {
+		if (updatesFileText == null || updatesFileText == "") {
 			StringBuffer datax = new StringBuffer("");
 
-			FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
-			InputStreamReader isr = new InputStreamReader(fis);
-			BufferedReader buffreader = new BufferedReader(isr);
+			try {
+				FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
+				InputStreamReader isr = new InputStreamReader(fis);
+				BufferedReader buffreader = new BufferedReader(isr);
 
-			String readString = buffreader.readLine();
-			while (readString != null) {
-				datax.append(readString + "\n");
-				readString = buffreader.readLine();
+				String readString = buffreader.readLine();
+				while (readString != null) {
+					datax.append(readString + "\n");
+					readString = buffreader.readLine();
+				}
+
+				isr.close();
+
+				updatesFileText = datax.toString();
+			} catch (FileNotFoundException e) {
+				updatesFileText = "";
 			}
-
-			isr.close();
-
-			updatesFileText = datax.toString();
 		}
 
 		return updatesFileText;
 	}
 
-	public void saveUpdateTime(String updateTime) {
-		setupPref();
-		Editor e = mPref.edit();
-		e.putString(UPDATETIME_KEY, updateTime);
-		e.commit();
+	/**
+	 * Saves the update time in RFC 2445 format.
+	 */
+	public boolean saveUpdateTime(String updateTime) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putString(UPDATETIME_KEY, updateTime).commit();
 	}
 
+	/**
+	 * Retrieves the latest time of update of the schedule.
+	 */
 	public String getUpdateTime() {
-		setupPref();
+		setupPref(PrefType.DEFAULT);
 		return mPref.getString(UPDATETIME_KEY, "");
+	}
+
+	public boolean deleteSavedUpdates() {
+		File dir = mContext.getFilesDir();
+		File file = new File(dir, UPDATES_NAME);
+		updatesFileText = "";
+		boolean a = file.delete();
+
+		setupPref(PrefType.DEFAULT);
+		boolean b = mPref.edit().remove(UPDATETIME_KEY).commit();
+
+		return a && b;
 	}
 }

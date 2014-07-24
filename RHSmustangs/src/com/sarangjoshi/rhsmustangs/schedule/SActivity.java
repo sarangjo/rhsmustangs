@@ -1,5 +1,5 @@
 /**
- * ScheduleActivity.java
+ * SActivity.java
  * 11 May 2014
  * Sarang Joshi
  */
@@ -9,15 +9,12 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.TimeZone;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -32,26 +29,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sarangjoshi.rhsmustangs.MyBroadcastReceiver;
 import com.sarangjoshi.rhsmustangs.Network;
+import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
 
 public class SActivity extends FragmentActivity implements
-		EditPDFragment.EditPeriodDialogListener {
+		EditPeriodFragment.EditPeriodDialogListener {
 
-	private ListView periodList;
+	ListView periodList;
 	ImageButton nextDay, previousDay;
 	TextView scheduleTitle, scheduleWeekDay;
+	LinearLayout scheduleLayout;
 
 	public ArrayList<Period> periods;
 
@@ -64,6 +64,28 @@ public class SActivity extends FragmentActivity implements
 	public static final int PICK_SCHEDULE_REQUEST = 0;
 	public static final String SCHEDULE_INDEX_KEY = "si_key";
 
+	private class MySwipeListener extends OnSwipeListener {
+		public MySwipeListener() {
+			super(SActivity.this);
+		}
+
+		@Override
+		public void onSwipeRight() {
+			changeSchedule(-1);
+			updatePeriods();
+			// Toast.makeText(SActivity.this, "Swiped right.",
+			// Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onSwipeLeft() {
+			changeSchedule(1);
+			updatePeriods();
+			// Toast.makeText(SActivity.this, "Swiped left.",
+			// Toast.LENGTH_SHORT).show();
+		}
+	}
+
 	// ACTIVITY BASE METHODS
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -71,7 +93,9 @@ public class SActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_schedule2);
 
 		mParser = new SParser(this);
-		mParser.initialize();
+
+		scheduleLayout = (LinearLayout) findViewById(R.id.scheduleLayout);
+		scheduleLayout.setOnTouchListener(new MySwipeListener());
 
 		periodList = (ListView) findViewById(R.id.periodsListView);
 		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -84,15 +108,19 @@ public class SActivity extends FragmentActivity implements
 				Period p = periods.get(pos);
 				if (p.isCustomizable) {
 					// Initializes DialogFragment and sets the default text
-					EditPDFragment dialog = new EditPDFragment();
+					EditPeriodFragment dialog = new EditPeriodFragment();
 					dialog.hintText = p.mClassName;
 					dialog.show(getSupportFragmentManager(),
 							"EditPeriodDialogFragment");
+					
+					imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 				}
 				return true;
 			}
 
 		});
+		periodList.setOnTouchListener(new MySwipeListener());
 
 		// Sets up the click listeners of the next and previous day buttons
 		previousDay = (ImageButton) findViewById(R.id.previousDay);
@@ -133,6 +161,16 @@ public class SActivity extends FragmentActivity implements
 
 		});
 
+		/*
+		 * View overlay = new View(this); WindowManager.LayoutParams p = new
+		 * WindowManager.LayoutParams(); p.gravity = Gravity.TOP; p.type =
+		 * WindowManager.LayoutParams.TYPE_APPLICATION_PANEL; p.token =
+		 * overlay.getWindowToken(); overlay.setOnTouchListener(new
+		 * MySwipeListener()); WindowManager wManager = (WindowManager)
+		 * getSystemService(Context.WINDOW_SERVICE); wManager.addView(overlay,
+		 * p);
+		 */
+
 		// Initially, shows current schedule
 		SStaticData.updateCurrentTime();
 		mParser.updateScheduleDay(SStaticData.now, true);
@@ -140,14 +178,13 @@ public class SActivity extends FragmentActivity implements
 		new LoadScheduleTask().execute();
 
 		// Service
-		boolean aua = getIntent().getBooleanExtra(
+		boolean ua = getIntent().getBooleanExtra(
 				SService.UPDATES_AVAILABLE_KEY, false);
 
 		stopAlarm();
 
-		if (aua) {
+		if (ua)
 			new DownloadScheduleTask().execute();
-		}
 	}
 
 	@Override
@@ -230,17 +267,24 @@ public class SActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
-			if (!Network.isConnectedToInternet(this)) {
-				Toast t = Toast.makeText(this,
-						"No connection to the Internet.", Toast.LENGTH_LONG);
-				t.show();
-			} else {
-				new DownloadScheduleTask().execute();
-			}
+			new DownloadScheduleTask().execute();
+			return true;
+		case R.id.action_resetperiods:
+			if (mParser.getSData().resetPeriods())
+				Toast.makeText(this, "Reset periods.", Toast.LENGTH_LONG)
+						.show();
+			updatePeriods();
 			return true;
 		case R.id.action_updatedDays:
+			// if (mParser.getAlteredDays() == null)
+			// new DownloadScheduleTask().execute();
 			showAlteredDays();
 			return true;
+			/*
+			 * case R.id.action_deleteupdates: if (mParser.deleteUpdates()) {
+			 * Toast.makeText(this, "Deleted updates.", Toast.LENGTH_LONG)
+			 * .show(); updatePeriods(); } return true;
+			 */
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -248,7 +292,7 @@ public class SActivity extends FragmentActivity implements
 
 	private void showAlteredDays() {
 		SelectUpdDayFragment dialog = new SelectUpdDayFragment();
-		dialog.setAlteredDays(mParser.getAlteredDays());
+		dialog.setUpdatedDays(mParser.getUpdatedDays());
 		dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
 	}
 
@@ -262,8 +306,8 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		@Override
-		public void onNothingSelected(AdapterView<?> arg0) {
-			// Do nothing...
+		public void onNothingSelected(AdapterView<?> parent) {
+			// do nothing
 		}
 	}
 
@@ -360,7 +404,7 @@ public class SActivity extends FragmentActivity implements
 		 */
 		private int getPeriodRelativeTime(Period p) {
 			SStaticData.updateCurrentTime();
-			ScheduleTime schedNow = SStaticData.getCurrentScheduleTime();
+			STime schedNow = SStaticData.getCurrentScheduleTime();
 			int day = mParser.getScheduleDay().weekDay;
 			int julian = SStaticData.getJulianDay(mParser.getScheduleDay())
 					- SStaticData.getJulianDay(SStaticData.now);
@@ -386,8 +430,11 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	// NAME CHANGE DIALOGS
+	InputMethodManager imm;
+	
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
+		closeKeyboard(dialog);
 		Period p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
@@ -397,10 +444,22 @@ public class SActivity extends FragmentActivity implements
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
+		closeKeyboard(dialog);
 		Period p = periods.get(chosenIndex);
 		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
 		mParser.getSData().deletePeriodName(p);
 		updatePeriods();
+	}
+	
+	@Override
+	public void onDialogNegativeClick(DialogFragment dialog) {
+		closeKeyboard(dialog);
+	}
+
+	private void closeKeyboard(DialogFragment d) {
+		imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		//imm.hideSoftInputFromInputMethod(((EditPeriodFragment) d).edit.getWindowToken(), 0);
+		imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	}
 
 	// ASYNCTASKS
@@ -438,6 +497,13 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
+			if (!Network.isConnectedToInternet(SActivity.this)) {
+				Toast.makeText(SActivity.this,
+						"No connection to the Internet.", Toast.LENGTH_LONG)
+						.show();
+				return false;
+			}
+
 			if (mParser.saveUpdatesFile()) {
 				mParser.parseUpdatesFile();
 				return true;

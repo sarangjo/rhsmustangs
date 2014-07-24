@@ -10,8 +10,8 @@ public class Period {
 	public String mPeriodShort = "0";
 	public String mClassName = "Period";
 	public boolean isCustomizable = true;
-	public ScheduleTime mStartTime = new ScheduleTime(6, 30);
-	public ScheduleTime mEndTime = new ScheduleTime(7, 24);
+	public STime mStartTime = new STime(6, 30);
+	public STime mEndTime = new STime(7, 24);
 	public char lunchStyle = '0';
 
 	public static enum PeriodStyle {
@@ -22,8 +22,8 @@ public class Period {
 			int em, char ls) {
 		mPeriodShort = periodNum;
 		mClassName = periodName;
-		mStartTime = new ScheduleTime(sh, sm);
-		mEndTime = new ScheduleTime(eh, em);
+		mStartTime = new STime(sh, sm);
+		mEndTime = new STime(eh, em);
 		lunchStyle = ls;
 	}
 
@@ -38,7 +38,7 @@ public class Period {
 		return parseTime(mEndTime);
 	}
 
-	private String parseTime(ScheduleTime t) {
+	private String parseTime(STime t) {
 		int minutes = t.minute;// getMinutes();
 		if (minutes < 10)
 			return t.hour + ":0" + t.minute;

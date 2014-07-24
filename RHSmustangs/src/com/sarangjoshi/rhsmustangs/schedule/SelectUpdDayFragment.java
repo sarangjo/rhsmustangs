@@ -25,12 +25,16 @@ public class SelectUpdDayFragment extends DialogFragment {
 	ListView vUpdatedDays;
 	String[] mUpdatedDaysText;
 
-	public void setAlteredDays(String[] updatedDaysText) {
-		mUpdatedDaysText = new String[updatedDaysText.length + 1];
-		mUpdatedDaysText[0] = "(Return)";
-		for (int i = 0; i < updatedDaysText.length; i++) {
-			mUpdatedDaysText[i + 1] = SStaticData.getDateString(updatedDaysText[i]);
-		}
+	public void setUpdatedDays(String[] updatedDaysText) {
+		if (updatedDaysText != null) {
+			mUpdatedDaysText = new String[updatedDaysText.length + 1];
+			mUpdatedDaysText[0] = "(Return)";
+			for (int i = 0; i < updatedDaysText.length; i++) {
+				mUpdatedDaysText[i + 1] = SStaticData
+						.getDateString(updatedDaysText[i]);
+			}
+		} else
+			mUpdatedDaysText = new String[] { "(Return)" };
 	}
 
 	@Override

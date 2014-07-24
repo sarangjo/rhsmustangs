@@ -16,8 +16,8 @@
         android:title="Choose Lunch" />
     
     <item
-        android:id="@+id/action_settings"
-        android:title="Settings"
+        android:id="@+id/action_resetperiods"
+        android:title="Reset Periods"
         android:showAsAction="never" />
     
     <item

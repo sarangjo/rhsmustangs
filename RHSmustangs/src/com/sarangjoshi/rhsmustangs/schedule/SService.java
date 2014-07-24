@@ -6,9 +6,8 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import com.sarangjoshi.rhsmustangs.R;
+import java.util.Calendar;
 
-import android.app.Activity;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -18,11 +17,14 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.widget.Toast;
 
-public class SService extends IntentService {
-	private int result = Activity.RESULT_CANCELED;
+import com.sarangjoshi.rhsmustangs.Network;
+import com.sarangjoshi.rhsmustangs.R;
 
+public class SService extends IntentService {
 	SNetwork mNet;
 	SData mData;
+
+	String net = "", dat = "";
 
 	public static final String UPDATES_AVAILABLE_KEY = "ua";
 	public static final String RESULT_KEY = "result";
@@ -36,9 +38,11 @@ public class SService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
-		boolean isUpdated = checkForUpdates();
-		if (isUpdated)
-			createNotification();
+		if (Network.isConnectedToInternet(this)) {
+			boolean isUpdated = checkForUpdates();
+			if (isUpdated)
+				createNotification();
+		}
 	}
 
 	/**
@@ -47,8 +51,9 @@ public class SService extends IntentService {
 	private boolean checkForUpdates() {
 		mNet = new SNetwork();
 		mData = new SData(this);
-		String netUpdate = mNet.getLatestUpdate();
-		if (netUpdate.equals(mData.getUpdateTime()))
+		net = mNet.getLatestUpdate();
+		dat = mData.getUpdateTime();
+		if (net.equals(dat) || net.equals("NA") || dat.equals(""))
 			return false;
 		return true;
 	}
@@ -59,21 +64,29 @@ public class SService extends IntentService {
 	private void createNotification() {
 		NotificationCompat.Builder b = new NotificationCompat.Builder(this);
 
+		String title = "Schedule updates available.";
+		String text = net + "\n" + dat;
+
+		Calendar cal = Calendar.getInstance();
+		text += "\nUpdated: " + cal.get(Calendar.HOUR_OF_DAY) + ":"
+				+ cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
+
+		// Setup small notification
 		b.setSmallIcon(R.drawable.rhslogo_green);
-		b.setContentTitle("Schedule updates available.");
-		b.setContentText("The schedule has updates! Click to find out more.");
+		b.setContentTitle(title);
+		b.setContentText(text);
 		b.setAutoCancel(true);
 
+		// Setup bit notification
 		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
-		bigTextStyle.setBigContentTitle("Schedule updates available.");
-		bigTextStyle.bigText("The schedule has updates! Click to find out more.");
+		bigTextStyle.setBigContentTitle(title);
+		bigTextStyle.bigText(text);
 
 		b.setStyle(bigTextStyle);
 
+		// Setup ContentIntent
 		Intent resultIntent = new Intent(this, SActivity.class);
-
 		resultIntent.putExtra(UPDATES_AVAILABLE_KEY, true);
-
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 		stackBuilder.addParentStack(SActivity.class);
 		stackBuilder.addNextIntent(resultIntent);
@@ -84,6 +97,7 @@ public class SService extends IntentService {
 		NotificationManager mNotifManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		mNotifManager.notify(0, b.build());
+
 		Toast.makeText(this, "Notification created.", Toast.LENGTH_SHORT)
 				.show();
 	}

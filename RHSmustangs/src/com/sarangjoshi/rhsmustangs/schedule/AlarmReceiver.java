@@ -1,5 +1,5 @@
 /**
- * SBroadcastReceiver.java
+ * AlarmReceiver.java
  * Jul 19, 2014
  * Sarang Joshi
  */
@@ -9,9 +9,6 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
-
-import com.sarangjoshi.rhsmustangs.MyService;
 
 public class AlarmReceiver extends BroadcastReceiver {
 	@Override

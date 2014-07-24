@@ -20,19 +20,20 @@ public class SParser {
 	private SData mData;
 
 	private Time scheduleDay;
-	private String lastUpdateString;
+	
 	private Time lastUpdate;
-
-	private String[] adjustedDaysText;
-	private boolean isAdjusted;
+	private String[] updatedDays;
+	private boolean isUpdated;
 
 	public SParser(Context newContext) {
 		mContext = newContext;
 		mData = new SData(mContext);
 		mNetwork = new SNetwork();
+		
+		initialize();
 	}
 
-	public void initialize() {
+	private void initialize() {
 		parseUpdatesFile();
 	}
 
@@ -43,7 +44,7 @@ public class SParser {
 	 */
 	public boolean saveUpdatesFile() {
 		String lTime = mNetwork.getLatestUpdate();
-		if (lTime.equals(lastUpdateString))
+		if (lTime.equals(mData.getUpdateTime()))
 			return false; // no updates
 		else
 			return mData.saveUpdates(mNetwork.getUpdatesFileText());
@@ -51,7 +52,8 @@ public class SParser {
 
 	/**
 	 * Parses the data from the file obtained from mData into blocks of text,
-	 * and stores in {@link adjustedDaysText}.
+	 * and stores in {@link updatedDays}. If there are no updated days
+	 * saved, then {@link updatedDays} is null.
 	 */
 	public void parseUpdatesFile() {
 		// Gets local file's updates string
@@ -59,16 +61,15 @@ public class SParser {
 		try {
 			updateS = mData.getUpdatesString();
 		} catch (IOException e) {
-			updateS = "";
 		}
 		if (!(updateS.contains("<") || updateS.contains(">"))
-				|| updateS.length() == 0)
-			adjustedDaysText = null;
+				|| updateS.trim().length() == 0)
+			updatedDays = null;
 		else {
 			try {
 				// MAIN PARSING OF THE SAVED FILE
 				// Gets update time - first line of text file
-				lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
+				String lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
 				// Saves update time to SData
 				mData.saveUpdateTime(lastUpdateString);
 				// Parses string to Time object
@@ -85,9 +86,9 @@ public class SParser {
 				updateS = updateS.substring(updateS.indexOf('<') + 2,
 						updateS.lastIndexOf('>') - 1);
 				// Now splitting the string into various arrays by "\n>\n<\n"
-				adjustedDaysText = updateS.split("\n>\n<\n");
+				updatedDays = updateS.split("\n>\n<\n");
 			} catch (Exception e) {
-				adjustedDaysText = null;
+				updatedDays = null;
 			}
 		}
 	}
@@ -163,8 +164,8 @@ public class SParser {
 			eMin = 20;
 		}
 
-		p.mStartTime = new ScheduleTime(sHours, sMin);
-		p.mEndTime = new ScheduleTime(eHours, eMin);
+		p.mStartTime = new STime(sHours, sMin);
+		p.mEndTime = new STime(eHours, eMin);
 
 		// length-1 Lunch Style
 		p.lunchStyle = result[result.length - 1].charAt(0);
@@ -187,12 +188,12 @@ public class SParser {
 
 		// Checks if the day is adjusted or not
 		if (adjustedIndex >= 0) {
-			isAdjusted = true;
+			isUpdated = true;
 			// From the array of adjusted days, gets schedule
-			String sched = adjustedDaysText[adjustedIndex];
+			String sched = updatedDays[adjustedIndex];
 			return sched.substring(sched.indexOf('\n') + 1, sched.length());
 		} else {
-			isAdjusted = false;
+			isUpdated = false;
 			// Pulls appropriate schedule based on current day
 			return SStaticData.getScheduleByDay(scheduleDay.weekDay);
 		}
@@ -211,11 +212,11 @@ public class SParser {
 		int i = -1;
 
 		try {
-			if (adjustedDaysText != null) {
+			if (updatedDays != null) {
 
 				// Go through adjustedDaysText to find the correct day
-				for (i = 0; i < adjustedDaysText.length; i++) {
-					String s = adjustedDaysText[i];
+				for (i = 0; i < updatedDays.length; i++) {
+					String s = updatedDays[i];
 					String l = s.substring(0, s.indexOf('\n'));
 
 					Time x = new Time();
@@ -367,20 +368,25 @@ public class SParser {
 	 * @return whether or not the current schedule is altered or not.
 	 */
 	public boolean isScheduleAdjusted() {
-		return isAdjusted;
+		return isUpdated;
 	}
 
 	/**
 	 * Parses through the local variable {@link adjustedDaysText} and returns an
 	 * array of just the dates of altered schedules.
 	 */
-	public String[] getAlteredDays() {
-		String[] alteredDays = new String[adjustedDaysText.length];
-		for (int i = 0; i < adjustedDaysText.length; i++) {
-			String fullText = adjustedDaysText[i];
-			alteredDays[i] = fullText.substring(0, fullText.indexOf('\n'));
-		}
-		return alteredDays;
+	public String[] getUpdatedDays() {
+		parseUpdatesFile();
+		if (updatedDays != null) {
+			String[] alteredDays = new String[updatedDays.length];
+
+			for (int i = 0; i < updatedDays.length; i++) {
+				String fullText = updatedDays[i];
+				alteredDays[i] = fullText.substring(0, fullText.indexOf('\n'));
+			}
+			return alteredDays;
+		} else
+			return null;
 	}
 
 	/**
@@ -392,10 +398,20 @@ public class SParser {
 	public void setAltDay(int index) {
 		Time t = new Time();
 		try {
-			t.parse(getAlteredDays()[index]);
+			t.parse(getUpdatedDays()[index]);
 			t.normalize(false);
 			scheduleDay = t;
 		} catch (Exception e) {
 		}
+	}
+
+	
+	public boolean deleteUpdates() {
+		boolean a = mData.deleteSavedUpdates();
+		
+		updatedDays = null;
+		isUpdated = false;
+		
+		return a;
 	}
 }

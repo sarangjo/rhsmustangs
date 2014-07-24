@@ -34,7 +34,6 @@ public class TActivity extends Activity {
 	};
 
 	public static TwitterStage appTwitterStage = TwitterStage.LOGGED_OUT;
-	public static Toast t;
 
 	private TAuthorization tAuth;
 	public static Twitter twitter;
@@ -59,7 +58,7 @@ public class TActivity extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-		
+
 		new SetupTwitterTask().execute();
 	}
 
@@ -86,14 +85,13 @@ public class TActivity extends Activity {
 					if (!tAuth.isTwitterLoggedIn())
 						loginToTwitter();
 					else {
-						t = Toast.makeText(TActivity.this,
-								"Already logged in.", Toast.LENGTH_LONG);
-						t.show();
+						Toast.makeText(TActivity.this, "Already logged in.",
+								Toast.LENGTH_LONG).show();
 					}
 				else {
-					t = Toast.makeText(TActivity.this,
-							"Not connected to Internet.", Toast.LENGTH_SHORT);
-					t.show();
+					Toast.makeText(TActivity.this,
+							"Not connected to Internet.", Toast.LENGTH_SHORT)
+							.show();
 				}
 			}
 		});
@@ -111,11 +109,10 @@ public class TActivity extends Activity {
 			public void onClick(View v) {
 				if (tAuth.isTwitterLoggedIn()) {
 					logoutFromTwitter();
-					//logoutPart2();
+					// logoutPart2();
 				} else {
-					t = Toast.makeText(TActivity.this,
-							"Already logged out.", Toast.LENGTH_SHORT);
-					t.show();
+					Toast.makeText(TActivity.this, "Already logged out.",
+							Toast.LENGTH_SHORT).show();
 				}
 			}
 
@@ -127,11 +124,10 @@ public class TActivity extends Activity {
 	 */
 	private void showTweets() {
 		if (tAuth.isTwitterLoggedIn())
-			startActivity(new Intent(TActivity.this,
-					TTweetsActivity.class));
+			startActivity(new Intent(TActivity.this, TTweetsActivity.class));
 		else {
-			t = Toast.makeText(this, "Please login first.", Toast.LENGTH_SHORT);
-			t.show();
+			Toast.makeText(this, "Please login first.", Toast.LENGTH_SHORT)
+					.show();
 		}
 	}
 
@@ -250,11 +246,11 @@ public class TActivity extends Activity {
 	private class LoginWebClient extends WebViewClient {
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-			/*if (url.equals("https://api.twitter.com/oauth/authorize")) {
-				appTwitterStage = TwitterStage.LOGGED_OUT;
-				updateViews();
-				((WebView) view).stopLoading(); 
-			}*/
+			/*
+			 * if (url.equals("https://api.twitter.com/oauth/authorize")) {
+			 * appTwitterStage = TwitterStage.LOGGED_OUT; updateViews();
+			 * ((WebView) view).stopLoading(); }
+			 */
 		}
 
 		@Override
@@ -293,28 +289,29 @@ public class TActivity extends Activity {
 	// ASYNCTASKS
 	private class SetupTwitterTask extends AsyncTask<Void, Void, Void> {
 		ProgressDialog pd;
-		
+
 		protected void onPreExecute() {
 			pd = ProgressDialog.show(TActivity.this, "", "Loading...");
 		}
-		
+
 		@Override
 		protected Void doInBackground(Void... params) {
 			tAuth.setupTwitterLogin();
 
 			if (tAuth.isTwitterLoggedIn())
 				appTwitterStage = TwitterStage.LOGGED_IN;
-			
+
 			return null;
 		}
-		
+
 		protected void onPostExecute(Void result) {
 			updateViews();
-			
+
 			pd.dismiss();
 		}
-		
+
 	}
+
 	private class SetupLoginTask extends AsyncTask<Void, Void, Void> {
 
 		@Override
@@ -322,6 +319,6 @@ public class TActivity extends Activity {
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
+
 	}
 }
