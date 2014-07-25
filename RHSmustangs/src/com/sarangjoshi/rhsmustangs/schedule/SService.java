@@ -30,6 +30,8 @@ public class SService extends IntentService {
 	public static final String RESULT_KEY = "result";
 	public static final String NOTIFICATION_ACTION = "com.sarangjoshi.rhsmustangs.schedule";
 
+	public static final int NOTIF_ID = 0;
+
 	public SService() {
 		super("SService");
 		// TODO Auto-generated constructor stub
@@ -37,23 +39,35 @@ public class SService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		setup();
 		Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
 		if (Network.isConnectedToInternet(this)) {
 			boolean isUpdated = checkForUpdates();
 			if (isUpdated)
-				createNotification();
+				if (!mData.getIsNotifCreated())
+					createNotification();
 		}
+	}
+
+	/**
+	 * Sets up SNetwork and SData objects.
+	 */
+	private void setup() {
+		if (mNet == null)
+			mNet = new SNetwork();
+		if (mData == null)
+			mData = new SData(this);
 	}
 
 	/**
 	 * Returns whether the online file has updates.
 	 */
 	private boolean checkForUpdates() {
-		mNet = new SNetwork();
-		mData = new SData(this);
-		net = mNet.getLatestUpdate();
+		net = mNet.getLatestUpdateTime();
 		dat = mData.getUpdateTime();
-		if (net.equals(dat) || net.equals("NA") || dat.equals(""))
+
+		if (net.equals(dat) || net.equals("NA") || dat.equals("")
+				|| net.trim().length() != SStaticData.DATE_LENGTH)
 			return false;
 		return true;
 	}
@@ -77,11 +91,10 @@ public class SService extends IntentService {
 		b.setContentText(text);
 		b.setAutoCancel(true);
 
-		// Setup bit notification
+		// Setup big notification
 		NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 		bigTextStyle.setBigContentTitle(title);
 		bigTextStyle.bigText(text);
-
 		b.setStyle(bigTextStyle);
 
 		// Setup ContentIntent
@@ -96,7 +109,9 @@ public class SService extends IntentService {
 		b.setContentIntent(resultPendingIntent);
 		NotificationManager mNotifManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-		mNotifManager.notify(0, b.build());
+		mNotifManager.notify(NOTIF_ID, b.build());
+
+		mData.saveNotification(true);
 
 		Toast.makeText(this, "Notification created.", Toast.LENGTH_SHORT)
 				.show();

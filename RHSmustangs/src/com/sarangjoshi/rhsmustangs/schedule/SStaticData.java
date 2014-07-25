@@ -19,6 +19,8 @@ public class SStaticData {
 
 	public static int shifted_hour = 9;
 	public static int shifted_min = 15;
+	
+	public static int DATE_LENGTH = 15;
 
 	public static Time now;
 
@@ -100,20 +102,6 @@ public class SStaticData {
 	 */
 	public static STime getCurrentScheduleTime() {
 		return new STime(now.hour, now.minute);
-	}
-
-	/**
-	 * Returns difference between two days. Positive if the second time is after
-	 * the first. Effectively b - a.
-	 * 
-	 * @param a
-	 *            first day
-	 * @param b
-	 *            second day
-	 * @return
-	 */
-	public static int dayDifference(Time a, Time b) {
-		return (b.yearDay - a.yearDay) + 365 * (b.year - a.year);
 	}
 
 	/**

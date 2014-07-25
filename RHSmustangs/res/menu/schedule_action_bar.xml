@@ -25,5 +25,10 @@
         android:showAsAction="never"
         android:title="Updated Days"
         />
+    
+    <item
+        android:id="@+id/action_downloadBase"
+        android:showAsAction="never"
+        android:title="@string/downloadBase"/>
 
 </menu>

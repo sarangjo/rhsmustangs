@@ -32,11 +32,14 @@ public class SData {
 	private static final String PREF_NAME = "schedule_pref";
 	private static final String PERIODS_PREF_NAME = "periods_pref";
 	private static final String UPDATES_NAME = "updates_file";
+	private static final String BASE_NAME = "base_file_";
 
 	// SharedPreference keys
 	private static final String LUNCH_KEY = "lunch";
 	private static final String PERIOD_BASE_KEY = "period";
 	private static final String UPDATETIME_KEY = "update";
+	private static final String NOTIF_KEY = "notif";
+	private static final String INIT_KEY = "init";
 
 	public SData(Context context) {
 		mContext = context;
@@ -73,7 +76,7 @@ public class SData {
 	 */
 	public char getLunch() {
 		setupPref(PrefType.DEFAULT);
-		return mPref.getString(LUNCH_KEY, "c").charAt(0);
+		return mPref.getString(LUNCH_KEY, "a").charAt(0);
 	}
 
 	// PERIOD NAMES
@@ -223,5 +226,65 @@ public class SData {
 		boolean b = mPref.edit().remove(UPDATETIME_KEY).commit();
 
 		return a && b;
+	}
+
+	// NOTIFICATION
+	/**
+	 * Saves if the notification has been created or not.
+	 * 
+	 * @return if the save was successful
+	 */
+	public boolean saveNotification(boolean created) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putBoolean(NOTIF_KEY, created).commit();
+	}
+
+	public boolean getIsNotifCreated() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getBoolean(NOTIF_KEY, false);
+	}
+
+	// BASE SCHEDULE
+	public boolean saveBaseDay(int day, String schedule) {
+		try {
+			FileOutputStream fos = mContext.openFileOutput(BASE_NAME + day,
+					Context.MODE_PRIVATE);
+			fos.write(schedule.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public String getBaseSchedule(int day) {
+		StringBuffer datax = new StringBuffer("");
+		try {
+			FileInputStream fis = mContext.openFileInput(BASE_NAME + day);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+
+			String readString = br.readLine();
+			while (readString != null) {
+				datax.append(readString + "\n");
+				readString = br.readLine();
+			}
+
+			isr.close();
+
+			return datax.toString();
+		} catch (IOException e) {
+			return "";
+		}
+	}
+
+	public boolean saveInitialize(boolean initialized) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putBoolean(INIT_KEY, initialized).commit();
+	}
+	public boolean getIsInitialized() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getBoolean(INIT_KEY, false);
 	}
 }

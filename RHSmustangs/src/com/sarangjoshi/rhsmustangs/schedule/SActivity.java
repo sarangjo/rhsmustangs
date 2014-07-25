@@ -41,12 +41,24 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sarangjoshi.rhsmustangs.MainActivity;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
 
 public class SActivity extends FragmentActivity implements
 		EditPeriodFragment.EditPeriodDialogListener {
+
+	/**
+	 * The state of the Schedule
+	 * 
+	 * @author Sarang
+	 */
+	private enum ScheduleState {
+		INIT, DEFAULT
+	}
+
+	ScheduleState mSState;
 
 	ListView periodList;
 	ImageButton nextDay, previousDay;
@@ -63,6 +75,8 @@ public class SActivity extends FragmentActivity implements
 
 	public static final int PICK_SCHEDULE_REQUEST = 0;
 	public static final String SCHEDULE_INDEX_KEY = "si_key";
+
+	public static final String INIT_KEY = "just-init";
 
 	private class MySwipeListener extends OnSwipeListener {
 		public MySwipeListener() {
@@ -90,101 +104,119 @@ public class SActivity extends FragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_schedule2);
 
 		mParser = new SParser(this);
 
-		scheduleLayout = (LinearLayout) findViewById(R.id.scheduleLayout);
-		scheduleLayout.setOnTouchListener(new MySwipeListener());
+		if (!mParser.getSData().getIsInitialized()) {
+			// INITIALIZATION
+			mSState = ScheduleState.INIT;
+			updateLayout();
+			new InitializeScheduleTask(this).execute();
+		} else {
+			if (getIntent().getBooleanExtra(INIT_KEY, false))
+				Toast.makeText(this, "Schedule initialized. You're all set!",
+						Toast.LENGTH_LONG).show();
 
-		periodList = (ListView) findViewById(R.id.periodsListView);
-		periodList.setOnItemLongClickListener(new OnItemLongClickListener() {
+			mSState = ScheduleState.DEFAULT;
+			updateLayout();
 
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View v,
-					int pos, long id) {
-				// Sets the local variable to the currently selected list index
-				chosenIndex = pos;
-				Period p = periods.get(pos);
-				if (p.isCustomizable) {
-					// Initializes DialogFragment and sets the default text
-					EditPeriodFragment dialog = new EditPeriodFragment();
-					dialog.hintText = p.mClassName;
-					dialog.show(getSupportFragmentManager(),
-							"EditPeriodDialogFragment");
-					
-					imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+			mParser.parseUpdatesFile();
+
+			scheduleLayout = (LinearLayout) findViewById(R.id.scheduleLayout);
+			scheduleLayout.setOnTouchListener(new MySwipeListener());
+
+			periodList = (ListView) findViewById(R.id.periodsListView);
+			periodList
+					.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+						@Override
+						public boolean onItemLongClick(AdapterView<?> parent,
+								View v, int pos, long id) {
+							// Sets the local variable to the currently selected
+							// list index
+							chosenIndex = pos;
+							Period p = periods.get(pos);
+							if (p.isCustomizable) {
+								// Initializes DialogFragment and sets the
+								// default text
+								EditPeriodFragment dialog = new EditPeriodFragment();
+								dialog.hintText = p.mClassName;
+								dialog.show(getSupportFragmentManager(),
+										"EditPeriodDialogFragment");
+
+								imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+								imm.toggleSoftInput(
+										InputMethodManager.SHOW_FORCED, 0);
+							}
+							return true;
+						}
+
+					});
+			periodList.setOnTouchListener(new MySwipeListener());
+
+			// Sets up the click listeners of the next and previous day buttons
+			previousDay = (ImageButton) findViewById(R.id.previousDay);
+			nextDay = (ImageButton) findViewById(R.id.nextDay);
+			scheduleTitle = (TextView) findViewById(R.id.title);
+			scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
+
+			previousDay.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					changeSchedule(-1);
+					updatePeriods();
 				}
-				return true;
-			}
+			});
+			nextDay.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					changeSchedule(1);
+					updatePeriods();
+				}
+			});
+			scheduleTitle.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					SStaticData.updateCurrentTime();
+					mParser.updateScheduleDay(SStaticData.now, true);
+					updatePeriods();
+				}
 
-		});
-		periodList.setOnTouchListener(new MySwipeListener());
+			});
+			scheduleWeekDay.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					SStaticData.updateCurrentTime();
+					mParser.updateScheduleDay(SStaticData.now, true);
+					updatePeriods();
+				}
 
-		// Sets up the click listeners of the next and previous day buttons
-		previousDay = (ImageButton) findViewById(R.id.previousDay);
-		nextDay = (ImageButton) findViewById(R.id.nextDay);
-		scheduleTitle = (TextView) findViewById(R.id.title);
-		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
+			});
 
-		previousDay.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				changeSchedule(-1);
-				updatePeriods();
-			}
-		});
-		nextDay.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				changeSchedule(1);
-				updatePeriods();
-			}
-		});
-		scheduleTitle.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				SStaticData.updateCurrentTime();
-				mParser.updateScheduleDay(SStaticData.now, true);
-				updatePeriods();
-			}
+			/*
+			 * View overlay = new View(this); WindowManager.LayoutParams p = new
+			 * WindowManager.LayoutParams(); p.gravity = Gravity.TOP; p.type =
+			 * WindowManager.LayoutParams.TYPE_APPLICATION_PANEL; p.token =
+			 * overlay.getWindowToken(); overlay.setOnTouchListener(new
+			 * MySwipeListener()); WindowManager wManager = (WindowManager)
+			 * getSystemService(Context.WINDOW_SERVICE);
+			 * wManager.addView(overlay, p);
+			 */
+			// Initially, shows current schedule
+			SStaticData.updateCurrentTime();
+			mParser.updateScheduleDay(SStaticData.now, true);
 
-		});
-		scheduleWeekDay.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				SStaticData.updateCurrentTime();
-				mParser.updateScheduleDay(SStaticData.now, true);
-				updatePeriods();
-			}
+			new LoadScheduleTask().execute();
 
-		});
+			// Service
+			boolean ua = getIntent().getBooleanExtra(
+					SService.UPDATES_AVAILABLE_KEY, false);
 
-		/*
-		 * View overlay = new View(this); WindowManager.LayoutParams p = new
-		 * WindowManager.LayoutParams(); p.gravity = Gravity.TOP; p.type =
-		 * WindowManager.LayoutParams.TYPE_APPLICATION_PANEL; p.token =
-		 * overlay.getWindowToken(); overlay.setOnTouchListener(new
-		 * MySwipeListener()); WindowManager wManager = (WindowManager)
-		 * getSystemService(Context.WINDOW_SERVICE); wManager.addView(overlay,
-		 * p);
-		 */
+			stopAlarm();
 
-		// Initially, shows current schedule
-		SStaticData.updateCurrentTime();
-		mParser.updateScheduleDay(SStaticData.now, true);
-
-		new LoadScheduleTask().execute();
-
-		// Service
-		boolean ua = getIntent().getBooleanExtra(
-				SService.UPDATES_AVAILABLE_KEY, false);
-
-		stopAlarm();
-
-		if (ua)
-			new DownloadScheduleTask().execute();
+			if (ua)
+				new DownloadScheduleTask().execute();
+		}
 	}
 
 	@Override
@@ -211,56 +243,66 @@ public class SActivity extends FragmentActivity implements
 	// SERVICE
 	AlarmManager alarmManager;
 	PendingIntent operation;
-	int timeInSec = 30;
+	int timeInSec = 60 * 30;
 
 	public void startAlarm() {
 		Calendar cal = Calendar.getInstance();
+
+		cal.setTimeInMillis(System.currentTimeMillis());
+		cal.set(Calendar.HOUR_OF_DAY, 16);
+		cal.set(Calendar.MINUTE, 0);
 
 		Intent broadcastIntent = new Intent(this, AlarmReceiver.class);
 		operation = PendingIntent.getBroadcast(this, 0, broadcastIntent, 0);
 
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-				cal.getTimeInMillis(), timeInSec * 1000, operation);
+				cal.getTimeInMillis(), 1000 * timeInSec, operation);
+
+		// alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+		// cal.getTimeInMillis(), timeInSec * 1000, operation);
 		// alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
 		// + (10 * 1000), operation);
 
-		Toast.makeText(this, "Alarm started; " + timeInSec + " seconds",
-				Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Alarm started; " + timeInSec + " seconds",
+		// Toast.LENGTH_SHORT).show();
 	}
 
 	public void stopAlarm() {
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		alarmManager.cancel(operation);
 
-		Toast.makeText(this, "Alarm stopped.", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Alarm stopped.", Toast.LENGTH_SHORT).show();
 	}
 
 	// ACTION BAR
 	// Really only to inflate the spinner programmatically.
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.schedule_action_bar, menu);
+		if (mSState == ScheduleState.DEFAULT) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.schedule_action_bar, menu);
 
-		View item = menu.findItem(R.id.lunches_spinner).getActionView();
+			View item = menu.findItem(R.id.lunches_spinner).getActionView();
 
-		Spinner spin = (Spinner) item;
+			Spinner spin = (Spinner) item;
 
-		// The third parameter is defined for the selected view (default)
-		ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter
-				.createFromResource(this, R.array.lunches_list,
-						R.layout.lunch_dropdown_default);
-		// This is for all the drop down resources
-		spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
-		spin.setAdapter(spinAdapter);
+			// The third parameter is defined for the selected view (default)
+			ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter
+					.createFromResource(this, R.array.lunches_list,
+							R.layout.lunch_dropdown_default);
+			// This is for all the drop down resources
+			spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
+			spin.setAdapter(spinAdapter);
 
-		spin.setOnItemSelectedListener(new LunchSelectedListener());
+			spin.setOnItemSelectedListener(new LunchSelectedListener());
 
-		int pos = spinAdapter.getPosition(mParser.getSpinnerLunch());
-		spin.setSelection(pos);
+			int pos = spinAdapter.getPosition(mParser.getSpinnerLunch());
+			spin.setSelection(pos);
 
-		return super.onCreateOptionsMenu(menu);
+			return super.onCreateOptionsMenu(menu);
+		} else
+			return false;
 	}
 
 	@Override
@@ -285,6 +327,9 @@ public class SActivity extends FragmentActivity implements
 			 * Toast.makeText(this, "Deleted updates.", Toast.LENGTH_LONG)
 			 * .show(); updatePeriods(); } return true;
 			 */
+		case R.id.action_downloadBase:
+			new DownloadBaseScheduleTask().execute();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -315,10 +360,10 @@ public class SActivity extends FragmentActivity implements
 	/**
 	 * Loads the current day's periods into the adapter and attaches the adapter
 	 * to the ListView.
-	 * 
 	 */
 	private void updatePeriods() {
 		// Gets the periods from parser
+
 		periods = mParser.getPeriods();
 
 		// Sets the title depending on the current day
@@ -431,7 +476,7 @@ public class SActivity extends FragmentActivity implements
 
 	// NAME CHANGE DIALOGS
 	InputMethodManager imm;
-	
+
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
 		closeKeyboard(dialog);
@@ -450,7 +495,7 @@ public class SActivity extends FragmentActivity implements
 		mParser.getSData().deletePeriodName(p);
 		updatePeriods();
 	}
-	
+
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
 		closeKeyboard(dialog);
@@ -458,11 +503,76 @@ public class SActivity extends FragmentActivity implements
 
 	private void closeKeyboard(DialogFragment d) {
 		imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		//imm.hideSoftInputFromInputMethod(((EditPeriodFragment) d).edit.getWindowToken(), 0);
+		// imm.hideSoftInputFromInputMethod(((EditPeriodFragment)
+		// d).edit.getWindowToken(), 0);
 		imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	}
 
 	// ASYNCTASKS
+	/**
+	 * Initializes the schedule.
+	 * 
+	 * Return types: <br>
+	 * <ul>
+	 * <li>"Y" Success</li>
+	 * <li>"I" Internet connection error</li>
+	 * <li>"E" General error</li>
+	 * </ul>
+	 * 
+	 * @author Sarang
+	 */
+	private class InitializeScheduleTask extends AsyncTask<Void, Void, String> {
+		ProgressDialog pd;
+		Context mCtx;
+
+		public InitializeScheduleTask(Context ctx) {
+			mCtx = ctx;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(mCtx, "",
+					"Initializing schedule...\nThis may take a while.");
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			if (Network.isConnectedToInternet(SActivity.this))
+				if (mParser.downloadBaseSchedules())
+					return "Y";
+				else {
+					return "E";
+				}
+			return "I";
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			if (result.equals("Y")) { // success
+				mParser.getSData().saveInitialize(true);
+				// Toast.makeText(mCtx, "Schedule initialized!",
+				// Toast.LENGTH_LONG).show();
+				// setupSchedule();
+				// recreate();
+				Intent i = new Intent(mCtx, SActivity.class);
+				i.putExtra(INIT_KEY, true);
+				finish();
+				mCtx.startActivity(i);
+			} else {
+				mParser.getSData().saveInitialize(false);
+				if (result.equals("I"))
+					// Internet error
+					setMessage("Please check your connection to the Internet.");
+				else
+					// general error
+					setMessage("There was an error. Please try again later or contact the ASB PR.");
+			}
+
+			pd.dismiss();
+		}
+
+	}
+
 	private class LoadScheduleTask extends AsyncTask<Void, Void, Void> {
 		ProgressDialog pd;
 
@@ -518,6 +628,7 @@ public class SActivity extends FragmentActivity implements
 				updatePeriods();
 				t = Toast.makeText(SActivity.this,
 						"Schedule has been updated!", Toast.LENGTH_LONG);
+				mParser.getSData().saveNotification(false);
 				showAlteredDays();
 			} else {
 				t = Toast.makeText(SActivity.this, "No updates!",
@@ -525,6 +636,34 @@ public class SActivity extends FragmentActivity implements
 			}
 			pd.dismiss();
 			t.show();
+		}
+	}
+
+	private class DownloadBaseScheduleTask extends
+			AsyncTask<Void, Void, Boolean> {
+		ProgressDialog pd;
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(SActivity.this, "", "Downloading base...");
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			if (!Network.isConnectedToInternet(SActivity.this)) {
+				Toast.makeText(SActivity.this,
+						"No connection to the Internet.", Toast.LENGTH_LONG)
+						.show();
+				return false;
+			}
+			mParser.downloadBaseSchedules();
+
+			return false;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			pd.dismiss();
 		}
 	}
 
@@ -540,6 +679,27 @@ public class SActivity extends FragmentActivity implements
 		mParser.shiftDay(d);
 		// Now that scheduleDay is updated, the periods can be updated
 		// updatePeriods();
+	}
+
+	public void setMessage(String s) {
+		if (mSState == ScheduleState.INIT) {
+			TextView v = (TextView) findViewById(R.id.messageView);
+			v.setText(s);
+		}
+	}
+
+	private void updateLayout() {
+		switch (mSState) {
+		case DEFAULT:
+			setContentView(R.layout.activity_schedule2);
+			break;
+		case INIT:
+			setContentView(R.layout.activity_schedule);
+			break;
+		default:
+			setContentView(R.layout.activity_schedule2);
+			break;
+		}
 	}
 
 	/**

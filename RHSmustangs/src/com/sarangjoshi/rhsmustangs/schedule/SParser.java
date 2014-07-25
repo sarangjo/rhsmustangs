@@ -20,7 +20,7 @@ public class SParser {
 	private SData mData;
 
 	private Time scheduleDay;
-	
+
 	private Time lastUpdate;
 	private String[] updatedDays;
 	private boolean isUpdated;
@@ -29,12 +29,6 @@ public class SParser {
 		mContext = newContext;
 		mData = new SData(mContext);
 		mNetwork = new SNetwork();
-		
-		initialize();
-	}
-
-	private void initialize() {
-		parseUpdatesFile();
 	}
 
 	/**
@@ -43,7 +37,7 @@ public class SParser {
 	 * @return whether or not the file has been updated
 	 */
 	public boolean saveUpdatesFile() {
-		String lTime = mNetwork.getLatestUpdate();
+		String lTime = mNetwork.getLatestUpdateTime();
 		if (lTime.equals(mData.getUpdateTime()))
 			return false; // no updates
 		else
@@ -52,8 +46,8 @@ public class SParser {
 
 	/**
 	 * Parses the data from the file obtained from mData into blocks of text,
-	 * and stores in {@link updatedDays}. If there are no updated days
-	 * saved, then {@link updatedDays} is null.
+	 * and stores in {@link updatedDays}. If there are no updated days saved,
+	 * then {@link updatedDays} is null.
 	 */
 	public void parseUpdatesFile() {
 		// Gets local file's updates string
@@ -69,7 +63,8 @@ public class SParser {
 			try {
 				// MAIN PARSING OF THE SAVED FILE
 				// Gets update time - first line of text file
-				String lastUpdateString = updateS.substring(0, updateS.indexOf('\n'));
+				String lastUpdateString = updateS.substring(0,
+						updateS.indexOf('\n'));
 				// Saves update time to SData
 				mData.saveUpdateTime(lastUpdateString);
 				// Parses string to Time object
@@ -195,7 +190,11 @@ public class SParser {
 		} else {
 			isUpdated = false;
 			// Pulls appropriate schedule based on current day
-			return SStaticData.getScheduleByDay(scheduleDay.weekDay);
+			// return SStaticData.getScheduleByDay(scheduleDay.weekDay);
+			int wDay = day.weekDay;
+			wDay = (wDay == Time.SATURDAY || wDay == Time.SUNDAY) ? wDay = Time.MONDAY
+					: wDay;
+			return mData.getBaseSchedule(wDay);
 		}
 	}
 
@@ -267,13 +266,16 @@ public class SParser {
 		int day = scheduleDay.weekDay;
 		int hour = scheduleDay.hour;
 
-		// If the time is more than 2 hours after the current time, and it's a
+		// If the time is more than 2 hours after the end time, and it's a
 		// weekday, it shifts forward one day.
 		if (isForward && day > Time.SUNDAY && day < Time.SATURDAY
 				&& hour >= 2 + SStaticData.getEndHour(day)) {
 			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
 		}
 
+		day = scheduleDay.weekDay;
+		hour = scheduleDay.hour;
+		
 		// Both Saturday and Sunday go to the next Monday
 		if (day == Time.SATURDAY) {
 			scheduleDay = SStaticData.shiftDay(scheduleDay,
@@ -321,6 +323,10 @@ public class SParser {
 	 */
 	public SData getSData() {
 		return mData;
+	}
+
+	public SNetwork getSNetwork() {
+		return mNetwork;
 	}
 
 	/**
@@ -405,13 +411,28 @@ public class SParser {
 		}
 	}
 
-	
+	/**
+	 * Saves the base schedule.
+	 */
+	public boolean downloadBaseSchedules() {
+		for (int i = Time.MONDAY; i <= Time.FRIDAY; i++) {
+			String schedule = mNetwork.getBaseDay(i);
+
+			if (schedule == "" || schedule == null) {
+				return false;
+			} else {
+				mData.saveBaseDay(i, schedule);
+			}
+		}
+		return true;
+	}
+
 	public boolean deleteUpdates() {
 		boolean a = mData.deleteSavedUpdates();
-		
+
 		updatedDays = null;
 		isUpdated = false;
-		
+
 		return a;
 	}
 }
