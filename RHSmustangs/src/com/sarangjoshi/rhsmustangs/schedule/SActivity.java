@@ -317,9 +317,9 @@ public class SActivity extends FragmentActivity implements
 			// new DownloadScheduleTask().execute();
 			showAlteredDays();
 			return true;
-		/*case R.id.action_setPeriods:
+		case R.id.action_setPeriods:
 			goToSettingPeriod(false);
-			return true;*/
+			return true;
 		case R.id.action_resetEverything:
 			// new DownloadBaseScheduleTask().execute();
 			mParser.resetEverything();
