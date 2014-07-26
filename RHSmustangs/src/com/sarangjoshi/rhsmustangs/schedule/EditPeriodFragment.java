@@ -21,11 +21,27 @@ import com.sarangjoshi.rhsmustangs.R;
 public class EditPeriodFragment extends DialogFragment {
 
 	public interface EditPeriodDialogListener {
+		/**
+		 * Callback method when the right-most button is clicked.
+		 * 
+		 * @param dialog this dialog
+		 * @param savedName the Period name
+		 */
 		public void onDialogPositiveClick(DialogFragment dialog,
 				String savedName);
 
+		/**
+		 * Callback method when the middle button is clicked.
+		 * 
+		 * @param dialog this dialog
+		 */
 		public void onDialogNeutralClick(DialogFragment dialog);
 
+		/**
+		 * Callback method when the left-most button is clicked.
+		 * 
+		 * @param dialog this dialog
+		 */
 		public void onDialogNegativeClick(DialogFragment dialog);
 	}
 

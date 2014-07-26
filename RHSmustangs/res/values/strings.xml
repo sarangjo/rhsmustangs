@@ -11,8 +11,7 @@
     <string name="schedule_name">"Schedule"</string>
     <string name="refresh">Refresh</string>
     <string name="service_name">Schedule Service</string>
-    <string name="downloadBase">Download Base</string>
-
+    
     <string-array name="lunches_list">
         <item>Lunch A</item>
         <item>Lunch B</item>

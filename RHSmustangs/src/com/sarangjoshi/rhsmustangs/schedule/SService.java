@@ -67,7 +67,7 @@ public class SService extends IntentService {
 		dat = mData.getUpdateTime();
 
 		if (net.equals(dat) || net.equals("NA") || dat.equals("")
-				|| net.trim().length() != SStaticData.DATE_LENGTH)
+				|| net.trim().length() != SStaticData.RFC2445_DATE_LENGTH)
 			return false;
 		return true;
 	}
@@ -79,7 +79,7 @@ public class SService extends IntentService {
 		NotificationCompat.Builder b = new NotificationCompat.Builder(this);
 
 		String title = "Schedule updates available.";
-		String text = net + "\n" + dat;
+		String text = "The schedule has been updated! Click here to find out more.";//net + "\n" + dat;
 
 		Calendar cal = Calendar.getInstance();
 		text += "\nUpdated: " + cal.get(Calendar.HOUR_OF_DAY) + ":"

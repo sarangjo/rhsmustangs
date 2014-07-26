@@ -34,6 +34,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -41,7 +43,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sarangjoshi.rhsmustangs.MainActivity;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
@@ -55,7 +56,7 @@ public class SActivity extends FragmentActivity implements
 	 * @author Sarang
 	 */
 	private enum ScheduleState {
-		INIT, DEFAULT
+		INIT, PERIODS, DEFAULT
 	}
 
 	ScheduleState mSState;
@@ -64,6 +65,7 @@ public class SActivity extends FragmentActivity implements
 	ImageButton nextDay, previousDay;
 	TextView scheduleTitle, scheduleWeekDay;
 	LinearLayout scheduleLayout;
+	Button setPeriodsBtn, skipPeriodsBtn, clearPeriodsBtn;
 
 	public ArrayList<Period> periods;
 
@@ -85,7 +87,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		public void onSwipeRight() {
-			changeSchedule(-1);
+			changeScheduleBy(-1);
 			updatePeriods();
 			// Toast.makeText(SActivity.this, "Swiped right.",
 			// Toast.LENGTH_SHORT).show();
@@ -93,7 +95,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		public void onSwipeLeft() {
-			changeSchedule(1);
+			changeScheduleBy(1);
 			updatePeriods();
 			// Toast.makeText(SActivity.this, "Swiped left.",
 			// Toast.LENGTH_SHORT).show();
@@ -108,15 +110,8 @@ public class SActivity extends FragmentActivity implements
 		mParser = new SParser(this);
 
 		if (!mParser.getSData().getIsInitialized()) {
-			// INITIALIZATION
-			mSState = ScheduleState.INIT;
-			updateLayout();
-			new InitializeScheduleTask(this).execute();
+			goToInit();
 		} else {
-			if (getIntent().getBooleanExtra(INIT_KEY, false))
-				Toast.makeText(this, "Schedule initialized. You're all set!",
-						Toast.LENGTH_LONG).show();
-
 			mSState = ScheduleState.DEFAULT;
 			updateLayout();
 
@@ -163,14 +158,14 @@ public class SActivity extends FragmentActivity implements
 			previousDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					changeSchedule(-1);
+					changeScheduleBy(-1);
 					updatePeriods();
 				}
 			});
 			nextDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					changeSchedule(1);
+					changeScheduleBy(1);
 					updatePeriods();
 				}
 			});
@@ -206,11 +201,17 @@ public class SActivity extends FragmentActivity implements
 			SStaticData.updateCurrentTime();
 			mParser.updateScheduleDay(SStaticData.now, true);
 
-			new LoadScheduleTask().execute();
+			updatePeriods();
 
 			// Service
 			boolean ua = getIntent().getBooleanExtra(
 					SService.UPDATES_AVAILABLE_KEY, false);
+
+			if (getIntent().getBooleanExtra(INIT_KEY, false)) {
+				ua = true;
+				Toast.makeText(this, "Base schedule initialized.",
+						Toast.LENGTH_SHORT).show();
+			}
 
 			stopAlarm();
 
@@ -234,7 +235,7 @@ public class SActivity extends FragmentActivity implements
 				int n = data.getIntExtra(SCHEDULE_INDEX_KEY, -1);
 				if (n >= 0) {
 					mParser.setAltDay(n - 1);
-					new LoadScheduleTask().execute();
+					updatePeriods();
 				}
 			}
 		}
@@ -311,24 +312,18 @@ public class SActivity extends FragmentActivity implements
 		case R.id.action_refresh_schedule:
 			new DownloadScheduleTask().execute();
 			return true;
-		case R.id.action_resetperiods:
-			if (mParser.getSData().resetPeriods())
-				Toast.makeText(this, "Reset periods.", Toast.LENGTH_LONG)
-						.show();
-			updatePeriods();
-			return true;
 		case R.id.action_updatedDays:
 			// if (mParser.getAlteredDays() == null)
 			// new DownloadScheduleTask().execute();
 			showAlteredDays();
 			return true;
-			/*
-			 * case R.id.action_deleteupdates: if (mParser.deleteUpdates()) {
-			 * Toast.makeText(this, "Deleted updates.", Toast.LENGTH_LONG)
-			 * .show(); updatePeriods(); } return true;
-			 */
-		case R.id.action_downloadBase:
-			new DownloadBaseScheduleTask().execute();
+		/*case R.id.action_setPeriods:
+			goToSettingPeriod(false);
+			return true;*/
+		case R.id.action_resetEverything:
+			// new DownloadBaseScheduleTask().execute();
+			mParser.resetEverything();
+			recreate();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -479,7 +474,7 @@ public class SActivity extends FragmentActivity implements
 
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
-		closeKeyboard(dialog);
+		closeKeyboard();
 		Period p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
@@ -489,7 +484,7 @@ public class SActivity extends FragmentActivity implements
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
-		closeKeyboard(dialog);
+		closeKeyboard();
 		Period p = periods.get(chosenIndex);
 		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
 		mParser.getSData().deletePeriodName(p);
@@ -498,10 +493,13 @@ public class SActivity extends FragmentActivity implements
 
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
-		closeKeyboard(dialog);
+		closeKeyboard();
 	}
 
-	private void closeKeyboard(DialogFragment d) {
+	/**
+	 * Closes the soft input keyboard after it has been forcefully opened.
+	 */
+	private void closeKeyboard() {
 		imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		// imm.hideSoftInputFromInputMethod(((EditPeriodFragment)
 		// d).edit.getWindowToken(), 0);
@@ -549,15 +547,7 @@ public class SActivity extends FragmentActivity implements
 		@Override
 		protected void onPostExecute(String result) {
 			if (result.equals("Y")) { // success
-				mParser.getSData().saveInitialize(true);
-				// Toast.makeText(mCtx, "Schedule initialized!",
-				// Toast.LENGTH_LONG).show();
-				// setupSchedule();
-				// recreate();
-				Intent i = new Intent(mCtx, SActivity.class);
-				i.putExtra(INIT_KEY, true);
-				finish();
-				mCtx.startActivity(i);
+				goToSettingPeriod(true);
 			} else {
 				mParser.getSData().saveInitialize(false);
 				if (result.equals("I"))
@@ -571,24 +561,6 @@ public class SActivity extends FragmentActivity implements
 			pd.dismiss();
 		}
 
-	}
-
-	private class LoadScheduleTask extends AsyncTask<Void, Void, Void> {
-		ProgressDialog pd;
-
-		protected void onPreExecute() {
-			pd = ProgressDialog.show(SActivity.this, "", "Loading schedule...");
-		}
-
-		@Override
-		protected Void doInBackground(Void... params) {
-			return null;
-		}
-
-		protected void onPostExecute(Void result) {
-			updatePeriods();
-			pd.dismiss();
-		}
 	}
 
 	/**
@@ -639,32 +611,128 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	private class DownloadBaseScheduleTask extends
-			AsyncTask<Void, Void, Boolean> {
-		ProgressDialog pd;
-
-		@Override
-		protected void onPreExecute() {
-			pd = ProgressDialog.show(SActivity.this, "", "Downloading base...");
+	// SETUP DIFFERENT LAYOUTS
+	private void updateLayout() {
+		switch (mSState) {
+		case DEFAULT:
+			setContentView(R.layout.activity_schedule2);
+			break;
+		case INIT:
+			setContentView(R.layout.activity_schedule);
+			break;
+		case PERIODS:
+			setContentView(R.layout.activity_schedule_setperiods);
+			break;
+		default:
+			break;
 		}
+	}
 
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			if (!Network.isConnectedToInternet(SActivity.this)) {
-				Toast.makeText(SActivity.this,
-						"No connection to the Internet.", Toast.LENGTH_LONG)
-						.show();
-				return false;
+	private void goToInit() {
+		mSState = ScheduleState.INIT;
+		updateLayout();
+		new InitializeScheduleTask(this).execute();
+	}
+
+	private void goToDefault(boolean isInit) {
+		mParser.getSData().saveInitialize(true);
+		Intent i = new Intent(this, SActivity.class);
+		i.putExtra(INIT_KEY, isInit);
+		finish();
+		startActivity(i);
+	}
+
+	private void goToSettingPeriod(boolean isInit) {
+		final boolean i = isInit;
+		mSState = ScheduleState.PERIODS;
+		updateLayout();
+		if (isInit)
+			Toast.makeText(this,
+					"Setup your periods with your current schedule!",
+					Toast.LENGTH_LONG).show();
+		setPeriodsBtn = (Button) findViewById(R.id.setPeriodsBtn);
+		skipPeriodsBtn = (Button) findViewById(R.id.skipBtn);
+		clearPeriodsBtn = (Button) findViewById(R.id.clearPeriodsBtn);
+
+		setPeriodsBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				savePeriods(i);
 			}
-			mParser.downloadBaseSchedules();
+		});
+		skipPeriodsBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mParser.getSData().saveInitialize(true);
+				goToDefault(i);
+			}
+		});
+		clearPeriodsBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				clearPeriods();
+			}
+		});
 
-			return false;
-		}
+		setPeriodEditTexts();
+	}
 
-		@Override
-		protected void onPostExecute(Boolean result) {
-			pd.dismiss();
+	// SETTING PERIODS
+	private void setPeriodEditTexts() {
+		setPeriod((EditText) findViewById(R.id.period1), mParser.getSData()
+				.getPeriodName(1));
+		setPeriod((EditText) findViewById(R.id.period2), mParser.getSData()
+				.getPeriodName(2));
+		setPeriod((EditText) findViewById(R.id.period3), mParser.getSData()
+				.getPeriodName(3));
+		setPeriod((EditText) findViewById(R.id.period4), mParser.getSData()
+				.getPeriodName(4));
+		setPeriod((EditText) findViewById(R.id.period5), mParser.getSData()
+				.getPeriodName(5));
+		setPeriod((EditText) findViewById(R.id.period6), mParser.getSData()
+				.getPeriodName(6));
+	}
+
+	private void setPeriod(EditText e, String pn) {
+		if (!pn.equals(""))
+			e.setText(pn);
+		else
+			e.setText("");
+	}
+
+	private void clearPeriods() {
+		if (mSState == ScheduleState.PERIODS) {
+			((EditText) findViewById(R.id.period1)).setText("");
+			((EditText) findViewById(R.id.period2)).setText("");
+			((EditText) findViewById(R.id.period3)).setText("");
+			((EditText) findViewById(R.id.period4)).setText("");
+			((EditText) findViewById(R.id.period5)).setText("");
+			((EditText) findViewById(R.id.period6)).setText("");
 		}
+	}
+
+	private void savePeriodName(int i, String s) {
+		if (!s.equals(""))
+			mParser.getSData().setPeriodName(i, s);
+		else
+			mParser.getSData().deletePeriodName(i);
+	}
+
+	private void savePeriods(boolean isInit) {
+		savePeriodName(1, ((EditText) findViewById(R.id.period1)).getText()
+				.toString());
+		savePeriodName(2, ((EditText) findViewById(R.id.period2)).getText()
+				.toString());
+		savePeriodName(3, ((EditText) findViewById(R.id.period3)).getText()
+				.toString());
+		savePeriodName(4, ((EditText) findViewById(R.id.period4)).getText()
+				.toString());
+		savePeriodName(5, ((EditText) findViewById(R.id.period5)).getText()
+				.toString());
+		savePeriodName(6, ((EditText) findViewById(R.id.period6)).getText()
+				.toString());
+
+		goToDefault(isInit);
 	}
 
 	// HELPERS
@@ -674,31 +742,14 @@ public class SActivity extends FragmentActivity implements
 	 * @param d
 	 *            the number of days forwards or backwards to change schedule by
 	 */
-	public void changeSchedule(int d) {
-		// Step one is to move the scheduleDay according to d
+	public void changeScheduleBy(int d) {
 		mParser.shiftDay(d);
-		// Now that scheduleDay is updated, the periods can be updated
-		// updatePeriods();
 	}
 
 	public void setMessage(String s) {
 		if (mSState == ScheduleState.INIT) {
 			TextView v = (TextView) findViewById(R.id.messageView);
 			v.setText(s);
-		}
-	}
-
-	private void updateLayout() {
-		switch (mSState) {
-		case DEFAULT:
-			setContentView(R.layout.activity_schedule2);
-			break;
-		case INIT:
-			setContentView(R.layout.activity_schedule);
-			break;
-		default:
-			setContentView(R.layout.activity_schedule2);
-			break;
 		}
 	}
 

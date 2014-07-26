@@ -133,7 +133,7 @@ public class SParser {
 			overrideName += result[i] + " ";
 		}
 		overrideName += result[result.length - 6];
-		if (overrideName.equals(SStaticData.defaultOverrideName)) {
+		if (overrideName.equals(SStaticData.DEFAULT_OVERRIDE_NAME)) {
 			// no override
 			p.mClassName = mData.getPeriodName(p);
 			p.isCustomizable = true;
@@ -268,21 +268,24 @@ public class SParser {
 
 		// If the time is more than 2 hours after the end time, and it's a
 		// weekday, it shifts forward one day.
-		if (isForward && day > Time.SUNDAY && day < Time.SATURDAY
-				&& hour >= 2 + SStaticData.getEndHour(day)) {
-			scheduleDay = SStaticData.shiftDay(scheduleDay, 1);
+		if (isForward
+				&& day > Time.SUNDAY
+				&& day < Time.SATURDAY
+				&& hour >= 2 + ((day == Time.WEDNESDAY) ? mData
+						.getMiscDetail("endHrW") : mData.getMiscDetail("endHr"))) {
+			scheduleDay = SStaticData.shiftDay(scheduleDay, 1, mData);
 		}
 
 		day = scheduleDay.weekDay;
 		hour = scheduleDay.hour;
-		
+
 		// Both Saturday and Sunday go to the next Monday
 		if (day == Time.SATURDAY) {
 			scheduleDay = SStaticData.shiftDay(scheduleDay,
-					(isForward ? 2 : -1));
+					(isForward ? 2 : -1), mData);
 		} else if (day == Time.SUNDAY) {
 			scheduleDay = SStaticData.shiftDay(scheduleDay,
-					(isForward ? 1 : -2));
+					(isForward ? 1 : -2), mData);
 		}
 
 		// Adjusts the other variables in the time object
@@ -363,7 +366,7 @@ public class SParser {
 	 *            the change in days
 	 */
 	public void shiftDay(int d) {
-		updateScheduleDay(SStaticData.shiftDay(scheduleDay, d), (d >= 0));
+		updateScheduleDay(SStaticData.shiftDay(scheduleDay, d, mData), (d >= 0));
 	}
 
 	public Time getScheduleDay() {
@@ -434,5 +437,33 @@ public class SParser {
 		isUpdated = false;
 
 		return a;
+	}
+
+	public boolean saveMiscDetails() {
+		String det = mNetwork.getMisc();
+		String[] details = det.split("\n");
+		String[] keyValPair = new String[2];
+		boolean a = true;
+		for (int i = 0; i < details.length; i++) {
+			keyValPair = details[i].split(" ");
+			try {
+				a = a
+						&& mData.saveMiscDetail(keyValPair[0],
+								Integer.parseInt(keyValPair[1]));
+			} catch (Exception e) {
+				a = a && false;
+			}
+		}
+		return a;
+	}
+
+	/**
+	 * Deletes updates, deletes base schedules.
+	 */
+	public void resetEverything() {
+		mData.saveInitialize(false);
+		mData.deletePeriods();
+		mData.deleteSavedUpdates();
+		mData.deleteBase();
 	}
 }

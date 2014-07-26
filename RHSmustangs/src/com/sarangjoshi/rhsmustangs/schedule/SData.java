@@ -93,6 +93,11 @@ public class SData {
 		return mPref.edit().putString(getKey(p), newName).commit();
 	}
 
+	public boolean setPeriodName(int i, String newName) {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().putString(PERIOD_BASE_KEY + i, newName).commit();
+	}
+
 	/**
 	 * Gets the period name from the shared preference. If a custom period name
 	 * is saved, this will be returned. Otherwise, the default will be returned. <br>
@@ -107,6 +112,11 @@ public class SData {
 		String defaultName = p.getDefaultPeriodName();
 		return mPref.getString(getKey(p), defaultName);
 	}
+	public String getPeriodName(int i) {
+		setupPref(PrefType.PERIODS);
+		return mPref.getString(PERIOD_BASE_KEY + i, "");
+	}
+
 
 	/**
 	 * Deletes the custom name of the given period.
@@ -116,6 +126,11 @@ public class SData {
 	public boolean deletePeriodName(Period p) {
 		setupPref(PrefType.PERIODS);
 		return mPref.edit().remove(getKey(p)).commit();
+	}
+
+	public boolean deletePeriodName(int i) {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().remove(PERIOD_BASE_KEY + i).commit();
 	}
 
 	/**
@@ -216,6 +231,11 @@ public class SData {
 		return mPref.getString(UPDATETIME_KEY, "");
 	}
 
+	/**
+	 * Deletes the saved updates.
+	 * 
+	 * @return the success of the delete
+	 */
 	public boolean deleteSavedUpdates() {
 		File dir = mContext.getFilesDir();
 		File file = new File(dir, UPDATES_NAME);
@@ -239,12 +259,24 @@ public class SData {
 		return mPref.edit().putBoolean(NOTIF_KEY, created).commit();
 	}
 
+	/**
+	 * Checks whether the notification has been created or not.
+	 */
 	public boolean getIsNotifCreated() {
 		setupPref(PrefType.DEFAULT);
 		return mPref.getBoolean(NOTIF_KEY, false);
 	}
 
 	// BASE SCHEDULE
+	/**
+	 * Saves the base schedule.
+	 * 
+	 * @param day
+	 *            the day index to save; 1 = Monday, 5 = Friday
+	 * @param schedule
+	 *            the schedule
+	 * @return success
+	 */
 	public boolean saveBaseDay(int day, String schedule) {
 		try {
 			FileOutputStream fos = mContext.openFileOutput(BASE_NAME + day,
@@ -258,6 +290,12 @@ public class SData {
 		return true;
 	}
 
+	/**
+	 * Gets the base schedule.
+	 * 
+	 * @param day
+	 *            the day index; 1 = Monday, 5 = Friday
+	 */
 	public String getBaseSchedule(int day) {
 		StringBuffer datax = new StringBuffer("");
 		try {
@@ -279,12 +317,52 @@ public class SData {
 		}
 	}
 
+	/**
+	 * Saves whether the schedule has been initialized.
+	 * 
+	 * @return success
+	 */
 	public boolean saveInitialize(boolean initialized) {
 		setupPref(PrefType.DEFAULT);
 		return mPref.edit().putBoolean(INIT_KEY, initialized).commit();
 	}
+
+	/**
+	 * Gets whether the schedule has been initialized or not.
+	 */
 	public boolean getIsInitialized() {
 		setupPref(PrefType.DEFAULT);
 		return mPref.getBoolean(INIT_KEY, false);
+	}
+
+	/**
+	 * Deletes ALL the base schedules saved.
+	 * 
+	 * @return success
+	 */
+	public boolean deleteBase() {
+		File dir = mContext.getFilesDir();
+		boolean a = true;
+		for (int i = 1; i <= 5; i++) {
+			File file = new File(dir, BASE_NAME + i);
+			a = a && file.delete();
+		}
+
+		return a;
+	}
+
+	public boolean saveMiscDetail(String key, int value) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putInt(key, value).commit();
+	}
+
+	public int getMiscDetail(String val) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getInt(val, 0);
+	}
+
+	public boolean deletePeriods() {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().clear().commit();
 	}
 }

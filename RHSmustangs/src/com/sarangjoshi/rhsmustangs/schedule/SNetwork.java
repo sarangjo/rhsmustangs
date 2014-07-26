@@ -18,10 +18,16 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class SNetwork {
-	public static final String BASE_DOMAIN = "https://e91cdbe99b3b9c74a0c3c3b13951890ecc0d6353.googledrive.com/host/0B9RPYw9KBJQEcTVub0w4WmlSN0U/";
+	public static final String BASE_DOMAIN = "https://832a98014b7c1301510632d504e2faa0bc9b2096.googledrive.com/host/0B9RPYw9KBJQEelJ1X0Q4b1dJVWs/";
 
 	public static final String UPDATES_FILE = "schedule.txt";
 
+	/**
+	 * Downloads the full file.
+	 * 
+	 * @param url the URL of the file
+	 * @return the full text of the file; returns "" if there was an error
+	 */
 	private String getFullFile(String url) {
 		DefaultHttpClient hClient = new DefaultHttpClient();
 
@@ -77,7 +83,17 @@ public class SNetwork {
 		return (x == "") ? "NA" : x;
 	}
 
+	/**
+	 * Downloads the base schedule for the given day.
+	 * 
+	 * @param day day of week; 1 = Monday, 5 = Friday
+	 * @return the full base schedule
+	 */
 	public String getBaseDay(int day) {
 		return getFullFile(BASE_DOMAIN + day + ".txt");
+	}
+
+	public String getMisc() {
+		return getFullFile(BASE_DOMAIN + "misc.txt");
 	}
 }
