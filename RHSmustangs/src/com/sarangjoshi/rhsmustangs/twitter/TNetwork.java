@@ -43,7 +43,6 @@ public class TNetwork {
 		try {
 			return new GetAccessTokenTask().execute(verifier).get();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			return null;
 		}
 	}
@@ -71,7 +70,6 @@ public class TNetwork {
 				aToken = TActivity.twitter.getOAuthAccessToken(
 						TAuthorization.appRequestToken, verifier);
 			} catch (TwitterException e) {
-				// TODO Auto-generated catch block
 			}
 			return aToken;
 		}
@@ -106,11 +104,8 @@ public class TNetwork {
 				statuses = TActivity.twitter
 						.getUserTimeline(TActivity.REDMONDASB_USERNAME);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			// TODO Auto-generated method stub
 			return statuses;
 		}
 
@@ -140,7 +135,6 @@ public class TNetwork {
 			try {
 				s = TActivity.twitter.getScreenName();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return s;

@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -29,10 +30,13 @@ public class SData {
 		DEFAULT, PERIODS
 	}
 
+	// SharedPreference files
 	private static final String PREF_NAME = "schedule_pref";
 	private static final String PERIODS_PREF_NAME = "periods_pref";
+	// Internal Storage files
 	private static final String UPDATES_NAME = "updates_file";
 	private static final String BASE_NAME = "base_file_";
+	private static final String UPDATES_GROUPNAMES_NAME = "update_groupnames_file";
 
 	// SharedPreference keys
 	private static final String LUNCH_KEY = "lunch";
@@ -49,10 +53,18 @@ public class SData {
 	 * Initializes the SharedPreferences object.
 	 */
 	private void setupPref(PrefType pt) {
-		if (mPref == null)
-			mPref = mContext
-					.getSharedPreferences((pt == PrefType.DEFAULT) ? PREF_NAME
-							: PERIODS_PREF_NAME, 0);
+		if (mPref == null) {
+			String s = "";
+			switch (pt) {
+			case DEFAULT:
+				s = PREF_NAME;
+				break;
+			case PERIODS:
+				s = PERIODS_PREF_NAME;
+				break;
+			}
+			mPref = mContext.getSharedPreferences(s, 0);
+		}
 	}
 
 	// LUNCH
@@ -112,11 +124,19 @@ public class SData {
 		String defaultName = p.getDefaultPeriodName();
 		return mPref.getString(getKey(p), defaultName);
 	}
+
+	/**
+	 * Gets the period name from the shared preference for a <i>period
+	 * number</i>.
+	 * 
+	 * @param i
+	 *            period number
+	 * @return saved period name
+	 */
 	public String getPeriodName(int i) {
 		setupPref(PrefType.PERIODS);
 		return mPref.getString(PERIOD_BASE_KEY + i, "");
 	}
-
 
 	/**
 	 * Deletes the custom name of the given period.
@@ -128,6 +148,13 @@ public class SData {
 		return mPref.edit().remove(getKey(p)).commit();
 	}
 
+	/**
+	 * Deletes the custom name of a period, given the <i>period number<i>.
+	 * 
+	 * @param i
+	 *            period number
+	 * @return
+	 */
 	public boolean deletePeriodName(int i) {
 		setupPref(PrefType.PERIODS);
 		return mPref.edit().remove(PERIOD_BASE_KEY + i).commit();
@@ -150,6 +177,16 @@ public class SData {
 	 */
 	public String getKey(Period p) {
 		return PERIOD_BASE_KEY + p.mPeriodShort;
+	}
+
+	/**
+	 * Deletes all the period names.
+	 * 
+	 * @return success
+	 */
+	public boolean deletePeriods() {
+		setupPref(PrefType.PERIODS);
+		return mPref.edit().clear().commit();
 	}
 
 	// SCHEDULE UPDATES
@@ -318,6 +355,23 @@ public class SData {
 	}
 
 	/**
+	 * Deletes ALL the base schedules saved.
+	 * 
+	 * @return success
+	 */
+	public boolean deleteBase() {
+		File dir = mContext.getFilesDir();
+		boolean a = true;
+		for (int i = 1; i <= 5; i++) {
+			File file = new File(dir, BASE_NAME + i);
+			a = a && file.delete();
+		}
+
+		return a;
+	}
+
+	// INITIALIZATION
+	/**
 	 * Saves whether the schedule has been initialized.
 	 * 
 	 * @return success
@@ -335,34 +389,70 @@ public class SData {
 		return mPref.getBoolean(INIT_KEY, false);
 	}
 
+	// MISC DETAILS
 	/**
-	 * Deletes ALL the base schedules saved.
+	 * Saves the given miscellaneous detail.
 	 * 
+	 * @param key
+	 *            the misc detail key
+	 * @param value
+	 *            the misc detail value
 	 * @return success
 	 */
-	public boolean deleteBase() {
-		File dir = mContext.getFilesDir();
-		boolean a = true;
-		for (int i = 1; i <= 5; i++) {
-			File file = new File(dir, BASE_NAME + i);
-			a = a && file.delete();
-		}
-
-		return a;
-	}
-
 	public boolean saveMiscDetail(String key, int value) {
 		setupPref(PrefType.DEFAULT);
 		return mPref.edit().putInt(key, value).commit();
 	}
 
+	/**
+	 * Gets the miscellaneous detail.
+	 * 
+	 * @param val
+	 *            the misc detail key
+	 * @return success
+	 */
 	public int getMiscDetail(String val) {
 		setupPref(PrefType.DEFAULT);
 		return mPref.getInt(val, 0);
 	}
 
-	public boolean deletePeriods() {
-		setupPref(PrefType.PERIODS);
-		return mPref.edit().clear().commit();
+	// PERIOD GROUP NAMES
+	public boolean savePeriodGroups(String s) {
+		try {
+			FileOutputStream fos = mContext.openFileOutput(
+					UPDATES_GROUPNAMES_NAME, Context.MODE_APPEND);
+			fos.write(s.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			return false;
+		}
+		return true;
+	}
+
+	public String[] getPeriodGroups(String day) {
+		ArrayList<String> allNames = new ArrayList<String>();
+
+		try {
+			FileInputStream fis = mContext
+					.openFileInput(UPDATES_GROUPNAMES_NAME);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+
+			String readString = "";
+			while ((readString = br.readLine()) != null) {
+				if (readString.substring(0, readString.indexOf(" "))
+						.equals(day))
+					allNames.add(readString);
+			}
+		} catch (IOException e) {
+
+		}
+		String[] allNamesArr = new String[allNames.size()];
+		allNames.toArray(allNamesArr);
+		return allNamesArr;
+	}
+
+	public boolean clearPeriodGroupNames() {
+		return mContext.deleteFile(UPDATES_GROUPNAMES_NAME);
 	}
 }

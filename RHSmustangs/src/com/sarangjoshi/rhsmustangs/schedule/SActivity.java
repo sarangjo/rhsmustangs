@@ -19,7 +19,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.format.Time;
 import android.view.LayoutInflater;
@@ -61,15 +60,15 @@ public class SActivity extends FragmentActivity implements
 
 	ScheduleState mSState;
 
+	// VIEWS
 	ListView periodList;
 	ImageButton nextDay, previousDay;
 	TextView scheduleTitle, scheduleWeekDay;
 	LinearLayout scheduleLayout;
 	Button setPeriodsBtn, skipPeriodsBtn, clearPeriodsBtn;
+	Spinner groupSpin;
+	Menu actionBar;
 
-	public ArrayList<Period> periods;
-
-	private PeriodsAdapter periodsAdapter;
 	private SParser mParser;
 
 	// The index of the periods that has currently been selected
@@ -102,7 +101,7 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	// ACTIVITY BASE METHODS
+	// ACTIVITY CALLBACK METHODS
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -280,30 +279,30 @@ public class SActivity extends FragmentActivity implements
 	// Really only to inflate the spinner programmatically.
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		actionBar = menu;
 		if (mSState == ScheduleState.DEFAULT) {
 			MenuInflater inflater = getMenuInflater();
-			inflater.inflate(R.menu.schedule_action_bar, menu);
+			inflater.inflate(R.menu.schedule_action_bar, actionBar);
 
-			View item = menu.findItem(R.id.lunches_spinner).getActionView();
+			groupSpin = (Spinner) actionBar.findItem(R.id.group_spinner)
+					.getActionView();
+			if (groupSpin != null)
+				groupSpin.setVisibility(View.GONE);
 
-			Spinner spin = (Spinner) item;
+			setSpinnerData();
 
-			// The third parameter is defined for the selected view (default)
-			ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter
-					.createFromResource(this, R.array.lunches_list,
-							R.layout.lunch_dropdown_default);
-			// This is for all the drop down resources
-			spinAdapter.setDropDownViewResource(R.layout.lunch_dropdown_item);
-			spin.setAdapter(spinAdapter);
-
-			spin.setOnItemSelectedListener(new LunchSelectedListener());
-
-			int pos = spinAdapter.getPosition(mParser.getSpinnerLunch());
-			spin.setSelection(pos);
-
-			return super.onCreateOptionsMenu(menu);
+			return super.onCreateOptionsMenu(actionBar);
 		} else
 			return false;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		actionBar = menu;
+		if (mSState == ScheduleState.DEFAULT) {
+
+		}
+		return super.onPrepareOptionsMenu(actionBar);
 	}
 
 	@Override
@@ -336,30 +335,21 @@ public class SActivity extends FragmentActivity implements
 		dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
 	}
 
-	// LUNCH SPINNER
-	private class LunchSelectedListener implements OnItemSelectedListener {
-		@Override
-		public void onItemSelected(AdapterView<?> parent, View view,
-				int position, long id) {
-			mParser.lunchSelected(position);
-			updatePeriods();
-		}
-
-		@Override
-		public void onNothingSelected(AdapterView<?> parent) {
-			// do nothing
-		}
-	}
-
 	// LOADING PERIODS
+	public ArrayList<Period> periods;
+	private PeriodsAdapter periodsAdapter;
+	String[] spinnerData;
+
 	/**
 	 * Loads the current day's periods into the adapter and attaches the adapter
 	 * to the ListView.
 	 */
 	private void updatePeriods() {
 		// Gets the periods from parser
-
 		periods = mParser.getPeriods();
+
+		// Sets Spinner data
+		setSpinnerData();
 
 		// Sets the title depending on the current day
 		scheduleTitle = (TextView) findViewById(R.id.title);
@@ -382,6 +372,56 @@ public class SActivity extends FragmentActivity implements
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods);
 			periodList.setAdapter(periodsAdapter);
+		}
+	}
+
+	/**
+	 * Sets the spinner data
+	 */
+	private void setSpinnerData() {
+		if (groupSpin != null) {
+			String[] oldSpinnerData = spinnerData;
+			spinnerData = mParser.getSpinnerValues();
+			int pos = mParser.getSelectedGroupN() - 1;// spinAdapter.getPosition(mParser.getSpinnerLunch());
+
+			if (spinnerData == null) {
+				// No period groups
+				spinnerData = new String[] { "No groups" };
+			}
+
+			// If oldSpinnerData is null, this is right after onCreate()
+
+			boolean a = (oldSpinnerData == null);
+			if (!a)
+				a = !SStaticData.areArraysEqual(oldSpinnerData, spinnerData);
+			if (a) {
+				// The third parameter is defined for the selected view
+				// (default)
+				ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(
+						this, R.layout.spinner_dropdown_default, spinnerData);
+				// ArrayAdapter.createFromResource(this, R.array.lunches_list,
+				// R.layout.spinner_dropdown_default);
+				// This is for all the drop down resources
+				spinAdapter
+						.setDropDownViewResource(R.layout.spinner_dropdown_item);
+				groupSpin.setAdapter(spinAdapter);
+
+				groupSpin
+						.setOnItemSelectedListener(new OnItemSelectedListener() {
+							@Override
+							public void onItemSelected(AdapterView<?> parent,
+									View view, int position, long id) {
+								mParser.groupSelected(position);
+								updatePeriods();
+							}
+
+							@Override
+							public void onNothingSelected(AdapterView<?> parent) {
+								// do nothing
+							}
+						});
+				groupSpin.setSelection(pos);
+			}
 		}
 	}
 
@@ -473,8 +513,9 @@ public class SActivity extends FragmentActivity implements
 	InputMethodManager imm;
 
 	@Override
-	public void onDialogPositiveClick(DialogFragment dialog, String savedName) {
-		closeKeyboard();
+	public void onDialogPositiveClick(EditPeriodFragment dialog,
+			String savedName) {
+		closeKeyboard(dialog);
 		Period p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
@@ -483,8 +524,8 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onDialogNeutralClick(DialogFragment dialog) {
-		closeKeyboard();
+	public void onDialogNeutralClick(EditPeriodFragment dialog) {
+		closeKeyboard(dialog);
 		Period p = periods.get(chosenIndex);
 		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
 		mParser.getSData().deletePeriodName(p);
@@ -492,18 +533,17 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onDialogNegativeClick(DialogFragment dialog) {
-		closeKeyboard();
+	public void onDialogNegativeClick(EditPeriodFragment dialog) {
+		closeKeyboard(dialog);
 	}
 
 	/**
-	 * Closes the soft input keyboard after it has been forcefully opened.
+	 * Closes the soft input keyboard if it has been forcefully opened.
 	 */
-	private void closeKeyboard() {
+	private void closeKeyboard(EditPeriodFragment d) {
 		imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		// imm.hideSoftInputFromInputMethod(((EditPeriodFragment)
-		// d).edit.getWindowToken(), 0);
-		imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+		imm.hideSoftInputFromWindow(d.edit.getApplicationWindowToken(), 0);
+		// imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	}
 
 	// ASYNCTASKS
@@ -536,9 +576,10 @@ public class SActivity extends FragmentActivity implements
 		@Override
 		protected String doInBackground(Void... params) {
 			if (Network.isConnectedToInternet(SActivity.this))
-				if (mParser.downloadBaseSchedules())
-					return "Y";
-				else {
+				if (mParser.downloadBaseSchedules()) {
+					if (mParser.saveMiscDetails())
+						return "Y";
+				} else {
 					return "E";
 				}
 			return "I";
@@ -586,11 +627,7 @@ public class SActivity extends FragmentActivity implements
 				return false;
 			}
 
-			if (mParser.saveUpdatesFile()) {
-				mParser.parseUpdatesFile();
-				return true;
-			}
-			return false;
+			return mParser.saveAndParseUpdatesFile();
 		}
 
 		@Override
@@ -628,12 +665,21 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
+	/**
+	 * Goes to the initialization stage.
+	 */
 	private void goToInit() {
 		mSState = ScheduleState.INIT;
 		updateLayout();
 		new InitializeScheduleTask(this).execute();
 	}
 
+	/**
+	 * Goes to the default schedule stage.
+	 * 
+	 * @param isInit
+	 *            whether this is in the process of initialization
+	 */
 	private void goToDefault(boolean isInit) {
 		mParser.getSData().saveInitialize(true);
 		Intent i = new Intent(this, SActivity.class);
@@ -642,6 +688,12 @@ public class SActivity extends FragmentActivity implements
 		startActivity(i);
 	}
 
+	/**
+	 * Goes to the period setting stage.
+	 * 
+	 * @param isInit
+	 *            whether this is in the process of initialization
+	 */
 	private void goToSettingPeriod(boolean isInit) {
 		final boolean i = isInit;
 		mSState = ScheduleState.PERIODS;

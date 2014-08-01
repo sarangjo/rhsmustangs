@@ -5,31 +5,26 @@
         android:id="@+id/action_refresh_schedule"
         android:icon="@drawable/ic_action_refresh"
         android:showAsAction="always"
-        android:title="Refresh" />
-    
+        android:title="Refresh"/>
     <item
-        android:id="@+id/lunches_spinner"
-        android:actionViewClass="android.widget.Spinner"
+        android:id="@+id/group_spinner"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:actionViewClass="android.widget.Spinner"
         android:showAsAction="always"
-        android:title="Choose Lunch" />
-    
+        android:title="Choose Period Group"
+        android:visibility="gone"/>
     <item
         android:id="@+id/action_updatedDays"
         android:showAsAction="never"
-        android:title="Updated Days"
-        />
-    
+        android:title="Updated Days"/>
     <item
         android:id="@+id/action_setPeriods"
-        android:showAsAction="never" 
-        android:title="Set Periods" />
-    
+        android:showAsAction="never"
+        android:title="Set Periods"/>
     <item
         android:id="@+id/action_resetEverything"
         android:showAsAction="never"
-        android:title="Reset EVERYTHING (!)" /> 
-        
-    
+        android:title="Reset EVERYTHING (!)"/>
+
 </menu>

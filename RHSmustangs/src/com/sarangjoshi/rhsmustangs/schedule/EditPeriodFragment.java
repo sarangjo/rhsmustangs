@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.widget.EditText;
 
@@ -27,7 +28,7 @@ public class EditPeriodFragment extends DialogFragment {
 		 * @param dialog this dialog
 		 * @param savedName the Period name
 		 */
-		public void onDialogPositiveClick(DialogFragment dialog,
+		public void onDialogPositiveClick(EditPeriodFragment dialog,
 				String savedName);
 
 		/**
@@ -35,19 +36,20 @@ public class EditPeriodFragment extends DialogFragment {
 		 * 
 		 * @param dialog this dialog
 		 */
-		public void onDialogNeutralClick(DialogFragment dialog);
+		public void onDialogNeutralClick(EditPeriodFragment dialog);
 
 		/**
 		 * Callback method when the left-most button is clicked.
 		 * 
 		 * @param dialog this dialog
 		 */
-		public void onDialogNegativeClick(DialogFragment dialog);
+		public void onDialogNegativeClick(EditPeriodFragment dialog);
 	}
 
 	EditPeriodDialogListener mListener;
 	public String hintText;
 	public EditText edit;
+	public boolean isKeyboardOpen = true;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -107,4 +109,6 @@ public class EditPeriodFragment extends DialogFragment {
 
 		return builder.create();
 	}
+
+
 }

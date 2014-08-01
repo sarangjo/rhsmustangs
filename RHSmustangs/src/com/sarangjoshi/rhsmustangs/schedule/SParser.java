@@ -19,6 +19,9 @@ public class SParser {
 	private SNetwork mNetwork;
 	private SData mData;
 
+	/**
+	 * The current day that the schedule is showing.
+	 */
 	private Time scheduleDay;
 
 	private Time lastUpdate;
@@ -36,12 +39,39 @@ public class SParser {
 	 * 
 	 * @return whether or not the file has been updated
 	 */
-	public boolean saveUpdatesFile() {
+	public boolean saveAndParseUpdatesFile() {
 		String lTime = mNetwork.getLatestUpdateTime();
 		if (lTime.equals(mData.getUpdateTime()))
 			return false; // no updates
-		else
-			return mData.saveUpdates(mNetwork.getUpdatesFileText());
+		else {
+			// STEP 1: Saves updates
+			boolean a = mData.saveUpdates(mNetwork.getUpdatesFileText());
+			// STEP 2: Parses
+			parseUpdatesFile();
+			// STEP 3: Saves group names
+			try {
+				for (String s : updatedDays) {
+					String[] lines = s.split("\n");
+					String day = lines[0];
+					String write = "";
+					for (int i = 1; i < lines.length; i++) {
+						if (lines[i].substring(0, lines[i].indexOf(" "))
+								.equals("GRP")) {
+							// Parses out the actual group name
+							String grpName = lines[i].substring(lines[i]
+									.indexOf(" ") + 1);
+							write += day + " " + i + " " + grpName + "\n";
+						} else
+							break;
+					}
+					// Writes the string to the file
+					if (write.trim().length() > 0)
+						a = a && mData.savePeriodGroups(write);
+				}
+			} catch (Exception e) {
+			}
+			return a;
+		}
 	}
 
 	/**
@@ -62,7 +92,7 @@ public class SParser {
 		else {
 			try {
 				// MAIN PARSING OF THE SAVED FILE
-				// Gets update time - first line of text file
+				// STEP 1: Gets update time - first line of text file
 				String lastUpdateString = updateS.substring(0,
 						updateS.indexOf('\n'));
 				// Saves update time to SData
@@ -76,8 +106,9 @@ public class SParser {
 				} else
 					lastUpdate.setToNow();
 				lastUpdate.normalize(false);
+
+				// STEP 2: Parse into individual schedule days
 				// Removes the beginning < and ending >
-				// updateS = updateS.substring(2, updateS.length() - 3);
 				updateS = updateS.substring(updateS.indexOf('<') + 2,
 						updateS.lastIndexOf('>') - 1);
 				// Now splitting the string into various arrays by "\n>\n<\n"
@@ -106,10 +137,15 @@ public class SParser {
 		// Loads individual strings into the ArrayList, depending on whether the
 		// lunch is correct
 		for (int i = 0; i < result.length; i++) {
-			Period p = getPeriodFromString(result[i]);
-			char lunch = mData.getLunch();
-			if (p.lunchStyle == '0' || p.lunchStyle == lunch)
-				periods.add(p);
+			if (!result[i].substring(0, result[i].indexOf(" ")).equals("GRP")) {
+				Period p = getPeriodFromString(result[i]);
+				// char lunch = mData.getLunch();
+				// if (p.lunchStyle == '0' || p.lunchStyle == lunch)
+				// periods.add(p);
+				// TODO: change this from 1 to preference
+				if (p.groupN == 1 || p.groupN == 0)
+					periods.add(p);
+			}
 		}
 
 		return periods;
@@ -162,8 +198,12 @@ public class SParser {
 		p.mStartTime = new STime(sHours, sMin);
 		p.mEndTime = new STime(eHours, eMin);
 
-		// length-1 Lunch Style
-		p.lunchStyle = result[result.length - 1].charAt(0);
+		// length-1 Group Number
+		try {
+			p.groupN = Integer.parseInt(result[result.length - 1]);
+		} catch (Exception e) {
+			p.groupN = 0;
+		}
 
 		return p;
 	}
@@ -179,9 +219,8 @@ public class SParser {
 	 * @return
 	 */
 	private String getSchedule(Time day) {
-		int adjustedIndex = dayAdjustedIndex(day);
-
 		// Checks if the day is adjusted or not
+		int adjustedIndex = dayAdjustedIndex(day);
 		if (adjustedIndex >= 0) {
 			isUpdated = true;
 			// From the array of adjusted days, gets schedule
@@ -208,13 +247,10 @@ public class SParser {
 	 * @return whether or not the given day has an adjusted schedule
 	 */
 	private int dayAdjustedIndex(Time day) {
-		int i = -1;
-
 		try {
 			if (updatedDays != null) {
-
 				// Go through adjustedDaysText to find the correct day
-				for (i = 0; i < updatedDays.length; i++) {
+				for (int i = 0; i < updatedDays.length; i++) {
 					String s = updatedDays[i];
 					String l = s.substring(0, s.indexOf('\n'));
 
@@ -237,16 +273,6 @@ public class SParser {
 			return -1;
 		}
 		return -1;
-		/*
-		 * String[] lines = fileText.split("\n"); // i for index int i; for (i =
-		 * 0; i < lines.length; i++) { if (lines[i].contains("<")) { // The very
-		 * next line contains the date of the adjusted schedule String l =
-		 * lines[i + 1]; String[] t = l.split(" "); int d =
-		 * Integer.parseInt(t[0]); int m = Integer.parseInt(t[1]); int y =
-		 * Integer.parseInt(t[2]); if (day.monthDay == d) if (day.month == m -
-		 * 1) if (day.year == y) return index; } if (lines[i].contains(">")) {
-		 * index++; } } return index;
-		 */
 	}
 
 	/**
@@ -268,13 +294,15 @@ public class SParser {
 
 		// If the time is more than 2 hours after the end time, and it's a
 		// weekday, it shifts forward one day.
-		if (isForward
-				&& day > Time.SUNDAY
-				&& day < Time.SATURDAY
-				&& hour >= 2 + ((day == Time.WEDNESDAY) ? mData
-						.getMiscDetail("endHrW") : mData.getMiscDetail("endHr"))) {
-			scheduleDay = SStaticData.shiftDay(scheduleDay, 1, mData);
-		}
+		if (isForward)
+			if (day > Time.SUNDAY)
+				if (day < Time.SATURDAY)
+					if (hour >= 2 + ((day == Time.WEDNESDAY) ? mData
+							.getMiscDetail("endHrW") : mData
+							.getMiscDetail("endHr"))) {
+						scheduleDay = SStaticData.shiftDay(scheduleDay, 1,
+								mData);
+					}
 
 		day = scheduleDay.weekDay;
 		hour = scheduleDay.hour;
@@ -292,32 +320,28 @@ public class SParser {
 		scheduleDay.normalize(false);
 	}
 
-	/**
+	/*
 	 * Based on {@link SData}'s lunch character, returns a string for the
 	 * spinner adapter.
 	 * 
 	 * E.g. if lunch was 'a' then this returns "Lunch A".
 	 * 
 	 * @return the string for the spinner adapter
-	 */
-	public String getSpinnerLunch() {
-		int x = (int) mData.getLunch();
-		String s = "Lunch " + (char) (x - 32);
-		return s;
-	}
-
-	/**
-	 * Sets the lunch in SData to the selected lunch based on the position of
-	 * the click
 	 * 
-	 * @param position
-	 *            the position of the click, 0 = a, 1 = b, 2 = c
+	 * public String getSpinnerLunch() { int x = (int) mData.getLunch(); String
+	 * s = "Lunch " + (char) (x - 32); return s; }
+	 * 
+	 * 
+	 * /** Sets the lunch in SData to the selected lunch based on the position
+	 * of the click
+	 * 
+	 * @param position the position of the click, 0 = a, 1 = b, 2 = c
+	 * 
 	 * @return whether the lunch was successfully selected
+	 * 
+	 * public boolean lunchSelected(int position) { mData.setLunch((char) (97 +
+	 * position)); return true; }
 	 */
-	public boolean lunchSelected(int position) {
-		mData.setLunch((char) (97 + position));
-		return true;
-	}
 
 	/**
 	 * Returns the SData object.
@@ -439,6 +463,11 @@ public class SParser {
 		return a;
 	}
 
+	/**
+	 * Saves misc details.
+	 * 
+	 * @return
+	 */
 	public boolean saveMiscDetails() {
 		String det = mNetwork.getMisc();
 		String[] details = det.split("\n");
@@ -465,5 +494,37 @@ public class SParser {
 		mData.deletePeriods();
 		mData.deleteSavedUpdates();
 		mData.deleteBase();
+	}
+
+	/**
+	 * Gets the spinner values for the current {@link scheduleDay}.
+	 * 
+	 * @return Spinner values array. null if no period groups for scheduleDay.
+	 */
+	public String[] getSpinnerValues() {
+		if (dayAdjustedIndex(scheduleDay) >= 0)
+			return mData
+					.getPeriodGroups(scheduleDay.toString().substring(0, 8));
+		return null;
+	}
+
+	/**
+	 * Gets the currently selected group number for the current schedule.
+	 * 
+	 * @return the groupN, 1-n
+	 */
+	public int getSelectedGroupN() {
+		// TODO Auto-generated method stub
+		return 1;
+	}
+
+	/**
+	 * Sets the group number for the current scheduleDay.
+	 * 
+	 * @param groupN
+	 */
+	public void groupSelected(int groupN) {
+		// TODO Auto-generated method stub
+
 	}
 }

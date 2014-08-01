@@ -12,19 +12,19 @@ public class Period {
 	public boolean isCustomizable = true;
 	public STime mStartTime = new STime(6, 30);
 	public STime mEndTime = new STime(7, 24);
-	public char lunchStyle = '0';
+	public int groupN = '0';
 
 	public static enum PeriodStyle {
 		HOMEROOM, LUNCH, CLASS, OTHER
 	}
 
 	public Period(String periodNum, String periodName, int sh, int sm, int eh,
-			int em, char ls) {
+			int em, int gn) {
 		mPeriodShort = periodNum;
 		mClassName = periodName;
 		mStartTime = new STime(sh, sm);
 		mEndTime = new STime(eh, em);
-		lunchStyle = ls;
+		groupN = gn;
 	}
 
 	public Period() {

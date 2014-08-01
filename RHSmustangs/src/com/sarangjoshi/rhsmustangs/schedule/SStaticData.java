@@ -6,6 +6,8 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import java.util.ArrayList;
+
 import android.text.format.Time;
 
 public class SStaticData {
@@ -18,7 +20,7 @@ public class SStaticData {
 			"November", "December" };
 	public static String[] days = { "Sunday", "Monday", "Tuesday", "Wednesday",
 			"Thursday", "Friday", "Saturday" };
-	
+
 	public static String DEFAULT_OVERRIDE_NAME = "-";
 
 	/**
@@ -53,7 +55,8 @@ public class SStaticData {
 	 * @return shifted time
 	 */
 	public static Time shiftDay(Time time, int dayChange, SData data) {
-		time.set(0, data.getMiscDetail("shifted_min"), data.getMiscDetail("shifted_hour"), time.monthDay + dayChange,
+		time.set(0, data.getMiscDetail("shifted_min"),
+				data.getMiscDetail("shifted_hour"), time.monthDay + dayChange,
 				time.month, time.year);
 		time.normalize(false);
 		return time;
@@ -66,7 +69,7 @@ public class SStaticData {
 		String s = months[t.month] + " " + t.monthDay + ", " + t.year;
 		return s;
 	}
-	
+
 	/**
 	 * Returns the standard String form of the given time.
 	 */
@@ -95,5 +98,23 @@ public class SStaticData {
 		long m = t.toMillis(false);
 		long g = t.gmtoff;
 		return Time.getJulianDay(m, g);
+	}
+
+	public static boolean areArraysEqual(String[] a, String[] b) {
+		if (a.length != b.length)
+			return false;
+		for (int i = 0; i < a.length; i++) {
+			if (!a[i].equals(b[i]))
+				return false;
+		}
+		return true;
+	}
+
+	public static ArrayList<String> getArrayListFromArray(String[] s) {
+		ArrayList<String> a = new ArrayList<String>();
+		for(int i = 0; i < s.length; i++) {
+			a.add(s[i]);
+		}
+		return a;
 	}
 }

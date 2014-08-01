@@ -34,13 +34,12 @@ public class SService extends IntentService {
 
 	public SService() {
 		super("SService");
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		setup();
-		Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
 		if (Network.isConnectedToInternet(this)) {
 			boolean isUpdated = checkForUpdates();
 			if (isUpdated)
