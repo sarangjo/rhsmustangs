@@ -411,7 +411,7 @@ public class SActivity extends FragmentActivity implements
 							@Override
 							public void onItemSelected(AdapterView<?> parent,
 									View view, int position, long id) {
-								mParser.groupSelected(position);
+								mParser.groupSelected(position + 1);
 								updatePeriods();
 							}
 

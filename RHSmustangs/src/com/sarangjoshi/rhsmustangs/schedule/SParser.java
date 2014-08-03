@@ -50,24 +50,27 @@ public class SParser {
 			parseUpdatesFile();
 			// STEP 3: Saves group names
 			try {
+				String write = "";
 				for (String s : updatedDays) {
 					String[] lines = s.split("\n");
 					String day = lines[0];
-					String write = "";
+					String currentWrite = "";
 					for (int i = 1; i < lines.length; i++) {
 						if (lines[i].substring(0, lines[i].indexOf(" "))
 								.equals("GRP")) {
 							// Parses out the actual group name
 							String grpName = lines[i].substring(lines[i]
 									.indexOf(" ") + 1);
-							write += day + " " + i + " " + grpName + "\n";
+							currentWrite += day + " " + i + " " + grpName + "\n";
 						} else
 							break;
 					}
 					// Writes the string to the file
-					if (write.trim().length() > 0)
-						a = a && mData.savePeriodGroups(write);
+					if (currentWrite.trim().length() > 0)
+						write += currentWrite;
 				}
+				if (write.trim().length() > 0)
+					a = a && mData.savePeriodGroups(write);
 			} catch (Exception e) {
 			}
 			return a;
@@ -142,8 +145,8 @@ public class SParser {
 				// char lunch = mData.getLunch();
 				// if (p.lunchStyle == '0' || p.lunchStyle == lunch)
 				// periods.add(p);
-				// TODO: change this from 1 to preference
-				if (p.groupN == 1 || p.groupN == 0)
+				int grp = mData.getGroupPref(todayShort());
+				if (p.groupN == grp || p.groupN == 0)
 					periods.add(p);
 			}
 		}
@@ -502,9 +505,13 @@ public class SParser {
 	 * @return Spinner values array. null if no period groups for scheduleDay.
 	 */
 	public String[] getSpinnerValues() {
-		if (dayAdjustedIndex(scheduleDay) >= 0)
-			return mData
-					.getPeriodGroups(scheduleDay.toString().substring(0, 8));
+		if (dayAdjustedIndex(scheduleDay) >= 0) {
+			String[] spinValues = mData.getPeriodGroups(todayShort());
+			for(int i = 0; i < spinValues.length; i++) {
+				spinValues[i] = SStaticData.shortenGrp(spinValues[i]);
+			}
+			return spinValues;
+		}
 		return null;
 	}
 
@@ -514,8 +521,7 @@ public class SParser {
 	 * @return the groupN, 1-n
 	 */
 	public int getSelectedGroupN() {
-		// TODO Auto-generated method stub
-		return 1;
+		return mData.getGroupPref(todayShort());
 	}
 
 	/**
@@ -524,7 +530,11 @@ public class SParser {
 	 * @param groupN
 	 */
 	public void groupSelected(int groupN) {
-		// TODO Auto-generated method stub
+		String today = scheduleDay.toString().substring(0, 8);
+		mData.saveGroupPref(today, groupN);
+	}
 
+	private String todayShort() {
+		return scheduleDay.toString().substring(0, 8);
 	}
 }

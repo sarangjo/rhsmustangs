@@ -419,8 +419,11 @@ public class SData {
 	// PERIOD GROUP NAMES
 	public boolean savePeriodGroups(String s) {
 		try {
+			// FileOutputStream fos =
+			// mContext.openFileOutput(UPDATES_GROUPNAMES_NAME,
+			// Context.MODE_APPEND);
 			FileOutputStream fos = mContext.openFileOutput(
-					UPDATES_GROUPNAMES_NAME, Context.MODE_APPEND);
+					UPDATES_GROUPNAMES_NAME, Context.MODE_PRIVATE);
 			fos.write(s.getBytes());
 			fos.close();
 		} catch (IOException e) {
@@ -454,5 +457,19 @@ public class SData {
 
 	public boolean clearPeriodGroupNames() {
 		return mContext.deleteFile(UPDATES_GROUPNAMES_NAME);
+	}
+
+	public boolean saveGroupPref(String day, int n) {
+		setupPref(PrefType.DEFAULT);
+		if (day.length() > 8)
+			day = day.substring(0, 8);
+		return mPref.edit().putInt(day + "_GRP", n).commit();
+	}
+
+	public int getGroupPref(String day) {
+		setupPref(PrefType.DEFAULT);
+		if (day.length() > 8)
+			day = day.substring(0, 8);
+		return mPref.getInt(day + "_GRP", 1);
 	}
 }

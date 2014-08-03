@@ -117,4 +117,9 @@ public class SStaticData {
 		}
 		return a;
 	}
+
+	public static String shortenGrp(String string) {
+		string = string.substring(string.indexOf(" ") + 1);
+		return (string = string.substring(string.indexOf(" ") + 1));
+	}
 }
