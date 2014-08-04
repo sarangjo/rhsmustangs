@@ -78,6 +78,7 @@ public class SActivity extends FragmentActivity implements
 	public static final String SCHEDULE_INDEX_KEY = "si_key";
 
 	public static final String INIT_KEY = "just-init";
+	public static final String GOTOALTDAY_KEY = "alt-day";
 
 	private class MySwipeListener extends OnSwipeListener {
 		public MySwipeListener() {
@@ -141,7 +142,10 @@ public class SActivity extends FragmentActivity implements
 								imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 								imm.toggleSoftInput(
 										InputMethodManager.SHOW_FORCED, 0);
-							}
+							} else
+								Toast.makeText(SActivity.this,
+										"Not customizable.", Toast.LENGTH_SHORT)
+										.show();
 							return true;
 						}
 
@@ -198,7 +202,13 @@ public class SActivity extends FragmentActivity implements
 			 */
 			// Initially, shows current schedule
 			SStaticData.updateCurrentTime();
-			mParser.updateScheduleDay(SStaticData.now, true);
+
+			int n = getIntent().getIntExtra(GOTOALTDAY_KEY, -1);
+			if (n >= 0) {
+				mParser.setAltDay(n - 1);
+			} else {
+				mParser.updateScheduleDay(SStaticData.now, true);
+			}
 
 			updatePeriods();
 
@@ -233,8 +243,15 @@ public class SActivity extends FragmentActivity implements
 				// we're good.
 				int n = data.getIntExtra(SCHEDULE_INDEX_KEY, -1);
 				if (n >= 0) {
-					mParser.setAltDay(n - 1);
-					updatePeriods();
+					// Alt day selected
+					if (mSState == ScheduleState.DEFAULT) {
+						mParser.setAltDay(n - 1);
+						updatePeriods();
+					} else {
+						Intent i = new Intent(this, SActivity.class);
+						i.putExtra(GOTOALTDAY_KEY, n);
+						goToDefault(i, false);
+					}
 				}
 			}
 		}
@@ -680,10 +697,8 @@ public class SActivity extends FragmentActivity implements
 	 * @param isInit
 	 *            whether this is in the process of initialization
 	 */
-	private void goToDefault(boolean isInit) {
+	private void goToDefault(Intent i, boolean isInit) {
 		mParser.getSData().saveInitialize(true);
-		Intent i = new Intent(this, SActivity.class);
-		i.putExtra(INIT_KEY, isInit);
 		finish();
 		startActivity(i);
 	}
@@ -716,7 +731,9 @@ public class SActivity extends FragmentActivity implements
 			@Override
 			public void onClick(View v) {
 				mParser.getSData().saveInitialize(true);
-				goToDefault(i);
+				Intent intent = new Intent(SActivity.this, SActivity.class);
+				intent.putExtra(INIT_KEY, i);
+				goToDefault(intent, i);
 			}
 		});
 		clearPeriodsBtn.setOnClickListener(new OnClickListener() {
@@ -784,7 +801,9 @@ public class SActivity extends FragmentActivity implements
 		savePeriodName(6, ((EditText) findViewById(R.id.period6)).getText()
 				.toString());
 
-		goToDefault(isInit);
+		Intent intent = new Intent(this, SActivity.class);
+		intent.putExtra(INIT_KEY, isInit);
+		goToDefault(intent, isInit);
 	}
 
 	// HELPERS

@@ -57,7 +57,7 @@ public class Period {
 
 	public PeriodStyle getPeriodStyle() {
 		if (mPeriodShort.charAt(0) == 'L')
-			return PeriodStyle.LUNCH;
+			return PeriodStyle.LUNCH; 
 		else if (mPeriodShort.equals("HR"))
 			return PeriodStyle.HOMEROOM;
 		else
@@ -80,8 +80,7 @@ public class Period {
 		case LUNCH:
 			return "Lunch";
 		default:
-			break;
+			return mClassName;
 		}
-		return "";
 	}
 }
