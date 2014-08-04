@@ -61,7 +61,8 @@ public class SParser {
 							// Parses out the actual group name
 							String grpName = lines[i].substring(lines[i]
 									.indexOf(" ") + 1);
-							currentWrite += day + " " + i + " " + grpName + "\n";
+							currentWrite += day + " " + i + " " + grpName
+									+ "\n";
 						} else
 							break;
 					}
@@ -284,8 +285,8 @@ public class SParser {
 	 * 
 	 * @param now
 	 *            the day to set scheduleDay. Default: SStaticData.now
-	 * @param direction
-	 *            the direction in which the user is navigating
+	 * @param isForward
+	 *            whether the schedule is moving forward
 	 */
 	public void updateScheduleDay(Time now, boolean isForward) {
 		// scheduleDay reflects whatever schedule is being shown
@@ -321,6 +322,9 @@ public class SParser {
 
 		// Adjusts the other variables in the time object
 		scheduleDay.normalize(false);
+		
+		// Saves scheduleDay
+		mData.saveLatestDay(scheduleDay.toString().substring(0, 8));
 	}
 
 	/*
@@ -507,7 +511,7 @@ public class SParser {
 	public String[] getSpinnerValues() {
 		if (dayAdjustedIndex(scheduleDay) >= 0) {
 			String[] spinValues = mData.getPeriodGroups(todayShort());
-			for(int i = 0; i < spinValues.length; i++) {
+			for (int i = 0; i < spinValues.length; i++) {
 				spinValues[i] = SStaticData.shortenGrp(spinValues[i]);
 			}
 			return spinValues;
@@ -536,5 +540,17 @@ public class SParser {
 
 	private String todayShort() {
 		return scheduleDay.toString().substring(0, 8);
+	}
+
+	public void setToLatestDay(boolean isForward) {
+		Time t = new Time();
+		String s = mData.getLatestDay();
+		if (!s.equals("")) {
+			t.parse(s);
+			t.normalize(false);
+		} else {
+			t = SStaticData.now;
+		}
+		updateScheduleDay(t, isForward);
 	}
 }

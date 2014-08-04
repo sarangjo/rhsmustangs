@@ -44,6 +44,7 @@ public class SData {
 	private static final String UPDATETIME_KEY = "update";
 	private static final String NOTIF_KEY = "notif";
 	private static final String INIT_KEY = "init";
+	private static final String LATESTDAY_KEY = "saved_day";
 
 	public SData(Context context) {
 		mContext = context;
@@ -471,5 +472,16 @@ public class SData {
 		if (day.length() > 8)
 			day = day.substring(0, 8);
 		return mPref.getInt(day + "_GRP", 1);
+	}
+
+	// LAST DAY
+	public boolean saveLatestDay(String lDay) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putString(LATESTDAY_KEY, lDay).commit();
+	}
+	
+	public String getLatestDay() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getString(LATESTDAY_KEY, "");
 	}
 }

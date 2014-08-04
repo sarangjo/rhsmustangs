@@ -200,14 +200,14 @@ public class SActivity extends FragmentActivity implements
 			 * getSystemService(Context.WINDOW_SERVICE);
 			 * wManager.addView(overlay, p);
 			 */
-			// Initially, shows current schedule
 			SStaticData.updateCurrentTime();
 
 			int n = getIntent().getIntExtra(GOTOALTDAY_KEY, -1);
 			if (n >= 0) {
 				mParser.setAltDay(n - 1);
 			} else {
-				mParser.updateScheduleDay(SStaticData.now, true);
+				mParser.setToLatestDay(true);
+				//mParser.updateScheduleDay(SStaticData.now, true);
 			}
 
 			updatePeriods();
@@ -232,8 +232,18 @@ public class SActivity extends FragmentActivity implements
 	@Override
 	public void onPause() {
 		super.onPause();
+		// Saving latest day
+		if(mSState == ScheduleState.DEFAULT || mSState == ScheduleState.PERIODS)
+			saveLatestDay();
+			
+		// Alarms
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		startAlarm();
+	}
+
+	private void saveLatestDay() {
+		String s = mParser.getScheduleDay().toString().substring(0, 8);
+		mParser.getSData().saveLatestDay(s);
 	}
 
 	@Override
@@ -429,7 +439,8 @@ public class SActivity extends FragmentActivity implements
 							public void onItemSelected(AdapterView<?> parent,
 									View view, int position, long id) {
 								mParser.groupSelected(position + 1);
-								updatePeriods();
+								if (mSState == ScheduleState.DEFAULT)
+									updatePeriods();
 							}
 
 							@Override
