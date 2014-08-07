@@ -66,7 +66,7 @@ public class SService extends IntentService {
 		dat = mData.getUpdateTime();
 
 		if (net.equals(dat) || net.equals("NA") || dat.equals("")
-				|| net.trim().length() != SStaticData.RFC2445_DATE_LENGTH)
+				|| net.trim().length() != SStatic.RFC2445_DATE_LENGTH)
 			return false;
 		return true;
 	}
