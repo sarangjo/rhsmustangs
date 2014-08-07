@@ -14,25 +14,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.text.format.Time;
 
 public class SData {
 	private SharedPreferences mPref;
 
 	private Context mContext;
 
-	private String updatesFileText;
-
 	private enum PrefType {
-		DEFAULT, PERIODS
+		DEFAULT, PERIODS, HOLIDAYS
 	}
 
 	// SharedPreference files
 	private static final String PREF_NAME = "schedule_pref";
 	private static final String PERIODS_PREF_NAME = "periods_pref";
+	private static final String HOLIDAYS_PREF_NAME = "holidays_pref";
 	// Internal Storage files
 	private static final String UPDATES_NAME = "updates_file";
 	private static final String BASE_NAME = "base_file_";
@@ -42,6 +44,7 @@ public class SData {
 	private static final String LUNCH_KEY = "lunch";
 	private static final String PERIOD_BASE_KEY = "period";
 	private static final String UPDATETIME_KEY = "update";
+	private static final String HOLIDAYSTIME_KEY = "holidays_time";
 	private static final String NOTIF_KEY = "notif";
 	private static final String INIT_KEY = "init";
 	private static final String LATESTDAY_KEY = "saved_day";
@@ -62,6 +65,9 @@ public class SData {
 				break;
 			case PERIODS:
 				s = PERIODS_PREF_NAME;
+				break;
+			case HOLIDAYS:
+				s = HOLIDAYS_PREF_NAME;
 				break;
 			}
 			mPref = mContext.getSharedPreferences(s, 0);
@@ -201,8 +207,6 @@ public class SData {
 	 * @throws IOException
 	 */
 	public boolean saveUpdates(String updates) {
-		updatesFileText = updates;
-
 		// Saves update time as well
 		try {
 			String updateTime = updates.substring(0, updates.indexOf('\n'));
@@ -228,27 +232,28 @@ public class SData {
 	 * @return the updates string
 	 */
 	public String getUpdatesString() throws IOException {
-		if (updatesFileText == null || updatesFileText == "") {
-			StringBuffer datax = new StringBuffer("");
+		String updatesFileText;
+		// if (updatesFileText == null || updatesFileText == "") {
+		StringBuffer datax = new StringBuffer("");
 
-			try {
-				FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
-				InputStreamReader isr = new InputStreamReader(fis);
-				BufferedReader buffreader = new BufferedReader(isr);
+		try {
+			FileInputStream fis = mContext.openFileInput(UPDATES_NAME);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader buffreader = new BufferedReader(isr);
 
-				String readString = buffreader.readLine();
-				while (readString != null) {
-					datax.append(readString + "\n");
-					readString = buffreader.readLine();
-				}
-
-				isr.close();
-
-				updatesFileText = datax.toString();
-			} catch (FileNotFoundException e) {
-				updatesFileText = "";
+			String readString = buffreader.readLine();
+			while (readString != null) {
+				datax.append(readString + "\n");
+				readString = buffreader.readLine();
 			}
+
+			isr.close();
+
+			updatesFileText = datax.toString();
+		} catch (FileNotFoundException e) {
+			updatesFileText = "";
 		}
+		// }
 
 		return updatesFileText;
 	}
@@ -277,7 +282,6 @@ public class SData {
 	public boolean deleteSavedUpdates() {
 		File dir = mContext.getFilesDir();
 		File file = new File(dir, UPDATES_NAME);
-		updatesFileText = "";
 		boolean a = file.delete();
 
 		setupPref(PrefType.DEFAULT);
@@ -479,9 +483,41 @@ public class SData {
 		setupPref(PrefType.DEFAULT);
 		return mPref.edit().putString(LATESTDAY_KEY, lDay).commit();
 	}
-	
+
 	public String getLatestDay() {
 		setupPref(PrefType.DEFAULT);
 		return mPref.getString(LATESTDAY_KEY, "");
+	}
+
+	// HOLIDAYS
+	public boolean saveHoliday(Time startT, String name) {
+		setupPref(PrefType.HOLIDAYS);
+		return mPref.edit().putString(startT.toString().substring(0, 8), name)
+				.commit();
+	}
+
+	public String getHolidayName(String date) {
+		setupPref(PrefType.HOLIDAYS);
+		return mPref.getString(date, null);
+	}
+
+	public Map<String, ?> getAllHolidays() {
+		setupPref(PrefType.HOLIDAYS);
+		return mPref.getAll();
+	}
+
+	public boolean saveHolidaysUpdateTime(String updateTime) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putString(HOLIDAYSTIME_KEY, updateTime).commit();
+	}
+
+	public String getHolidaysUpdateTime() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getString(HOLIDAYSTIME_KEY, "");
+	}
+
+	public boolean deleteAllHolidays() {
+		setupPref(PrefType.HOLIDAYS);
+		return mPref.edit().clear().commit();
 	}
 }
