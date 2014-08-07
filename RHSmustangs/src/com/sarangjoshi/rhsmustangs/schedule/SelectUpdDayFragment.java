@@ -30,7 +30,7 @@ public class SelectUpdDayFragment extends DialogFragment {
 			mUpdatedDaysText = new String[updatedDaysText.length + 1];
 			mUpdatedDaysText[0] = "(Return)";
 			for (int i = 0; i < updatedDaysText.length; i++) {
-				mUpdatedDaysText[i + 1] = SStatic
+				mUpdatedDaysText[i + 1] = SStaticData
 						.getDateString(updatedDaysText[i]);
 			}
 		} else

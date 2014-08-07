@@ -8,13 +8,13 @@ package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 import android.content.Context;
 import android.text.format.Time;
 
 public class SParser {
+	private String currentSchedule = null;
+
 	private Context mContext;
 	private SNetwork mNetwork;
 	private SData mData;
@@ -25,9 +25,7 @@ public class SParser {
 	private Time scheduleDay;
 
 	private Time lastUpdate;
-	private Time lastHolUpdate;
 	private String[] updatedDays;
-	private ArrayList<String> holidays = new ArrayList<String>();
 	private boolean isUpdated;
 
 	public SParser(Context newContext) {
@@ -36,7 +34,6 @@ public class SParser {
 		mNetwork = new SNetwork();
 	}
 
-	// UPDATES FILE
 	/**
 	 * Downloads and saves the entire online file to a local String variable.
 	 * 
@@ -81,92 +78,6 @@ public class SParser {
 		}
 	}
 
-	// Online parsing
-	public boolean saveAndParseHolidaysFile() {
-		String lTime = mNetwork.getHolidaysUpdateTime();
-		if (lTime.equals(mData.getHolidaysUpdateTime()))
-			return false; // no updates
-		else {
-			boolean a = true;
-			// Download and parse online file into file strings
-			String t = mNetwork.getHolidaysFileText();
-			String[] holidayFileStrings = null;
-			if (!(t.contains("<") || t.contains(">")) || t.trim().length() == 0)
-				holidayFileStrings = null;
-			else {
-				try {
-					// MAIN PARSING OF THE SAVED FILE
-					// STEP 1: Gets update time - first line of text file
-					String lastHolUpdateTimeString = t.substring(0,
-							t.indexOf('\n'));
-					// Saves update time to SData
-					mData.saveHolidaysUpdateTime(lastHolUpdateTimeString);
-					// Parses string to Time object
-					if (lastHolUpdateTimeString.length() > 8) {
-						// Removes first line
-						t = t.substring(t.indexOf('\n') + 1);
-						lastHolUpdate = SStatic
-								.getTimeFromString(lastHolUpdateTimeString);
-					} else
-						lastHolUpdate = null;
-
-					// STEP 2: Parse into individual schedule days
-					// Removes the beginning < and ending >
-					t = t.substring(t.indexOf('<') + 2, t.lastIndexOf('>') - 1);
-					// Now splitting the string into various arrays by
-					// "\n>\n<\n"
-					holidayFileStrings = t.split("\n>\n<\n");
-				} catch (Exception e) {
-					holidayFileStrings = null;
-				}
-			}
-			// Save prefs
-			try {
-				for (String s : holidayFileStrings) {
-					String[] lines = s.split("\n");
-					mData.deleteAllHolidays();
-					// Strings
-					String start = lines[0];
-					String end = lines[1].substring(lines[1].indexOf(" ") + 1);
-					String name = lines[2];
-					// Times
-					Time startT = SStatic.getTimeFromString(start);
-					Time endT = SStatic.getTimeFromString(end);
-					a = a && mData.saveHoliday(startT, name);
-					while (SStatic.getJulianDay(startT) != SStatic
-							.getJulianDay(endT)) {
-						startT.monthDay++;
-						startT.normalize(false);
-						a = a && mData.saveHoliday(startT, name);
-					}
-				}
-			} catch (Exception e) {
-			}
-			// Offline parsing
-			return a && readHolidays();
-		}		
-	}
-
-	/**
-	 * Offline reading from prefs
-	 * 
-	 * @return
-	 */
-	public boolean readHolidays() {
-		// Read from prefs
-		try {
-			Object[] prefDaysArray = mData.getAllHolidays().keySet().toArray();
-			holidays = new ArrayList<String>();
-			// Set<String> prefDays = prefHols.keySet(); = prefDays.toArray();
-			for (int i = 0; i < prefDaysArray.length; i++) {
-				holidays.add((String) prefDaysArray[i]);
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
 	/**
 	 * Parses the data from the file obtained from mData into blocks of text,
 	 * and stores in {@link updatedDays}. If there are no updated days saved,
@@ -191,12 +102,14 @@ public class SParser {
 				// Saves update time to SData
 				mData.saveUpdateTime(lastUpdateString);
 				// Parses string to Time object
+				lastUpdate = new Time();
 				if (lastUpdateString.length() > 8) {
 					// Removes first line
 					updateS = updateS.substring(updateS.indexOf('\n') + 1);
-					lastUpdate = SStatic.getTimeFromString(lastUpdateString);
+					lastUpdate.parse(lastUpdateString);
 				} else
-					lastUpdate = null;
+					lastUpdate.setToNow();
+				lastUpdate.normalize(false);
 
 				// STEP 2: Parse into individual schedule days
 				// Removes the beginning < and ending >
@@ -210,7 +123,6 @@ public class SParser {
 		}
 	}
 
-	// SCHEDULE RETRIEVING
 	/**
 	 * Parses and returns a set of Periods, based on the current value of
 	 * {@link scheduleDay}.
@@ -220,68 +132,27 @@ public class SParser {
 	public ArrayList<Period> getPeriods() {
 		ArrayList<Period> periods = new ArrayList<Period>();
 
-		String holName = mData.getHolidayName(scheduleDay.toString().substring(
-				0, 8));
+		// Gets current schedule
+		currentSchedule = getSchedule(scheduleDay);
 
-		// Check for holidays
-		if (holName != null) {
-			Period p = new Period("HD", holName, 0, 0, 11, 59, 0);
-			periods.add(p);
-			isUpdated = true;
-		} else {
-			// Gets current schedule
-			String currentSchedule = getSchedule(scheduleDay);
+		// Parses out individual period strings
+		String[] result = currentSchedule.split("\n");
 
-			// Parses out individual period strings
-			String[] result = currentSchedule.split("\n");
-
-			// Loads individual strings into the ArrayList, depending on whether
-			// the
-			// lunch is correct
-			for (int i = 0; i < result.length; i++) {
-				if (!result[i].substring(0, result[i].indexOf(" ")).equals(
-						"GRP")) {
-					Period p = getPeriodFromString(result[i]);
-					// char lunch = mData.getLunch();
-					// if (p.lunchStyle == '0' || p.lunchStyle == lunch)
-					// periods.add(p);
-					int grp = mData.getGroupPref(todayShort());
-					if (p.groupN == grp || p.groupN == 0)
-						periods.add(p);
-				}
+		// Loads individual strings into the ArrayList, depending on whether the
+		// lunch is correct
+		for (int i = 0; i < result.length; i++) {
+			if (!result[i].substring(0, result[i].indexOf(" ")).equals("GRP")) {
+				Period p = getPeriodFromString(result[i]);
+				// char lunch = mData.getLunch();
+				// if (p.lunchStyle == '0' || p.lunchStyle == lunch)
+				// periods.add(p);
+				int grp = mData.getGroupPref(todayShort());
+				if (p.groupN == grp || p.groupN == 0)
+					periods.add(p);
 			}
 		}
 
 		return periods;
-	}
-
-	/**
-	 * Given a day of the year, returns the correct schedule for that day. If
-	 * the schedule is adjusted, returns the parsed-out adjusted schedule from
-	 * the fileText. If the given day is not adjusted, returns the standard
-	 * non-adjusted schedule.
-	 * 
-	 * @param day
-	 *            the day of the adjusted schedule
-	 * @return
-	 */
-	private String getSchedule(Time day) {
-		// Checks if the day is adjusted or not
-		int adjustedIndex = dayAdjustedIndex(day);
-		if (adjustedIndex >= 0) {
-			isUpdated = true;
-			// From the array of adjusted days, gets schedule
-			String sched = updatedDays[adjustedIndex];
-			return sched.substring(sched.indexOf('\n') + 1, sched.length());
-		} else {
-			isUpdated = false;
-			// Pulls appropriate schedule based on current day
-			// return SStaticData.getScheduleByDay(scheduleDay.weekDay);
-			int wDay = day.weekDay;
-			wDay = (wDay == Time.SATURDAY || wDay == Time.SUNDAY) ? wDay = Time.MONDAY
-					: wDay;
-			return mData.getBaseSchedule(wDay);
-		}
 	}
 
 	/**
@@ -302,7 +173,7 @@ public class SParser {
 			overrideName += result[i] + " ";
 		}
 		overrideName += result[result.length - 6];
-		if (overrideName.equals(SStatic.DEFAULT_OVERRIDE_NAME)) {
+		if (overrideName.equals(SStaticData.DEFAULT_OVERRIDE_NAME)) {
 			// no override
 			p.mClassName = mData.getPeriodName(p);
 			p.isCustomizable = true;
@@ -342,6 +213,35 @@ public class SParser {
 	}
 
 	/**
+	 * Given a day of the year, returns the correct schedule for that day. If
+	 * the schedule is adjusted, returns the parsed-out adjusted schedule from
+	 * the fileText. If the given day is not adjusted, returns the standard
+	 * non-adjusted schedule.
+	 * 
+	 * @param day
+	 *            the day of the adjusted schedule
+	 * @return
+	 */
+	private String getSchedule(Time day) {
+		// Checks if the day is adjusted or not
+		int adjustedIndex = dayAdjustedIndex(day);
+		if (adjustedIndex >= 0) {
+			isUpdated = true;
+			// From the array of adjusted days, gets schedule
+			String sched = updatedDays[adjustedIndex];
+			return sched.substring(sched.indexOf('\n') + 1, sched.length());
+		} else {
+			isUpdated = false;
+			// Pulls appropriate schedule based on current day
+			// return SStaticData.getScheduleByDay(scheduleDay.weekDay);
+			int wDay = day.weekDay;
+			wDay = (wDay == Time.SATURDAY || wDay == Time.SUNDAY) ? wDay = Time.MONDAY
+					: wDay;
+			return mData.getBaseSchedule(wDay);
+		}
+	}
+
+	/**
 	 * <b>Call parseFileData() before this.</b>
 	 * <p>
 	 * Returns the index among all the adjusted schedules of the given day. If
@@ -361,7 +261,8 @@ public class SParser {
 					Time x = new Time();
 					x.parse(l);
 					x.normalize(false);
-					if (SStatic.getJulianDay(x) == SStatic.getJulianDay(day)) {
+					if (SStaticData.getJulianDay(x) == SStaticData
+							.getJulianDay(day)) {
 						return i;
 					}
 					/*
@@ -403,7 +304,8 @@ public class SParser {
 					if (hour >= 2 + ((day == Time.WEDNESDAY) ? mData
 							.getMiscDetail("endHrW") : mData
 							.getMiscDetail("endHr"))) {
-						scheduleDay = SStatic.shiftDay(scheduleDay, 1, mData);
+						scheduleDay = SStaticData.shiftDay(scheduleDay, 1,
+								mData);
 					}
 
 		day = scheduleDay.weekDay;
@@ -411,16 +313,16 @@ public class SParser {
 
 		// Both Saturday and Sunday go to the next Monday
 		if (day == Time.SATURDAY) {
-			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 2 : -1),
-					mData);
+			scheduleDay = SStaticData.shiftDay(scheduleDay,
+					(isForward ? 2 : -1), mData);
 		} else if (day == Time.SUNDAY) {
-			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 1 : -2),
-					mData);
+			scheduleDay = SStaticData.shiftDay(scheduleDay,
+					(isForward ? 1 : -2), mData);
 		}
 
 		// Adjusts the other variables in the time object
 		scheduleDay.normalize(false);
-
+		
 		// Saves scheduleDay
 		mData.saveLatestDay(scheduleDay.toString().substring(0, 8));
 	}
@@ -448,7 +350,6 @@ public class SParser {
 	 * position)); return true; }
 	 */
 
-	// SCHEDULE OBJECTS
 	/**
 	 * Returns the SData object.
 	 * 
@@ -467,10 +368,10 @@ public class SParser {
 	 * 
 	 */
 	public String getScheduleTitle() {
-		SStatic.updateCurrentTime();
+		SStaticData.updateCurrentTime();
 		try {
-			int diff = SStatic.getJulianDay(SStatic.now)
-					- SStatic.getJulianDay(scheduleDay);
+			int diff = SStaticData.getJulianDay(SStaticData.now)
+					- SStaticData.getJulianDay(scheduleDay);
 			// SStaticData.dayDifference(scheduleDay, SStaticData.now);
 			// Today
 			if (diff == 0) {
@@ -485,7 +386,7 @@ public class SParser {
 		} catch (Exception e) {
 		}
 		// Else
-		return SStatic.getDateString(scheduleDay);
+		return SStaticData.getDateString(scheduleDay);
 	}
 
 	/**
@@ -496,7 +397,7 @@ public class SParser {
 	 *            the change in days
 	 */
 	public void shiftDay(int d) {
-		updateScheduleDay(SStatic.shiftDay(scheduleDay, d, mData), (d >= 0));
+		updateScheduleDay(SStaticData.shiftDay(scheduleDay, d, mData), (d >= 0));
 	}
 
 	public Time getScheduleDay() {
@@ -611,7 +512,7 @@ public class SParser {
 		if (dayAdjustedIndex(scheduleDay) >= 0) {
 			String[] spinValues = mData.getPeriodGroups(todayShort());
 			for (int i = 0; i < spinValues.length; i++) {
-				spinValues[i] = SStatic.shortenGrp(spinValues[i]);
+				spinValues[i] = SStaticData.shortenGrp(spinValues[i]);
 			}
 			return spinValues;
 		}
@@ -648,7 +549,7 @@ public class SParser {
 			t.parse(s);
 			t.normalize(false);
 		} else {
-			t = SStatic.now;
+			t = SStaticData.now;
 		}
 		updateScheduleDay(t, isForward);
 	}

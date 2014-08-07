@@ -175,8 +175,8 @@ public class SActivity extends FragmentActivity implements
 			scheduleTitle.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					SStatic.updateCurrentTime();
-					mParser.updateScheduleDay(SStatic.now, true);
+					SStaticData.updateCurrentTime();
+					mParser.updateScheduleDay(SStaticData.now, true);
 					updatePeriods();
 				}
 
@@ -184,8 +184,8 @@ public class SActivity extends FragmentActivity implements
 			scheduleWeekDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					SStatic.updateCurrentTime();
-					mParser.updateScheduleDay(SStatic.now, true);
+					SStaticData.updateCurrentTime();
+					mParser.updateScheduleDay(SStaticData.now, true);
 					updatePeriods();
 				}
 
@@ -200,14 +200,14 @@ public class SActivity extends FragmentActivity implements
 			 * getSystemService(Context.WINDOW_SERVICE);
 			 * wManager.addView(overlay, p);
 			 */
-			SStatic.updateCurrentTime();
+			SStaticData.updateCurrentTime();
 
 			int n = getIntent().getIntExtra(GOTOALTDAY_KEY, -1);
 			if (n >= 0) {
 				mParser.setAltDay(n - 1);
 			} else {
 				mParser.setToLatestDay(true);
-				// mParser.updateScheduleDay(SStaticData.now, true);
+				//mParser.updateScheduleDay(SStaticData.now, true);
 			}
 
 			updatePeriods();
@@ -233,21 +233,17 @@ public class SActivity extends FragmentActivity implements
 	public void onPause() {
 		super.onPause();
 		// Saving latest day
-		if (mSState == ScheduleState.DEFAULT
-				|| mSState == ScheduleState.PERIODS)
+		if(mSState == ScheduleState.DEFAULT || mSState == ScheduleState.PERIODS)
 			saveLatestDay();
-
+			
 		// Alarms
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 		startAlarm();
 	}
 
 	private void saveLatestDay() {
-		try {
-			String s = mParser.getScheduleDay().toString().substring(0, 8);
-			mParser.getSData().saveLatestDay(s);
-		} catch (Exception e) {
-		}
+		String s = mParser.getScheduleDay().toString().substring(0, 8);
+		mParser.getSData().saveLatestDay(s);
 	}
 
 	@Override
@@ -387,7 +383,7 @@ public class SActivity extends FragmentActivity implements
 		scheduleTitle.setText(mParser.getScheduleTitle());
 
 		scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
-		scheduleWeekDay.setText(SStatic.getDay(mParser.getScheduleDay()));
+		scheduleWeekDay.setText(SStaticData.getDay(mParser.getScheduleDay()));
 
 		// Sets color based on if the schedule is adjusted or not
 		if (mParser.isScheduleAdjusted()) {
@@ -424,7 +420,7 @@ public class SActivity extends FragmentActivity implements
 
 			boolean a = (oldSpinnerData == null);
 			if (!a)
-				a = !SStatic.areArraysEqual(oldSpinnerData, spinnerData);
+				a = !SStaticData.areArraysEqual(oldSpinnerData, spinnerData);
 			if (a) {
 				// The third parameter is defined for the selected view
 				// (default)
@@ -515,11 +511,11 @@ public class SActivity extends FragmentActivity implements
 		 *            the chosen period
 		 */
 		private int getPeriodRelativeTime(Period p) {
-			SStatic.updateCurrentTime();
-			STime schedNow = SStatic.getCurrentScheduleTime();
+			SStaticData.updateCurrentTime();
+			STime schedNow = SStaticData.getCurrentScheduleTime();
 			int day = mParser.getScheduleDay().weekDay;
-			int julian = SStatic.getJulianDay(mParser.getScheduleDay())
-					- SStatic.getJulianDay(SStatic.now);
+			int julian = SStaticData.getJulianDay(mParser.getScheduleDay())
+					- SStaticData.getJulianDay(SStaticData.now);
 
 			if (julian != 0) {
 				// Past day
@@ -641,7 +637,7 @@ public class SActivity extends FragmentActivity implements
 	 * 
 	 * @author Sarang
 	 */
-	private class DownloadScheduleTask extends AsyncTask<Void, Void, String> {
+	private class DownloadScheduleTask extends AsyncTask<Void, Void, Boolean> {
 		ProgressDialog pd;
 
 		@Override
@@ -651,48 +647,32 @@ public class SActivity extends FragmentActivity implements
 		}
 
 		@Override
-		protected String doInBackground(Void... params) {
+		protected Boolean doInBackground(Void... params) {
 			if (!Network.isConnectedToInternet(SActivity.this)) {
 				Toast.makeText(SActivity.this,
 						"No connection to the Internet.", Toast.LENGTH_LONG)
 						.show();
-				return null;
+				return false;
 			}
-			boolean u = mParser.saveAndParseUpdatesFile();
-			boolean h = mParser.saveAndParseHolidaysFile();
-			if (u && h)
-				return "UH";
-			else if (u)
-				return "U";
-			else if (h)
-				return "H";
-			else
-				return "N";
+
+			return mParser.saveAndParseUpdatesFile();
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(Boolean result) {
 			Toast t;
-			if (result != null) {
-				if (result.equals("U") || result.equals("UH")) {
-					updatePeriods();
-					t = Toast.makeText(SActivity.this,
-							"Schedule has been updated!", Toast.LENGTH_LONG);
-					mParser.getSData().saveNotification(false);
-					showAlteredDays();
-				} else if (result.equals("H")) {
-					updatePeriods();
-					t = Toast.makeText(SActivity.this, "New holidays!",
-							Toast.LENGTH_LONG);
-					mParser.getSData().saveNotification(false);
-				} else {
-					t = Toast.makeText(SActivity.this, "No updates!",
-							Toast.LENGTH_LONG);
-				}
-
-				t.show();
+			if (result) {
+				updatePeriods();
+				t = Toast.makeText(SActivity.this,
+						"Schedule has been updated!", Toast.LENGTH_LONG);
+				mParser.getSData().saveNotification(false);
+				showAlteredDays();
+			} else {
+				t = Toast.makeText(SActivity.this, "No updates!",
+						Toast.LENGTH_LONG);
 			}
 			pd.dismiss();
+			t.show();
 		}
 	}
 
@@ -761,8 +741,7 @@ public class SActivity extends FragmentActivity implements
 		skipPeriodsBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (i)
-					mParser.getSData().saveInitialize(true);
+				mParser.getSData().saveInitialize(true);
 				Intent intent = new Intent(SActivity.this, SActivity.class);
 				intent.putExtra(INIT_KEY, i);
 				goToDefault(intent, i);

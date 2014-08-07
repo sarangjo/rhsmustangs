@@ -21,9 +21,14 @@ public class SNetwork {
 	public static final String BASE_DOMAIN = "https://832a98014b7c1301510632d504e2faa0bc9b2096.googledrive.com/host/0B9RPYw9KBJQEelJ1X0Q4b1dJVWs/";
 
 	public static final String UPDATES_FILE = "schedule.txt";
-	public static final String HOLIDAYS_FILE = "holidays.txt";
 
-	private BufferedReader getFileReader(String url) {
+	/**
+	 * Downloads the full file.
+	 * 
+	 * @param url the URL of the file
+	 * @return the full text of the file; returns "" if there was an error
+	 */
+	private String getFullFile(String url) {
 		DefaultHttpClient hClient = new DefaultHttpClient();
 
 		HttpGet hGet = new HttpGet(url);
@@ -33,37 +38,15 @@ public class SNetwork {
 
 			BufferedHttpEntity buf = new BufferedHttpEntity(ht);
 			InputStream is = buf.getContent();
-			return new BufferedReader(new InputStreamReader(is));
-		} catch (IOException e) {
-			return null;
-		}
-	}
+			BufferedReader r = new BufferedReader(new InputStreamReader(is));
 
-	/**
-	 * Downloads the full file.
-	 * 
-	 * @param url
-	 *            the URL of the file
-	 * @return the full text of the file; returns "" if there was an error
-	 */
-	private String getFullFile(String url) {
-		BufferedReader r = getFileReader(url);
-		StringBuilder total = new StringBuilder();
+			StringBuilder total = new StringBuilder();
 
-		String line;
-		try {
-			while ((line = r.readLine()) != null)
+			String line;
+			while ((line = r.readLine()) != null) {
 				total.append(line + "\n");
-		} catch (Exception e) {
-			return "";
-		}
-		return total.toString();
-	}
-
-	private String getFirstLine(String url) {
-		BufferedReader r = getFileReader(url);
-		try {
-			return r.readLine().trim();
+			}
+			return total.toString();
 		} catch (IOException e) {
 			return "";
 		}
@@ -74,7 +57,21 @@ public class SNetwork {
 	 * some error, returns "".
 	 */
 	public String getLatestUpdateTime() {
-		return getFirstLine(BASE_DOMAIN + UPDATES_FILE);
+		DefaultHttpClient hClient = new DefaultHttpClient();
+
+		HttpGet hGet = new HttpGet(BASE_DOMAIN + UPDATES_FILE);
+		try {
+			HttpResponse response = hClient.execute(hGet);
+			HttpEntity ht = response.getEntity();
+
+			BufferedHttpEntity buf = new BufferedHttpEntity(ht);
+			InputStream is = buf.getContent();
+			BufferedReader r = new BufferedReader(new InputStreamReader(is));
+
+			return r.readLine().trim();
+		} catch (IOException e) {
+			return "";
+		}
 	}
 
 	/**
@@ -86,19 +83,10 @@ public class SNetwork {
 		return (x == "") ? "NA" : x;
 	}
 
-	public String getHolidaysUpdateTime() {
-		return getFirstLine(BASE_DOMAIN + HOLIDAYS_FILE);
-	}
-
-	public String getHolidaysFileText() {
-		return getFullFile(BASE_DOMAIN + HOLIDAYS_FILE);
-	}
-
 	/**
 	 * Downloads the base schedule for the given day.
 	 * 
-	 * @param day
-	 *            day of week; 1 = Monday, 5 = Friday
+	 * @param day day of week; 1 = Monday, 5 = Friday
 	 * @return the full base schedule
 	 */
 	public String getBaseDay(int day) {

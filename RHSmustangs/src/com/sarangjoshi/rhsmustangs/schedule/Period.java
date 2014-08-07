@@ -18,9 +18,9 @@ public class Period {
 		HOMEROOM, LUNCH, CLASS, OTHER
 	}
 
-	public Period(String periodShort, String periodName, int sh, int sm, int eh,
+	public Period(String periodNum, String periodName, int sh, int sm, int eh,
 			int em, int gn) {
-		mPeriodShort = periodShort;
+		mPeriodShort = periodNum;
 		mClassName = periodName;
 		mStartTime = new STime(sh, sm);
 		mEndTime = new STime(eh, em);
