@@ -28,7 +28,14 @@ public class SParser {
 	private Time lastHolUpdate;
 	private String[] updatedDays;
 	private ArrayList<String> holidays = new ArrayList<String>();
-	private boolean isUpdated;
+	// private boolean isUpdated;
+	/**
+	 * 0 = no, 1 = updated schedule, 2 = holiday
+	 */
+	private int isUpdated;
+	public static int UPDATED_NO = 0;
+	public static int UPDATED_SCHED = 1;
+	public static int UPDATED_HOL = 2;
 
 	public SParser(Context newContext) {
 		mContext = newContext;
@@ -144,7 +151,7 @@ public class SParser {
 			}
 			// Offline parsing
 			return a && readHolidays();
-		}		
+		}
 	}
 
 	/**
@@ -159,7 +166,16 @@ public class SParser {
 			holidays = new ArrayList<String>();
 			// Set<String> prefDays = prefHols.keySet(); = prefDays.toArray();
 			for (int i = 0; i < prefDaysArray.length; i++) {
-				holidays.add((String) prefDaysArray[i]);
+				String x = (String) prefDaysArray[i];
+				try {
+					Integer.parseInt(x);
+					if (x.length() > 8)
+						holidays.add(x.substring(0, 8));
+					else
+						holidays.add(x);
+				} catch (Exception e) {
+					// Is not a holiday
+				}
 			}
 			return true;
 		} catch (Exception e) {
@@ -227,7 +243,7 @@ public class SParser {
 		if (holName != null) {
 			Period p = new Period("HD", holName, 0, 0, 11, 59, 0);
 			periods.add(p);
-			isUpdated = true;
+			isUpdated = UPDATED_HOL;
 		} else {
 			// Gets current schedule
 			String currentSchedule = getSchedule(scheduleDay);
@@ -269,12 +285,12 @@ public class SParser {
 		// Checks if the day is adjusted or not
 		int adjustedIndex = dayAdjustedIndex(day);
 		if (adjustedIndex >= 0) {
-			isUpdated = true;
+			isUpdated = UPDATED_SCHED;
 			// From the array of adjusted days, gets schedule
 			String sched = updatedDays[adjustedIndex];
 			return sched.substring(sched.indexOf('\n') + 1, sched.length());
 		} else {
-			isUpdated = false;
+			isUpdated = UPDATED_NO;
 			// Pulls appropriate schedule based on current day
 			// return SStaticData.getScheduleByDay(scheduleDay.weekDay);
 			int wDay = day.weekDay;
@@ -506,7 +522,7 @@ public class SParser {
 	/**
 	 * @return whether or not the current schedule is altered or not.
 	 */
-	public boolean isScheduleAdjusted() {
+	public int getIsUpdated() {
 		return isUpdated;
 	}
 
@@ -564,7 +580,7 @@ public class SParser {
 		boolean a = mData.deleteSavedUpdates();
 
 		updatedDays = null;
-		isUpdated = false;
+		isUpdated = UPDATED_NO;
 
 		return a;
 	}
@@ -651,5 +667,26 @@ public class SParser {
 			t = SStatic.now;
 		}
 		updateScheduleDay(t, isForward);
+	}
+
+	public void goToNextHoliday() {
+		int diff = -1, n, index = -1;
+		if (holidays.size() > 0) {
+			diff = SStatic.getJulianDay(SStatic.getTimeFromString(holidays
+					.get(0))) - SStatic.getJulianDay(scheduleDay);
+			for (int i = 1; i < holidays.size(); i++) {
+				n = SStatic.getJulianDay(SStatic.getTimeFromString(holidays
+						.get(i))) - SStatic.getJulianDay(scheduleDay);
+				if (n > 0 && n < diff) {
+					diff = n;
+					index = i;
+				}
+
+			}
+		}
+		if (index >= 0) {
+			updateScheduleDay(SStatic.getTimeFromString(holidays.get(index)),
+					true);
+		}
 	}
 }

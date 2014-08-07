@@ -35,6 +35,14 @@
             android:layout_centerHorizontal="true" />
         
         <ImageButton
+            android:id="@+id/nextHol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/nextDay"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_action_forward_dark" />
+        
+        <ImageButton
             android:id="@+id/nextDay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

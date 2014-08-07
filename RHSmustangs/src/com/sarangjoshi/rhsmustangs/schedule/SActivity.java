@@ -62,7 +62,7 @@ public class SActivity extends FragmentActivity implements
 
 	// VIEWS
 	ListView periodList;
-	ImageButton nextDay, previousDay;
+	ImageButton nextDay, previousDay, nextHol;
 	TextView scheduleTitle, scheduleWeekDay;
 	LinearLayout scheduleLayout;
 	Button setPeriodsBtn, skipPeriodsBtn, clearPeriodsBtn;
@@ -116,6 +116,7 @@ public class SActivity extends FragmentActivity implements
 			updateLayout();
 
 			mParser.parseUpdatesFile();
+			mParser.readHolidays();
 
 			scheduleLayout = (LinearLayout) findViewById(R.id.scheduleLayout);
 			scheduleLayout.setOnTouchListener(new MySwipeListener());
@@ -157,6 +158,7 @@ public class SActivity extends FragmentActivity implements
 			nextDay = (ImageButton) findViewById(R.id.nextDay);
 			scheduleTitle = (TextView) findViewById(R.id.title);
 			scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
+			nextHol = (ImageButton) findViewById(R.id.nextHol);
 
 			previousDay.setOnClickListener(new OnClickListener() {
 				@Override
@@ -189,6 +191,13 @@ public class SActivity extends FragmentActivity implements
 					updatePeriods();
 				}
 
+			});
+			nextHol.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mParser.goToNextHoliday();
+					updatePeriods();
+				}
 			});
 
 			/*
@@ -379,6 +388,8 @@ public class SActivity extends FragmentActivity implements
 		// Gets the periods from parser
 		periods = mParser.getPeriods();
 
+		int isU = mParser.getIsUpdated();
+
 		// Sets Spinner data
 		setSpinnerData();
 
@@ -390,7 +401,7 @@ public class SActivity extends FragmentActivity implements
 		scheduleWeekDay.setText(SStatic.getDay(mParser.getScheduleDay()));
 
 		// Sets color based on if the schedule is adjusted or not
-		if (mParser.isScheduleAdjusted()) {
+		if (isU != SParser.UPDATED_NO) {
 			this.setTextColor(Color.parseColor("#006600"), scheduleTitle,
 					scheduleWeekDay);
 			scheduleTitle.setTypeface(null, Typeface.BOLD);
@@ -401,7 +412,7 @@ public class SActivity extends FragmentActivity implements
 
 		// Loads adapter
 		if (periods != null) {
-			periodsAdapter = new PeriodsAdapter(this, periods);
+			periodsAdapter = new PeriodsAdapter(this, periods, isU);
 			periodList.setAdapter(periodsAdapter);
 		}
 	}
@@ -459,10 +470,12 @@ public class SActivity extends FragmentActivity implements
 
 	private class PeriodsAdapter extends ArrayAdapter<Period> {
 		private final Context mContext;
+		private int mIsU;
 
-		public PeriodsAdapter(Context context, List<Period> objects) {
+		public PeriodsAdapter(Context context, List<Period> objects, int isU) {
 			super(context, R.layout.layout_period, objects);
 
+			mIsU = isU;
 			mContext = context;
 		}
 
@@ -471,18 +484,33 @@ public class SActivity extends FragmentActivity implements
 			LayoutInflater inflater = (LayoutInflater) mContext
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-			View rowView = inflater.inflate(R.layout.layout_period, parent,
-					false);
+			View rowView;
+			TextView periodNumView, classNameView, startTimeView, endTimeView;
 
-			// Individual views
-			TextView periodNumView = (TextView) rowView
-					.findViewById(R.id.periodNum);
-			TextView classNameView = (TextView) rowView
-					.findViewById(R.id.className);
-			TextView startTimeView = (TextView) rowView
-					.findViewById(R.id.startTime);
-			TextView endTimeView = (TextView) rowView
-					.findViewById(R.id.endTime);
+			// Holiday?
+			if (mIsU == SParser.UPDATED_HOL) {
+				rowView = inflater.inflate(R.layout.layout_hol_period, parent,
+						false);
+
+				// Individual views
+				periodNumView = (TextView) rowView
+						.findViewById(R.id.periodNumHol);
+				classNameView = (TextView) rowView
+						.findViewById(R.id.classNameHol);
+				startTimeView = (TextView) rowView
+						.findViewById(R.id.startTimeHol);
+				endTimeView = (TextView) rowView.findViewById(R.id.endTimeHol);
+			} else {
+				rowView = inflater.inflate(R.layout.layout_period, parent,
+						false);
+
+				// Individual views
+				periodNumView = (TextView) rowView.findViewById(R.id.periodNum);
+				classNameView = (TextView) rowView.findViewById(R.id.className);
+				startTimeView = (TextView) rowView.findViewById(R.id.startTime);
+				endTimeView = (TextView) rowView.findViewById(R.id.endTime);
+
+			}
 
 			// Setting view data
 			Period p = periods.get(position);

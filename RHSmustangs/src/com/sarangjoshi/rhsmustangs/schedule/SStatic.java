@@ -125,6 +125,8 @@ public class SStatic {
 
 	public static Time getTimeFromString(String s) {
 		Time t = new Time();
+		if(s.length() > 8)
+			s = s.substring(0, 8);
 		try {
 			t.parse(s);
 			t.normalize(false);
