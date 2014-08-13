@@ -15,9 +15,10 @@ import android.content.Intent;
 public class AlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		//Toast.makeText(context, "Broadcast received, service started.", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(context, "Broadcast received, service started.",
+		// Toast.LENGTH_SHORT).show();
 		Intent i = new Intent(context, SService.class);
-		if(shouldStart())
+		if (shouldStart())
 			context.startService(i);
 	}
 
@@ -26,11 +27,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 		int hr = cal.get(Calendar.HOUR_OF_DAY);
 		int day = cal.get(Calendar.DAY_OF_WEEK);
 		
-		if(hr >= 16 && hr <= 22)
+		// Checks whether the alarm is in range
+		if (hr >= 16 && hr <= 22)
 			return (day >= Calendar.SUNDAY && day <= Calendar.THURSDAY);
-		if(hr >= 6 && hr <= 8)
+		if (hr >= 6 && hr <= 8)
 			return (day >= Calendar.MONDAY && day <= Calendar.FRIDAY);
-				
+
 		return false;
 	}
 }

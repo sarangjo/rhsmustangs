@@ -6,10 +6,7 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 import android.content.Context;
 import android.text.format.Time;
@@ -24,14 +21,9 @@ public class SParser {
 	 */
 	private Time scheduleDay;
 
-	private Time lastUpdate;
-	private Time lastHolUpdate;
 	private String[] updatedDays;
 	private ArrayList<String> holidays = new ArrayList<String>();
-	// private boolean isUpdated;
-	/**
-	 * 0 = no, 1 = updated schedule, 2 = holiday
-	 */
+
 	private int isUpdated;
 	public static int UPDATED_NO = 0;
 	public static int UPDATED_SCHED = 1;
@@ -91,12 +83,15 @@ public class SParser {
 	// Online parsing
 	public boolean saveAndParseHolidaysFile() {
 		String lTime = mNetwork.getHolidaysUpdateTime();
-		if (lTime.equals(mData.getHolidaysUpdateTime()))
+		String dTime = mData.getHolidaysUpdateTime();
+		if (lTime.equals(dTime) || lTime.equals("") || lTime.equals("N/A")
+				|| dTime.equals("N/A"))
 			return false; // no updates
 		else {
 			boolean a = true;
 			// Download and parse online file into file strings
 			String t = mNetwork.getHolidaysFileText();
+			// Saves holidays
 			String[] holidayFileStrings = null;
 			if (!(t.contains("<") || t.contains(">")) || t.trim().length() == 0)
 				holidayFileStrings = null;
@@ -104,18 +99,11 @@ public class SParser {
 				try {
 					// MAIN PARSING OF THE SAVED FILE
 					// STEP 1: Gets update time - first line of text file
-					String lastHolUpdateTimeString = t.substring(0,
-							t.indexOf('\n'));
+					String lastHolUpdate = t.substring(0, t.indexOf('\n'));
 					// Saves update time to SData
-					mData.saveHolidaysUpdateTime(lastHolUpdateTimeString);
-					// Parses string to Time object
-					if (lastHolUpdateTimeString.length() > 8) {
-						// Removes first line
-						t = t.substring(t.indexOf('\n') + 1);
-						lastHolUpdate = SStatic
-								.getTimeFromString(lastHolUpdateTimeString);
-					} else
-						lastHolUpdate = null;
+					mData.saveHolidaysUpdateTime(lastHolUpdate);
+					// Removes first line
+					t = t.substring(t.indexOf('\n') + 1);
 
 					// STEP 2: Parse into individual schedule days
 					// Removes the beginning < and ending >
@@ -129,16 +117,16 @@ public class SParser {
 			}
 			// Save prefs
 			try {
+				mData.deleteAllHolidays();
 				for (String s : holidayFileStrings) {
 					String[] lines = s.split("\n");
-					mData.deleteAllHolidays();
 					// Strings
 					String start = lines[0];
 					String end = lines[1].substring(lines[1].indexOf(" ") + 1);
 					String name = lines[2];
 					// Times
-					Time startT = SStatic.getTimeFromString(start);
-					Time endT = SStatic.getTimeFromString(end);
+					Time startT = SStatic.getTimeFromString(start, 8);
+					Time endT = SStatic.getTimeFromString(end, 8);
 					a = a && mData.saveHoliday(startT, name);
 					while (SStatic.getJulianDay(startT) != SStatic
 							.getJulianDay(endT)) {
@@ -191,10 +179,8 @@ public class SParser {
 	public void parseUpdatesFile() {
 		// Gets local file's updates string
 		String updateS = "";
-		try {
-			updateS = mData.getUpdatesString();
-		} catch (IOException e) {
-		}
+		updateS = mData.getUpdatesString();
+
 		if (!(updateS.contains("<") || updateS.contains(">"))
 				|| updateS.trim().length() == 0)
 			updatedDays = null;
@@ -202,17 +188,11 @@ public class SParser {
 			try {
 				// MAIN PARSING OF THE SAVED FILE
 				// STEP 1: Gets update time - first line of text file
-				String lastUpdateString = updateS.substring(0,
-						updateS.indexOf('\n'));
+				String lastUpdate = updateS.substring(0, updateS.indexOf('\n'));
 				// Saves update time to SData
-				mData.saveUpdateTime(lastUpdateString);
-				// Parses string to Time object
-				if (lastUpdateString.length() > 8) {
-					// Removes first line
-					updateS = updateS.substring(updateS.indexOf('\n') + 1);
-					lastUpdate = SStatic.getTimeFromString(lastUpdateString);
-				} else
-					lastUpdate = null;
+				mData.saveUpdateTime(lastUpdate);
+
+				updateS = updateS.substring(updateS.indexOf('\n') + 1);
 
 				// STEP 2: Parse into individual schedule days
 				// Removes the beginning < and ending >
@@ -242,6 +222,7 @@ public class SParser {
 		// Check for holidays
 		if (holName != null) {
 			Period p = new Period("HD", holName, 0, 0, 11, 59, 0);
+			p.isCustomizable = false;
 			periods.add(p);
 			isUpdated = UPDATED_HOL;
 		} else {
@@ -395,76 +376,22 @@ public class SParser {
 	}
 
 	/**
-	 * Updates the local scheduleDay variable to the appropriate time, given the
-	 * desired time.
+	 * Sets the schedule given an index of altered schedules.
 	 * 
-	 * @param now
-	 *            the day to set scheduleDay. Default: SStaticData.now
-	 * @param isForward
-	 *            whether the schedule is moving forward
+	 * @param index
+	 *            index of the chosen altered schedule
 	 */
-	public void updateScheduleDay(Time now, boolean isForward) {
-		// scheduleDay reflects whatever schedule is being shown
-		scheduleDay = now;
-
-		// Get day and hour based on the given Time object
-		int day = scheduleDay.weekDay;
-		int hour = scheduleDay.hour;
-
-		// If the time is more than 2 hours after the end time, and it's a
-		// weekday, it shifts forward one day.
-		if (isForward)
-			if (day > Time.SUNDAY)
-				if (day < Time.SATURDAY)
-					if (hour >= 2 + ((day == Time.WEDNESDAY) ? mData
-							.getMiscDetail("endHrW") : mData
-							.getMiscDetail("endHr"))) {
-						scheduleDay = SStatic.shiftDay(scheduleDay, 1, mData);
-					}
-
-		day = scheduleDay.weekDay;
-		hour = scheduleDay.hour;
-
-		// Both Saturday and Sunday go to the next Monday
-		if (day == Time.SATURDAY) {
-			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 2 : -1),
-					mData);
-		} else if (day == Time.SUNDAY) {
-			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 1 : -2),
-					mData);
+	public void setAltDay(int index) {
+		Time t = new Time();
+		try {
+			t.parse(getUpdatedDays()[index]);
+			t.normalize(false);
+			scheduleDay = t;
+		} catch (Exception e) {
 		}
-
-		// Adjusts the other variables in the time object
-		scheduleDay.normalize(false);
-
-		// Saves scheduleDay
-		mData.saveLatestDay(scheduleDay.toString().substring(0, 8));
 	}
 
-	/*
-	 * Based on {@link SData}'s lunch character, returns a string for the
-	 * spinner adapter.
-	 * 
-	 * E.g. if lunch was 'a' then this returns "Lunch A".
-	 * 
-	 * @return the string for the spinner adapter
-	 * 
-	 * public String getSpinnerLunch() { int x = (int) mData.getLunch(); String
-	 * s = "Lunch " + (char) (x - 32); return s; }
-	 * 
-	 * 
-	 * /** Sets the lunch in SData to the selected lunch based on the position
-	 * of the click
-	 * 
-	 * @param position the position of the click, 0 = a, 1 = b, 2 = c
-	 * 
-	 * @return whether the lunch was successfully selected
-	 * 
-	 * public boolean lunchSelected(int position) { mData.setLunch((char) (97 +
-	 * position)); return true; }
-	 */
-
-	// SCHEDULE OBJECTS
+	// GETS
 	/**
 	 * Returns the SData object.
 	 * 
@@ -504,6 +431,18 @@ public class SParser {
 		return SStatic.getDateString(scheduleDay);
 	}
 
+	public Time getScheduleDay() {
+		return scheduleDay;
+	}
+
+	/**
+	 * @return whether or not the current schedule is altered or not.
+	 */
+	public int getIsUpdated() {
+		return isUpdated;
+	}
+
+	// ADJUSTING SCHEDULE DAY
 	/**
 	 * Updates the local {@link scheduleDay} variable by shifting it by
 	 * {@link d} days
@@ -515,15 +454,58 @@ public class SParser {
 		updateScheduleDay(SStatic.shiftDay(scheduleDay, d, mData), (d >= 0));
 	}
 
-	public Time getScheduleDay() {
-		return scheduleDay;
-	}
-
 	/**
-	 * @return whether or not the current schedule is altered or not.
+	 * Updates the local scheduleDay variable to the appropriate time, given the
+	 * desired time.
+	 * 
+	 * @param now
+	 *            the day to set scheduleDay. Default: SStaticData.now
+	 * @param isForward
+	 *            whether the schedule is moving forward
 	 */
-	public int getIsUpdated() {
-		return isUpdated;
+	public void updateScheduleDay(Time now, boolean isForward) {
+		// scheduleDay reflects whatever schedule is being shown
+		scheduleDay = now;
+
+		// Get day and hour based on the given Time object
+		int day = scheduleDay.weekDay;
+		int hour = scheduleDay.hour;
+
+		// If the time is more than 2 hours after the end time, and it's a
+		// weekday, it shifts forward one day.
+		if (isForward)
+			if (day > Time.SUNDAY)
+				if (day < Time.SATURDAY) {
+					int x = ((day == Time.WEDNESDAY) ? mData
+							.getMiscDetail("endHrW") : mData
+							.getMiscDetail("endHr"));
+
+					if (x == -1) {
+						x = ((day == Time.WEDNESDAY) ? 12 : 14);
+					}
+
+					if (hour >= 2 + x) {
+						scheduleDay = SStatic.shiftDay(scheduleDay, 1, mData);
+					}
+				}
+
+		day = scheduleDay.weekDay;
+		hour = scheduleDay.hour;
+
+		// Both Saturday and Sunday go to the next Monday
+		if (day == Time.SATURDAY) {
+			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 2 : -1),
+					mData);
+		} else if (day == Time.SUNDAY) {
+			scheduleDay = SStatic.shiftDay(scheduleDay, (isForward ? 1 : -2),
+					mData);
+		}
+
+		// Adjusts the other variables in the time object
+		scheduleDay.normalize(false);
+
+		// Saves scheduleDay
+		mData.saveLatestDay(scheduleDay.toString().substring(0, 8));
 	}
 
 	/**
@@ -544,22 +526,7 @@ public class SParser {
 			return null;
 	}
 
-	/**
-	 * Sets the schedule given an index of altered schedules.
-	 * 
-	 * @param index
-	 *            index of the chosen altered schedule
-	 */
-	public void setAltDay(int index) {
-		Time t = new Time();
-		try {
-			t.parse(getUpdatedDays()[index]);
-			t.normalize(false);
-			scheduleDay = t;
-		} catch (Exception e) {
-		}
-	}
-
+	// INITIALIZATION FILES
 	/**
 	 * Saves the base schedule.
 	 */
@@ -574,15 +541,6 @@ public class SParser {
 			}
 		}
 		return true;
-	}
-
-	public boolean deleteUpdates() {
-		boolean a = mData.deleteSavedUpdates();
-
-		updatedDays = null;
-		isUpdated = UPDATED_NO;
-
-		return a;
 	}
 
 	/**
@@ -613,11 +571,15 @@ public class SParser {
 	 */
 	public void resetEverything() {
 		mData.saveInitialize(false);
-		mData.deletePeriods();
+		// Files
 		mData.deleteSavedUpdates();
 		mData.deleteBase();
+		// Prefs
+		mData.deletePeriods();
+		mData.deleteAllPrefs();
 	}
 
+	// SPINNER/GROUP STUFF
 	/**
 	 * Gets the spinner values for the current {@link scheduleDay}.
 	 * 
@@ -653,6 +615,7 @@ public class SParser {
 		mData.saveGroupPref(today, groupN);
 	}
 
+	// MISC
 	private String todayShort() {
 		return scheduleDay.toString().substring(0, 8);
 	}
@@ -661,32 +624,52 @@ public class SParser {
 		Time t = new Time();
 		String s = mData.getLatestDay();
 		if (!s.equals("")) {
-			t.parse(s);
-			t.normalize(false);
+			try {
+				t.parse(s);
+				t.normalize(false);
+			} catch (Exception e) {
+				t = SStatic.now;
+			}
 		} else {
 			t = SStatic.now;
 		}
 		updateScheduleDay(t, isForward);
 	}
 
-	public void goToNextHoliday() {
-		int diff = -1, n, index = -1;
+	// HOLIDAYS
+	public boolean goToNextHoliday() {
+		int index = isHolidayInFuture();
+		if (index >= 0) {
+			updateScheduleDay(
+					SStatic.getTimeFromString(holidays.get(index), 8), true);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public int isHolidayInFuture() {
+		Integer diff = null;
+		int n, index = -1;
 		if (holidays.size() > 0) {
-			diff = SStatic.getJulianDay(SStatic.getTimeFromString(holidays
-					.get(0))) - SStatic.getJulianDay(scheduleDay);
-			for (int i = 1; i < holidays.size(); i++) {
-				n = SStatic.getJulianDay(SStatic.getTimeFromString(holidays
-						.get(i))) - SStatic.getJulianDay(scheduleDay);
-				if (n > 0 && n < diff) {
-					diff = n;
-					index = i;
+			for (int i = 0; i < holidays.size(); i++) {
+				n = SStatic.getJulianDay(SStatic.getTimeFromString(
+						holidays.get(i), 8))
+						- SStatic.getJulianDay(scheduleDay);
+				if (diff == null) {
+					if (n > 0) {
+						diff = n;
+						index = i;
+					}
+				} else {
+					if (n > 0 && n < diff) {
+						diff = n;
+						index = i;
+					}
 				}
 
 			}
 		}
-		if (index >= 0) {
-			updateScheduleDay(SStatic.getTimeFromString(holidays.get(index)),
-					true);
-		}
+		return index;
 	}
 }

@@ -3,13 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" 
-    android:id="@+id/scheduleLayout" >"
+    android:id="@+id/scheduleLayout" >
 
     <RelativeLayout
         android:id="@+id/daySelector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="6dp" >
+        android:layout_margin="6dp"
+        android:isScrollContainer="true" >
 
         <ImageButton
             android:id="@+id/previousDay"
@@ -17,7 +18,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_action_back_dark" />
+            android:src="@drawable/ic_action_back_dark"
+            android:contentDescription="Previous Day" />
 
         <TextView
             android:id="@+id/title"
@@ -38,9 +40,11 @@
             android:id="@+id/nextHol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
             android:layout_toLeftOf="@+id/nextDay"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_action_forward_dark" />
+            android:src="@drawable/holiday_icon"
+            android:contentDescription="Next Holiday" />
         
         <ImageButton
             android:id="@+id/nextDay"
@@ -48,7 +52,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_action_forward_dark" />
+            android:src="@drawable/ic_action_forward_dark"
+            android:contentDescription="Next Day" />
 
     </RelativeLayout>
 

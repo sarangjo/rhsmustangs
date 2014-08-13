@@ -6,8 +6,6 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import java.util.Calendar;
-
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.R;
@@ -23,8 +20,6 @@ import com.sarangjoshi.rhsmustangs.R;
 public class SService extends IntentService {
 	SNetwork mNet;
 	SData mData;
-
-	String net = "", dat = "";
 
 	public static final String UPDATES_AVAILABLE_KEY = "ua";
 	public static final String RESULT_KEY = "result";
@@ -36,15 +31,19 @@ public class SService extends IntentService {
 		super("SService");
 	}
 
+	/**
+	 * The entry callback method.
+	 */
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		setup();
-		//Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
+		// Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
 		if (Network.isConnectedToInternet(this)) {
 			boolean isUpdated = checkForUpdates();
-			if (isUpdated)
+			boolean isHolUpdated = checkForHolUpdates();
+			if (isUpdated || isHolUpdated)
 				if (!mData.getIsNotifCreated())
-					createNotification();
+					createNotification(isUpdated, isHolUpdated);
 		}
 	}
 
@@ -62,10 +61,22 @@ public class SService extends IntentService {
 	 * Returns whether the online file has updates.
 	 */
 	private boolean checkForUpdates() {
-		net = mNet.getLatestUpdateTime();
-		dat = mData.getUpdateTime();
+		String net = mNet.getLatestUpdateTime();
+		String dat = mData.getUpdateTime();
+		if (net.equals(dat) || net.equals("N/A") || dat.equals("")
+				|| net.trim().length() != SStatic.RFC2445_DATE_LENGTH)
+			return false;
+		return true;
+	}
 
-		if (net.equals(dat) || net.equals("NA") || dat.equals("")
+	/**
+	 * Returns whether the online holidays file has updates.
+	 */
+	private boolean checkForHolUpdates() {
+		String net = mNet.getHolidaysUpdateTime();
+		String dat = mData.getHolidaysUpdateTime();
+		if (net.equals(dat) || net.equals("N/A") || dat.equals("")
+				|| dat.equals("N/A")
 				|| net.trim().length() != SStatic.RFC2445_DATE_LENGTH)
 			return false;
 		return true;
@@ -74,15 +85,15 @@ public class SService extends IntentService {
 	/**
 	 * Notifies the user that the schedule has been updated.
 	 */
-	private void createNotification() {
+	private void createNotification(boolean u, boolean h) {
 		NotificationCompat.Builder b = new NotificationCompat.Builder(this);
 
 		String title = "Schedule updates available.";
-		String text = "The schedule has been updated! Click here to find out more.";//net + "\n" + dat;
+		String text = "The schedule has been updated! Click here to find out more.";
 
-		Calendar cal = Calendar.getInstance();
-		text += "\nUpdated: " + cal.get(Calendar.HOUR_OF_DAY) + ":"
-				+ cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
+		// Calendar cal = Calendar.getInstance();
+		// text += "\nUpdated: " + cal.get(Calendar.HOUR_OF_DAY) + ":" +
+		// cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
 
 		// Setup small notification
 		b.setSmallIcon(R.drawable.rhslogo_green);
@@ -112,7 +123,7 @@ public class SService extends IntentService {
 
 		mData.saveNotification(true);
 
-		Toast.makeText(this, "Notification created.", Toast.LENGTH_SHORT)
-				.show();
+		// Toast.makeText(this, "Notification created.",
+		// Toast.LENGTH_SHORT).show();
 	}
 }

@@ -23,8 +23,9 @@
         android:showAsAction="never"
         android:title="Set Periods"/>
     <item
-        android:id="@+id/action_resetEverything"
+        android:id="@+id/action_lastUpdates"
         android:showAsAction="never"
-        android:title="Reset EVERYTHING (!)"/>
+        android:title="See Last Update"
+        />
 
 </menu>

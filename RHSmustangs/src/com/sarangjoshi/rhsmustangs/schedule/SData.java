@@ -9,17 +9,14 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.text.format.Time;
 
 public class SData {
@@ -41,7 +38,6 @@ public class SData {
 	private static final String UPDATES_GROUPNAMES_NAME = "update_groupnames_file";
 
 	// SharedPreference keys
-	private static final String LUNCH_KEY = "lunch";
 	private static final String PERIOD_BASE_KEY = "period";
 	private static final String UPDATETIME_KEY = "update";
 	private static final String HOLIDAYSTIME_KEY = "holidays_time";
@@ -57,65 +53,44 @@ public class SData {
 	 * Initializes the SharedPreferences object.
 	 */
 	private void setupPref(PrefType pt) {
-		if (mPref == null) {
-			String s = "";
-			switch (pt) {
-			case DEFAULT:
-				s = PREF_NAME;
-				break;
-			case PERIODS:
-				s = PERIODS_PREF_NAME;
-				break;
-			case HOLIDAYS:
-				s = HOLIDAYS_PREF_NAME;
-				break;
-			}
-			mPref = mContext.getSharedPreferences(s, 0);
+		String s = "";
+		switch (pt) {
+		case DEFAULT:
+			s = PREF_NAME;
+			break;
+		case PERIODS:
+			s = PERIODS_PREF_NAME;
+			break;
+		case HOLIDAYS:
+			s = HOLIDAYS_PREF_NAME;
+			break;
 		}
-	}
-
-	// LUNCH
-	/**
-	 * Saves the new lunch to the shared preference.
-	 * 
-	 * @param lunch
-	 *            the new lunch
-	 */
-	public void setLunch(char lunch) {
-		setupPref(PrefType.DEFAULT);
-		Editor e = mPref.edit();
-		e.putString(LUNCH_KEY, lunch + "");
-		e.commit();
-	}
-
-	/**
-	 * Gets the lunch from the shared preference.
-	 * 
-	 * @return the lunch char
-	 */
-	public char getLunch() {
-		setupPref(PrefType.DEFAULT);
-		return mPref.getString(LUNCH_KEY, "a").charAt(0);
+		mPref = mContext.getSharedPreferences(s, 0);
 	}
 
 	// PERIOD NAMES
 	/**
 	 * Saves the new period name to the shared preference.
 	 * 
-	 * @param p
+	 * @param periodShort
 	 *            the period which corresponds to the SharedPref key
 	 * @param newName
 	 *            the new period name
 	 */
-	public boolean setPeriodName(Period p, String newName) {
+	public boolean setPeriodName(String periodShort, String newName) {
 		setupPref(PrefType.PERIODS);
-		return mPref.edit().putString(getKey(p), newName).commit();
+		return mPref.edit().putString(getKey(periodShort), newName).commit();
 	}
 
-	public boolean setPeriodName(int i, String newName) {
-		setupPref(PrefType.PERIODS);
-		return mPref.edit().putString(PERIOD_BASE_KEY + i, newName).commit();
-	}
+	/*
+	 * public boolean setPeriodName(Period p, String newName) {
+	 * setupPref(PrefType.PERIODS); return
+	 * mPref.edit().putString(getKey(p.mPeriodShort), newName).commit(); }
+	 * 
+	 * public boolean setPeriodName(int i, String newName) {
+	 * setupPref(PrefType.PERIODS); return
+	 * mPref.edit().putString(PERIOD_BASE_KEY + i, newName).commit(); }
+	 */
 
 	/**
 	 * Gets the period name from the shared preference. If a custom period name
@@ -129,18 +104,10 @@ public class SData {
 	public String getPeriodName(Period p) {
 		setupPref(PrefType.PERIODS);
 		String defaultName = p.getDefaultPeriodName();
-		return mPref.getString(getKey(p), defaultName);
+		return mPref.getString(getKey(p.mPeriodShort), defaultName);
 	}
 
-	/**
-	 * Gets the period name from the shared preference for a <i>period
-	 * number</i>.
-	 * 
-	 * @param i
-	 *            period number
-	 * @return saved period name
-	 */
-	public String getPeriodName(int i) {
+	public String getPeriodName(String i) {
 		setupPref(PrefType.PERIODS);
 		return mPref.getString(PERIOD_BASE_KEY + i, "");
 	}
@@ -148,24 +115,19 @@ public class SData {
 	/**
 	 * Deletes the custom name of the given period.
 	 * 
-	 * @param p
 	 */
-	public boolean deletePeriodName(Period p) {
+	public boolean deletePeriodName(String periodShort) {
 		setupPref(PrefType.PERIODS);
-		return mPref.edit().remove(getKey(p)).commit();
+		return mPref.edit().remove(getKey(periodShort)).commit();
 	}
 
-	/**
-	 * Deletes the custom name of a period, given the <i>period number<i>.
+	/*
+	 * public boolean deletePeriodName(Period p) { setupPref(PrefType.PERIODS);
+	 * return mPref.edit().remove(getKey(p.mPeriodShort)).commit(); }
 	 * 
-	 * @param i
-	 *            period number
-	 * @return
+	 * public boolean deletePeriodName(int i) { setupPref(PrefType.PERIODS);
+	 * return mPref.edit().remove(PERIOD_BASE_KEY + i).commit(); }
 	 */
-	public boolean deletePeriodName(int i) {
-		setupPref(PrefType.PERIODS);
-		return mPref.edit().remove(PERIOD_BASE_KEY + i).commit();
-	}
 
 	/**
 	 * Deletes all custom Period names.
@@ -182,8 +144,8 @@ public class SData {
 	 *            the given period
 	 * @return the SharedPreferences key
 	 */
-	public String getKey(Period p) {
-		return PERIOD_BASE_KEY + p.mPeriodShort;
+	public String getKey(String perShort) {
+		return PERIOD_BASE_KEY + perShort;
 	}
 
 	/**
@@ -231,7 +193,7 @@ public class SData {
 	 * 
 	 * @return the updates string
 	 */
-	public String getUpdatesString() throws IOException {
+	public String getUpdatesString() {
 		String updatesFileText;
 		// if (updatesFileText == null || updatesFileText == "") {
 		StringBuffer datax = new StringBuffer("");
@@ -250,7 +212,7 @@ public class SData {
 			isr.close();
 
 			updatesFileText = datax.toString();
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			updatesFileText = "";
 		}
 		// }
@@ -271,7 +233,7 @@ public class SData {
 	 */
 	public String getUpdateTime() {
 		setupPref(PrefType.DEFAULT);
-		return mPref.getString(UPDATETIME_KEY, "");
+		return mPref.getString(UPDATETIME_KEY, "N/A");
 	}
 
 	/**
@@ -418,7 +380,7 @@ public class SData {
 	 */
 	public int getMiscDetail(String val) {
 		setupPref(PrefType.DEFAULT);
-		return mPref.getInt(val, 0);
+		return mPref.getInt(val, -1);
 	}
 
 	// PERIOD GROUP NAMES
@@ -520,4 +482,14 @@ public class SData {
 		setupPref(PrefType.HOLIDAYS);
 		return mPref.edit().clear().commit();
 	}
+
+	
+	public void deleteAllPrefs() {
+		PrefType[] types = PrefType.values();
+		for(int i = 0; i < types.length; i++) {
+			setupPref(types[i]);
+			mPref.edit().clear().commit();
+		}
+	}
+
 }

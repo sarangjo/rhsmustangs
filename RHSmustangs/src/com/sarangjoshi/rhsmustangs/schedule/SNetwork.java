@@ -64,8 +64,8 @@ public class SNetwork {
 		BufferedReader r = getFileReader(url);
 		try {
 			return r.readLine().trim();
-		} catch (IOException e) {
-			return "";
+		} catch (Exception e) {
+			return "N/A";
 		}
 	}
 
@@ -83,7 +83,7 @@ public class SNetwork {
 	 */
 	public String getUpdatesFileText() {
 		String x = getFullFile(BASE_DOMAIN + UPDATES_FILE);
-		return (x == "") ? "NA" : x;
+		return (x == "") ? "N/A" : x;
 	}
 
 	public String getHolidaysUpdateTime() {

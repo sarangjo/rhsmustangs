@@ -27,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -45,6 +46,10 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
+import com.sarangjoshi.rhsmustangs.schedule.fragments.ConfirmResetFragment;
+import com.sarangjoshi.rhsmustangs.schedule.fragments.EditPeriodFragment;
+import com.sarangjoshi.rhsmustangs.schedule.fragments.LastUpdatesFragment;
+import com.sarangjoshi.rhsmustangs.schedule.fragments.SelectUpdDayFragment;
 
 public class SActivity extends FragmentActivity implements
 		EditPeriodFragment.EditPeriodDialogListener {
@@ -87,7 +92,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		public void onSwipeRight() {
-			changeScheduleBy(-1);
+			mParser.shiftDay(-1);
 			updatePeriods();
 			// Toast.makeText(SActivity.this, "Swiped right.",
 			// Toast.LENGTH_SHORT).show();
@@ -95,7 +100,7 @@ public class SActivity extends FragmentActivity implements
 
 		@Override
 		public void onSwipeLeft() {
-			changeScheduleBy(1);
+			mParser.shiftDay(1);
 			updatePeriods();
 			// Toast.makeText(SActivity.this, "Swiped left.",
 			// Toast.LENGTH_SHORT).show();
@@ -163,15 +168,31 @@ public class SActivity extends FragmentActivity implements
 			previousDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					changeScheduleBy(-1);
+					mParser.shiftDay(-1);
 					updatePeriods();
+				}
+			});
+			previousDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Previous Day",
+							Toast.LENGTH_SHORT).show();
+					return true;
 				}
 			});
 			nextDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					changeScheduleBy(1);
+					mParser.shiftDay(1);
 					updatePeriods();
+				}
+			});
+			nextDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Next Day",
+							Toast.LENGTH_SHORT).show();
+					return true;
 				}
 			});
 			scheduleTitle.setOnClickListener(new OnClickListener() {
@@ -183,6 +204,14 @@ public class SActivity extends FragmentActivity implements
 				}
 
 			});
+			scheduleTitle.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Go to Today",
+							Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
 			scheduleWeekDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -192,23 +221,36 @@ public class SActivity extends FragmentActivity implements
 				}
 
 			});
+			scheduleWeekDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Go to Today",
+							Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
 			nextHol.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mParser.goToNextHoliday();
-					updatePeriods();
+					if (mParser.goToNextHoliday())
+						updatePeriods();
+					else
+						Toast.makeText(SActivity.this,
+								"No holidays in the near future. :(",
+								Toast.LENGTH_SHORT).show();
+				}
+			});
+			nextHol.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Upcoming Holiday",
+							Toast.LENGTH_SHORT).show();
+					return true;
 				}
 			});
 
-			/*
-			 * View overlay = new View(this); WindowManager.LayoutParams p = new
-			 * WindowManager.LayoutParams(); p.gravity = Gravity.TOP; p.type =
-			 * WindowManager.LayoutParams.TYPE_APPLICATION_PANEL; p.token =
-			 * overlay.getWindowToken(); overlay.setOnTouchListener(new
-			 * MySwipeListener()); WindowManager wManager = (WindowManager)
-			 * getSystemService(Context.WINDOW_SERVICE);
-			 * wManager.addView(overlay, p);
-			 */
+			// nextHol.setColorFilter(Color.GREEN);
+
 			SStatic.updateCurrentTime();
 
 			int n = getIntent().getIntExtra(GOTOALTDAY_KEY, -1);
@@ -248,7 +290,8 @@ public class SActivity extends FragmentActivity implements
 
 		// Alarms
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-		startAlarm();
+		if (mParser.getSData().getIsInitialized())
+			startAlarm();
 	}
 
 	private void saveLatestDay() {
@@ -299,11 +342,6 @@ public class SActivity extends FragmentActivity implements
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				cal.getTimeInMillis(), 1000 * timeInSec, operation);
 
-		// alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-		// cal.getTimeInMillis(), timeInSec * 1000, operation);
-		// alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
-		// + (10 * 1000), operation);
-
 		// Toast.makeText(this, "Alarm started; " + timeInSec + " seconds",
 		// Toast.LENGTH_SHORT).show();
 	}
@@ -352,27 +390,44 @@ public class SActivity extends FragmentActivity implements
 			new DownloadScheduleTask().execute();
 			return true;
 		case R.id.action_updatedDays:
-			// if (mParser.getAlteredDays() == null)
-			// new DownloadScheduleTask().execute();
 			showAlteredDays();
 			return true;
 		case R.id.action_setPeriods:
 			goToSettingPeriod(false);
 			return true;
-		case R.id.action_resetEverything:
-			// new DownloadBaseScheduleTask().execute();
-			mParser.resetEverything();
-			recreate();
+			// case R.id.action_resetEverything:
+			// resetEverything();
+			// return true;
+		case R.id.action_lastUpdates:
+			showLastUpdates();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+	public void resetEverything() {
+		mParser.resetEverything();
+		recreate();
+	}
+
 	private void showAlteredDays() {
 		SelectUpdDayFragment dialog = new SelectUpdDayFragment();
 		dialog.setUpdatedDays(mParser.getUpdatedDays());
 		dialog.show(getSupportFragmentManager(), "SelectAltDayFragment");
+	}
+
+	private void showLastUpdates() {
+		LastUpdatesFragment dialog = new LastUpdatesFragment();
+		dialog.schedUpdates = mParser.getSData().getUpdateTime();
+		dialog.holUpdates = mParser.getSData().getHolidaysUpdateTime();
+		dialog.show(getSupportFragmentManager(), "LastUpdatesFragment");
+	}
+
+	@SuppressWarnings("unused")
+	private void showConfirmReset() {
+		ConfirmResetFragment dialog = new ConfirmResetFragment();
+		dialog.show(getSupportFragmentManager(), "ConfirmResetFragment");
 	}
 
 	// LOADING PERIODS
@@ -402,7 +457,9 @@ public class SActivity extends FragmentActivity implements
 
 		// Sets color based on if the schedule is adjusted or not
 		if (isU != SParser.UPDATED_NO) {
-			this.setTextColor(Color.parseColor("#006600"), scheduleTitle,
+			this.setTextColor(
+					Color.parseColor((isU == SParser.UPDATED_HOL) ? SStatic.COLOR_HOLIDAY
+							: SStatic.COLOR_UPDATE), scheduleTitle,
 					scheduleWeekDay);
 			scheduleTitle.setTypeface(null, Typeface.BOLD);
 		} else {
@@ -414,6 +471,13 @@ public class SActivity extends FragmentActivity implements
 		if (periods != null) {
 			periodsAdapter = new PeriodsAdapter(this, periods, isU);
 			periodList.setAdapter(periodsAdapter);
+		}
+
+		// Checks for holidays
+		if (mParser.isHolidayInFuture() >= 0) {
+			nextHol.setColorFilter(Color.parseColor(SStatic.COLOR_HOLIDAY));
+		} else {
+			nextHol.setColorFilter(Color.TRANSPARENT);
 		}
 	}
 
@@ -428,7 +492,7 @@ public class SActivity extends FragmentActivity implements
 
 			if (spinnerData == null) {
 				// No period groups
-				spinnerData = new String[] { "No groups" };
+				spinnerData = new String[] { "N/A" };
 			}
 
 			// If oldSpinnerData is null, this is right after onCreate()
@@ -579,7 +643,7 @@ public class SActivity extends FragmentActivity implements
 		Period p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
-		mParser.getSData().setPeriodName(p, savedName);
+		mParser.getSData().setPeriodName(p.mPeriodShort, savedName);
 		updatePeriods();
 	}
 
@@ -588,7 +652,7 @@ public class SActivity extends FragmentActivity implements
 		closeKeyboard(dialog);
 		Period p = periods.get(chosenIndex);
 		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
-		mParser.getSData().deletePeriodName(p);
+		mParser.getSData().deletePeriodName(p.mPeriodShort);
 		updatePeriods();
 	}
 
@@ -653,10 +717,10 @@ public class SActivity extends FragmentActivity implements
 				mParser.getSData().saveInitialize(false);
 				if (result.equals("I"))
 					// Internet error
-					setMessage("Please check your connection to the Internet.");
+					setInitMessage("Please check your connection to the Internet.");
 				else
 					// general error
-					setMessage("There was an error. Please try again later or contact the ASB PR.");
+					setInitMessage("There was an error. Please try again later or contact the ASB PR.");
 			}
 
 			pd.dismiss();
@@ -681,9 +745,6 @@ public class SActivity extends FragmentActivity implements
 		@Override
 		protected String doInBackground(Void... params) {
 			if (!Network.isConnectedToInternet(SActivity.this)) {
-				Toast.makeText(SActivity.this,
-						"No connection to the Internet.", Toast.LENGTH_LONG)
-						.show();
 				return null;
 			}
 			boolean u = mParser.saveAndParseUpdatesFile();
@@ -706,20 +767,23 @@ public class SActivity extends FragmentActivity implements
 					updatePeriods();
 					t = Toast.makeText(SActivity.this,
 							"Schedule has been updated!", Toast.LENGTH_LONG);
-					mParser.getSData().saveNotification(false);
 					showAlteredDays();
 				} else if (result.equals("H")) {
 					updatePeriods();
 					t = Toast.makeText(SActivity.this, "New holidays!",
 							Toast.LENGTH_LONG);
-					mParser.getSData().saveNotification(false);
 				} else {
 					t = Toast.makeText(SActivity.this, "No updates!",
 							Toast.LENGTH_LONG);
 				}
+				mParser.getSData().saveNotification(false);
 
 				t.show();
+			} else {
+				t = Toast.makeText(SActivity.this,
+						"No connection to the Internet.", Toast.LENGTH_LONG);
 			}
+			t.show();
 			pd.dismiss();
 		}
 	}
@@ -800,6 +864,7 @@ public class SActivity extends FragmentActivity implements
 			@Override
 			public void onClick(View v) {
 				clearPeriods();
+				savePeriods(i);
 			}
 		});
 
@@ -807,19 +872,22 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	// SETTING PERIODS
+	// Setup
 	private void setPeriodEditTexts() {
 		setPeriod((EditText) findViewById(R.id.period1), mParser.getSData()
-				.getPeriodName(1));
+				.getPeriodName(1 + ""));
 		setPeriod((EditText) findViewById(R.id.period2), mParser.getSData()
-				.getPeriodName(2));
+				.getPeriodName(2 + ""));
 		setPeriod((EditText) findViewById(R.id.period3), mParser.getSData()
-				.getPeriodName(3));
+				.getPeriodName(3 + ""));
 		setPeriod((EditText) findViewById(R.id.period4), mParser.getSData()
-				.getPeriodName(4));
+				.getPeriodName(4 + ""));
 		setPeriod((EditText) findViewById(R.id.period5), mParser.getSData()
-				.getPeriodName(5));
+				.getPeriodName(5 + ""));
 		setPeriod((EditText) findViewById(R.id.period6), mParser.getSData()
-				.getPeriodName(6));
+				.getPeriodName(6 + ""));
+		setPeriod((EditText) findViewById(R.id.periodLunch), mParser.getSData()
+				.getPeriodName(SStatic.lunch_short));
 	}
 
 	private void setPeriod(EditText e, String pn) {
@@ -837,10 +905,12 @@ public class SActivity extends FragmentActivity implements
 			((EditText) findViewById(R.id.period4)).setText("");
 			((EditText) findViewById(R.id.period5)).setText("");
 			((EditText) findViewById(R.id.period6)).setText("");
+			((EditText) findViewById(R.id.periodLunch)).setText("");
 		}
 	}
 
-	private void savePeriodName(int i, String s) {
+	// Saving
+	private void savePeriodName(String i, String s) {
 		if (!s.equals(""))
 			mParser.getSData().setPeriodName(i, s);
 		else
@@ -848,18 +918,22 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	private void savePeriods(boolean isInit) {
-		savePeriodName(1, ((EditText) findViewById(R.id.period1)).getText()
-				.toString());
-		savePeriodName(2, ((EditText) findViewById(R.id.period2)).getText()
-				.toString());
-		savePeriodName(3, ((EditText) findViewById(R.id.period3)).getText()
-				.toString());
-		savePeriodName(4, ((EditText) findViewById(R.id.period4)).getText()
-				.toString());
-		savePeriodName(5, ((EditText) findViewById(R.id.period5)).getText()
-				.toString());
-		savePeriodName(6, ((EditText) findViewById(R.id.period6)).getText()
-				.toString());
+		savePeriodName(1 + "", ((EditText) findViewById(R.id.period1))
+				.getText().toString());
+		savePeriodName(2 + "", ((EditText) findViewById(R.id.period2))
+				.getText().toString());
+		savePeriodName(3 + "", ((EditText) findViewById(R.id.period3))
+				.getText().toString());
+		savePeriodName(4 + "", ((EditText) findViewById(R.id.period4))
+				.getText().toString());
+		savePeriodName(5 + "", ((EditText) findViewById(R.id.period5))
+				.getText().toString());
+		savePeriodName(6 + "", ((EditText) findViewById(R.id.period6))
+				.getText().toString());
+
+		savePeriodName(SStatic.lunch_short,
+				((EditText) findViewById(R.id.periodLunch)).getText()
+						.toString());
 
 		Intent intent = new Intent(this, SActivity.class);
 		intent.putExtra(INIT_KEY, isInit);
@@ -867,17 +941,7 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	// HELPERS
-	/**
-	 * Changes the schedule by the given number of days.
-	 * 
-	 * @param d
-	 *            the number of days forwards or backwards to change schedule by
-	 */
-	public void changeScheduleBy(int d) {
-		mParser.shiftDay(d);
-	}
-
-	public void setMessage(String s) {
+	private void setInitMessage(String s) {
 		if (mSState == ScheduleState.INIT) {
 			TextView v = (TextView) findViewById(R.id.messageView);
 			v.setText(s);

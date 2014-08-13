@@ -15,6 +15,11 @@ public class SStatic {
 
 	public static Time now;
 
+	public static String lunch_short = "LN";
+	public static String hr_short = "HR";
+	public static String COLOR_UPDATE = "#006600";
+	public static String COLOR_HOLIDAY = "#D4AF37";//"#FFD700";
+
 	public static String[] months = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
 			"November", "December" };
@@ -62,6 +67,16 @@ public class SStatic {
 		return time;
 	}
 
+	public static String getTimeString(Time t) {
+		String s = months[t.month] + " " + t.monthDay + ", " + t.year + " ";
+		s += t.hour + ":" + ((t.minute < 10) ? "0" + t.minute : t.minute);
+		return s;
+	}
+
+	public static String getTimeString(String s) {
+		return getTimeString(getTimeFromString(s, 15));
+	}
+
 	/**
 	 * Returns the standard String form of the given time.
 	 */
@@ -74,10 +89,7 @@ public class SStatic {
 	 * Returns the standard String form of the given time.
 	 */
 	public static String getDateString(String s) {
-		Time x = new Time();
-		x.parse(s);
-		x.normalize(false);
-		return getDateString(x);
+		return getDateString(getTimeFromString(s, 8));
 	}
 
 	/**
@@ -112,7 +124,7 @@ public class SStatic {
 
 	public static ArrayList<String> getArrayListFromArray(String[] s) {
 		ArrayList<String> a = new ArrayList<String>();
-		for(int i = 0; i < s.length; i++) {
+		for (int i = 0; i < s.length; i++) {
 			a.add(s[i]);
 		}
 		return a;
@@ -123,10 +135,10 @@ public class SStatic {
 		return (string = string.substring(string.indexOf(" ") + 1));
 	}
 
-	public static Time getTimeFromString(String s) {
+	public static Time getTimeFromString(String s, int len) {
 		Time t = new Time();
-		if(s.length() > 8)
-			s = s.substring(0, 8);
+		if (s.length() > len)
+			s = s.substring(0, len);
 		try {
 			t.parse(s);
 			t.normalize(false);
@@ -134,5 +146,12 @@ public class SStatic {
 			t.setToNow();
 		}
 		return t;
+	}
+
+	public static Time absShiftDay(Time time, int i) {
+		time.set(0, time.minute, time.hour, time.monthDay + i, time.month,
+				time.year);
+		time.normalize(false);
+		return null;
 	}
 }
