@@ -1,0 +1,19 @@
+﻿<Page
+    x:Class="RHSMustangs.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RHSMustangs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <TextBlock x:Name="mainTitle" HorizontalAlignment="Left" Margin="15,15,0,-1" TextWrapping="Wrap" Text="RHS Mustangs" VerticalAlignment="Top" FontSize="48"/>
+        <ListView x:Name="mainList" HorizontalAlignment="Left" Margin="15,73,0,0" VerticalAlignment="Top" MinWidth="2" Width="360">
+            <ListViewItem Content="Links" FontSize="24" Tapped="linksTapped"/>
+            <ListViewItem Content="Schedule" FontSize="24" />
+        </ListView>
+        <HyperlinkButton Content="Navigate" HorizontalAlignment="Left" Margin="103,248,0,0" VerticalAlignment="Top" Click="HyperlinkButton_Click"/>
+    </Grid>
+</Page>
