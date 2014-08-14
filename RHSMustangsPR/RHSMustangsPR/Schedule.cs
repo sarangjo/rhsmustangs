@@ -8,8 +8,13 @@ namespace RHSMustangsPR
 {
     public class Schedule
     {
-        private String date;
-        private List<Period> periods;
-        private List<String> groups;
+        private string date;
+        private List<Period> periods = new List<Period>();
+        private List<string> groups = new List<string>();
+
+        public void addPeriod(Period p)
+        {
+            periods.Add(p);
+        }
     }
 }

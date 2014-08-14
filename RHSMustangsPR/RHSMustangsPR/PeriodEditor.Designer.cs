@@ -42,12 +42,16 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.addPeriodBtn = new System.Windows.Forms.Button();
+            this.groupsListBox = new System.Windows.Forms.ListBox();
+            this.newGroupBtn = new System.Windows.Forms.Button();
+            this.newGroupText = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // periodButton
             // 
             this.periodButton.AutoSize = true;
-            this.periodButton.Location = new System.Drawing.Point(24, 28);
+            this.periodButton.Location = new System.Drawing.Point(69, 28);
             this.periodButton.Name = "periodButton";
             this.periodButton.Size = new System.Drawing.Size(55, 17);
             this.periodButton.TabIndex = 0;
@@ -59,7 +63,7 @@
             // lunchButton
             // 
             this.lunchButton.AutoSize = true;
-            this.lunchButton.Location = new System.Drawing.Point(24, 52);
+            this.lunchButton.Location = new System.Drawing.Point(69, 48);
             this.lunchButton.Name = "lunchButton";
             this.lunchButton.Size = new System.Drawing.Size(55, 17);
             this.lunchButton.TabIndex = 1;
@@ -71,21 +75,21 @@
             // periodN
             // 
             this.periodN.Enabled = false;
-            this.periodN.Location = new System.Drawing.Point(86, 28);
+            this.periodN.Location = new System.Drawing.Point(131, 28);
             this.periodN.Name = "periodN";
             this.periodN.Size = new System.Drawing.Size(29, 20);
             this.periodN.TabIndex = 2;
             // 
             // shortName
             // 
-            this.shortName.Location = new System.Drawing.Point(220, 27);
+            this.shortName.Location = new System.Drawing.Point(265, 27);
             this.shortName.Name = "shortName";
             this.shortName.Size = new System.Drawing.Size(36, 20);
             this.shortName.TabIndex = 3;
             // 
             // periodName
             // 
-            this.periodName.Location = new System.Drawing.Point(220, 49);
+            this.periodName.Location = new System.Drawing.Point(265, 49);
             this.periodName.Name = "periodName";
             this.periodName.Size = new System.Drawing.Size(87, 20);
             this.periodName.TabIndex = 4;
@@ -93,7 +97,7 @@
             // shortLabel
             // 
             this.shortLabel.AutoSize = true;
-            this.shortLabel.Location = new System.Drawing.Point(137, 31);
+            this.shortLabel.Location = new System.Drawing.Point(182, 31);
             this.shortLabel.Name = "shortLabel";
             this.shortLabel.Size = new System.Drawing.Size(63, 13);
             this.shortLabel.TabIndex = 5;
@@ -102,7 +106,7 @@
             // nameLabel
             // 
             this.nameLabel.AutoSize = true;
-            this.nameLabel.Location = new System.Drawing.Point(137, 52);
+            this.nameLabel.Location = new System.Drawing.Point(182, 52);
             this.nameLabel.Name = "nameLabel";
             this.nameLabel.Size = new System.Drawing.Size(68, 13);
             this.nameLabel.TabIndex = 6;
@@ -110,28 +114,28 @@
             // 
             // startHText
             // 
-            this.startHText.Location = new System.Drawing.Point(146, 88);
+            this.startHText.Location = new System.Drawing.Point(194, 89);
             this.startHText.Name = "startHText";
             this.startHText.Size = new System.Drawing.Size(29, 20);
             this.startHText.TabIndex = 7;
             // 
             // startMText
             // 
-            this.startMText.Location = new System.Drawing.Point(181, 88);
+            this.startMText.Location = new System.Drawing.Point(229, 89);
             this.startMText.Name = "startMText";
             this.startMText.Size = new System.Drawing.Size(29, 20);
             this.startMText.TabIndex = 8;
             // 
             // endMText
             // 
-            this.endMText.Location = new System.Drawing.Point(181, 114);
+            this.endMText.Location = new System.Drawing.Point(229, 115);
             this.endMText.Name = "endMText";
             this.endMText.Size = new System.Drawing.Size(29, 20);
             this.endMText.TabIndex = 12;
             // 
             // endHText
             // 
-            this.endHText.Location = new System.Drawing.Point(146, 114);
+            this.endHText.Location = new System.Drawing.Point(194, 115);
             this.endHText.Name = "endHText";
             this.endHText.Size = new System.Drawing.Size(29, 20);
             this.endHText.TabIndex = 11;
@@ -139,7 +143,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(85, 91);
+            this.label1.Location = new System.Drawing.Point(133, 92);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(55, 13);
             this.label1.TabIndex = 13;
@@ -148,7 +152,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(85, 117);
+            this.label2.Location = new System.Drawing.Point(133, 118);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(52, 13);
             this.label2.TabIndex = 14;
@@ -156,7 +160,7 @@
             // 
             // addPeriodBtn
             // 
-            this.addPeriodBtn.Location = new System.Drawing.Point(125, 223);
+            this.addPeriodBtn.Location = new System.Drawing.Point(170, 275);
             this.addPeriodBtn.Name = "addPeriodBtn";
             this.addPeriodBtn.Size = new System.Drawing.Size(75, 23);
             this.addPeriodBtn.TabIndex = 15;
@@ -164,11 +168,51 @@
             this.addPeriodBtn.UseVisualStyleBackColor = true;
             this.addPeriodBtn.Click += new System.EventHandler(this.addPeriodBtn_Click);
             // 
+            // groupsListBox
+            // 
+            this.groupsListBox.FormattingEnabled = true;
+            this.groupsListBox.Items.AddRange(new object[] {
+            "Everyone"});
+            this.groupsListBox.Location = new System.Drawing.Point(55, 165);
+            this.groupsListBox.Name = "groupsListBox";
+            this.groupsListBox.Size = new System.Drawing.Size(120, 95);
+            this.groupsListBox.TabIndex = 16;
+            // 
+            // newGroupBtn
+            // 
+            this.newGroupBtn.Location = new System.Drawing.Point(296, 182);
+            this.newGroupBtn.Name = "newGroupBtn";
+            this.newGroupBtn.Size = new System.Drawing.Size(56, 25);
+            this.newGroupBtn.TabIndex = 17;
+            this.newGroupBtn.Text = "Add";
+            this.newGroupBtn.UseVisualStyleBackColor = true;
+            this.newGroupBtn.Click += new System.EventHandler(this.newGroupBtn_Click);
+            // 
+            // newGroupText
+            // 
+            this.newGroupText.Location = new System.Drawing.Point(186, 185);
+            this.newGroupText.Name = "newGroupText";
+            this.newGroupText.Size = new System.Drawing.Size(100, 20);
+            this.newGroupText.TabIndex = 18;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(95, 149);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(41, 13);
+            this.label3.TabIndex = 19;
+            this.label3.Text = "Groups";
+            // 
             // PeriodEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(327, 258);
+            this.ClientSize = new System.Drawing.Size(405, 310);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.newGroupText);
+            this.Controls.Add(this.newGroupBtn);
+            this.Controls.Add(this.groupsListBox);
             this.Controls.Add(this.addPeriodBtn);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -206,6 +250,10 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button addPeriodBtn;
+        private System.Windows.Forms.ListBox groupsListBox;
+        private System.Windows.Forms.Button newGroupBtn;
+        private System.Windows.Forms.TextBox newGroupText;
+        private System.Windows.Forms.Label label3;
 
     }
 }
