@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace RHSMustangsPR
 {
-    class Period
+    public class Period
     {
+        public static String OVERRIDE_DEFAULT = "-";
+
         public string periodShort;
         public string overrideName;
         public int startH, startM, endH, endM;
@@ -18,7 +20,7 @@ namespace RHSMustangsPR
         /// </summary>
         public override String ToString()
         {
-            return periodShort + " " + ((overrideName == null) ? "-" : overrideName) + " " + startH + " " + startM + " " + endH + " " + endM + " " + groupN;
+            return periodShort + " " + ((overrideName == null) ? OVERRIDE_DEFAULT : overrideName) + " " + startH + " " + startM + " " + endH + " " + endM + " " + groupN;
         }
     }
 }

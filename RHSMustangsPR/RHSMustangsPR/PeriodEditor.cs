@@ -19,20 +19,40 @@ namespace RHSMustangsPR
             InitializeComponent();
             addSched = s;
 
+            setupGroups();
+
             //initializeGroupBoxes();
         }
 
-        
-
-        private void lunchButton_CheckedChanged(object sender, EventArgs e)
+        private void setupGroups()
         {
-            periodN.Enabled = !lunchButton.Checked;
+            groupsListBox.Items.Clear();
+            for (int i = 0; i < addSched.sched.groups.Count; i++)
+            {
+                groupsListBox.Items.Add(addSched.sched.groups[i]);
+            }
         }
 
-        private void periodButton_CheckedChanged(object sender, EventArgs e)
+        #region Radio Buttons
+        private void otherRadio_CheckedChanged(object sender, EventArgs e)
         {
-            periodN.Enabled = periodButton.Checked;
+            periodN.Enabled = !otherRadio.Checked;
         }
+
+        private void periodRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            periodN.Enabled = periodRadio.Checked;
+            shortName.Enabled = !periodRadio.Checked;
+            periodName.Enabled = !periodRadio.Checked;
+        }
+
+        private void lunchRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            periodN.Enabled = !lunchRadio.Checked;
+            shortName.Enabled = !lunchRadio.Checked;
+            periodName.Enabled = !lunchRadio.Checked;
+        }
+        #endregion
 
         private void addPeriodBtn_Click(object sender, EventArgs e)
         {
@@ -41,29 +61,55 @@ namespace RHSMustangsPR
 
             Period p = new Period();
 
-            // First, checks all 5 fields.
-            // 1 - Short
-            if (!lunchRadio.Checked && !hrRadio.Checked)
+            // Period
+            if (periodRadio.Checked)
             {
-                if (!int.TryParse(periodNumberText.Text, out periodN) || periodN == 0)
+                int n = -1;
+                if (!int.TryParse(periodN.Text, out n) || n == 0)
                 {
-                    if (shortFormText.Text.Trim().Length <= 0)
-                    {
-                        errors++;
-                        messageBoxText += "Please enter a valid period number.\n";
-                    }
+                    errors++;
+                    messageBoxText += "Please enter a valid period number.\n";
                 }
-                else if (shortFormText.Text.Trim().Length <= 0 || shortFormText.Text.Trim().Length > 2)
+                else
+                {
+                    p.periodShort = periodN.Text;
+                    p.overrideName = Period.OVERRIDE_DEFAULT;
+                }
+            }
+            else if (lunchRadio.Checked)
+            {
+                p.periodShort = "LN";
+                p.overrideName = Period.OVERRIDE_DEFAULT;
+            }
+            else if (otherRadio.Checked)
+            {
+                // Short
+                if (shortName.Text.Length <= 2 || shortName.Text.Length > 0)
+                    p.periodShort = shortName.Text;
+                else
                 {
                     errors++;
                     messageBoxText += "Short form text needs to be 1-2 characters.\n";
                 }
+
+                // Period Name
+                if (periodName.Text.Length > 0)
+                {
+                    p.overrideName = periodName.Text;
+                }
+                else
+                {
+                    errors++;
+                    messageBoxText += "Please enter a period name.\n";
+                }
             }
+
+            // Times
             // Parse integers
-            bool intErrors = !(int.TryParse(startHr.Text, out startH) &&
-                int.TryParse(startMin.Text, out startM) &&
-                int.TryParse(endHr.Text, out endH) &&
-                int.TryParse(endMin.Text, out endM));
+            bool intErrors = !(int.TryParse(startHText.Text, out p.startH) &&
+                int.TryParse(startMText.Text, out p.startM) &&
+                int.TryParse(endHText.Text, out p.endH) &&
+                int.TryParse(endMText.Text, out p.endM));
             if (intErrors)
             {
                 messageBoxText += "Please enter valid numbers for the start and end times.\n";
@@ -72,17 +118,15 @@ namespace RHSMustangsPR
             else
             {
                 // 3/4 - Start/End Times
-                if (startH > 24 || startH < 0 || endH > 24 || endH < 0 || startM > 60 || startM < 0 || endM > 60 || endM < 0)
+                if (p.startH > 24 || p.startH < 0 || p.endH > 24 || p.endH < 0 || p.startM > 60 || p.startM < 0 || p.endM > 60 || p.endM < 0)
                 {
                     messageBoxText += "Please enter valid numbers for the start and end times.\n";
                     errors++;
                 }
             }
-            if (!aRadio.Checked && !bRadio.Checked && !cRadio.Checked && !allRadio.Checked)
-            {
-                messageBoxText += "Please select a lunch type.\n";
-                errors++;
-            }
+
+            // Group
+            p.groupN = (groupsListBox.SelectedIndex < 0) ? 0 : groupsListBox.SelectedIndex;
 
             if (errors > 0)
             {
@@ -90,35 +134,8 @@ namespace RHSMustangsPR
             }
             else
             {
-                // Creating the String
-                String p = "";
-
-                p += (periodN == 0) ? "" : (periodN + " ");
-                if (lunchRadio.Checked)
-                {
-                    p += "L";
-                    if (aRadio.Checked) p += "A ";
-                    else if (bRadio.Checked) p += "B ";
-                    else if (cRadio.Checked) p += "C ";
-                    else if (allRadio.Checked) p += "N ";
-                }
-                else
-                {
-                    p += (hrRadio.Checked) ? "HR " : "";
-                    p += shortFormText.Text.Trim() + " ";
-                    if (customNameText.Text.Trim().Length > 0)
-                        p += customNameText.Text.Trim() + " ";
-                    else
-                        p += "- ";
-                }
-                p += startH + " " + startM + " ";
-                p += endH + " " + endM + " ";
-                if (aRadio.Checked) p += "a";
-                else if (bRadio.Checked) p += "b";
-                else if (cRadio.Checked) p += "c";
-                else if (allRadio.Checked) p += "0";
-
                 addSched.addPeriod(p);
+                addSched.saveGroups(groupsListBox.Items);
                 this.Close();
             }
         }
@@ -131,12 +148,19 @@ namespace RHSMustangsPR
                 {
                     groupsListBox.Items.Add(newGroupText.Text);
                     newGroupText.Text = "";
+                    groupsListBox.SelectedIndex = groupsListBox.Items.Count - 1;
                 }
                 catch (Exception ex)
                 {
-
                 }
-                
+            }
+        }
+
+        private void shortName_TextChanged(object sender, EventArgs e)
+        {
+            if (shortName.Text.Trim().Length > 0)
+            {
+                otherRadio.Checked = true;
             }
         }
 

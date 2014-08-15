@@ -12,7 +12,7 @@ namespace RHSMustangsPR
 {
     public partial class AddSchedule : Form
     {
-        public Schedule sched;
+        public Schedule sched = new Schedule();
 
         public AddSchedule()
         {
@@ -25,8 +25,20 @@ namespace RHSMustangsPR
             new PeriodEditor(this).Show();
         }
 
-        public void addPeriod(String s) {
-            listBox1.Items.Add(s);
+        public void addPeriod(Period s) {
+            sched.addPeriod(s);
+            listBox1.Items.Add(s.ToString());
+        }
+
+        public void saveGroups(ListBox.ObjectCollection items)
+        {
+            sched.groups = new List<string>();
+            groupsList.Items.Clear();
+            for (int i = 0; i < items.Count; i++)
+            {
+                sched.groups.Add((string)items[i]);
+                groupsList.Items.Add((string)items[i] + "\n");
+            }
         }
     }
 }
