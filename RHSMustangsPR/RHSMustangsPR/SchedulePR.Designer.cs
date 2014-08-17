@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.removeGrpBtn = new System.Windows.Forms.Button();
             this.otherRadio = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
@@ -49,12 +48,7 @@
             this.periodN = new System.Windows.Forms.TextBox();
             this.lunchRadio = new System.Windows.Forms.RadioButton();
             this.periodRadio = new System.Windows.Forms.RadioButton();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.whatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenuStrip1.SuspendLayout();
+            this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.SuspendLayout();
             // 
             // removeGrpBtn
@@ -229,46 +223,18 @@
             this.periodRadio.Text = "Period";
             this.periodRadio.UseVisualStyleBackColor = true;
             // 
-            // contextMenuStrip1
+            // monthCalendar1
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.whatToolStripMenuItem,
-            this.exitToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(103, 70);
-            // 
-            // fileToolStripMenuItem
-            // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addToolStripMenuItem});
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
-            this.fileToolStripMenuItem.Text = "File";
-            // 
-            // whatToolStripMenuItem
-            // 
-            this.whatToolStripMenuItem.Name = "whatToolStripMenuItem";
-            this.whatToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
-            this.whatToolStripMenuItem.Text = "What";
-            // 
-            // exitToolStripMenuItem
-            // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
-            this.exitToolStripMenuItem.Text = "Exit";
-            // 
-            // addToolStripMenuItem
-            // 
-            this.addToolStripMenuItem.Name = "addToolStripMenuItem";
-            this.addToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.addToolStripMenuItem.Text = "Add";
+            this.monthCalendar1.Location = new System.Drawing.Point(433, 57);
+            this.monthCalendar1.Name = "monthCalendar1";
+            this.monthCalendar1.TabIndex = 42;
             // 
             // SchedulePR
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1127, 767);
+            this.Controls.Add(this.monthCalendar1);
             this.Controls.Add(this.removeGrpBtn);
             this.Controls.Add(this.otherRadio);
             this.Controls.Add(this.label3);
@@ -291,7 +257,6 @@
             this.Controls.Add(this.periodRadio);
             this.Name = "SchedulePR";
             this.Text = "SchedulePR";
-            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -319,11 +284,7 @@
         private System.Windows.Forms.TextBox periodN;
         private System.Windows.Forms.RadioButton lunchRadio;
         private System.Windows.Forms.RadioButton periodRadio;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem addToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem whatToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.MonthCalendar monthCalendar1;
 
     }
 }
