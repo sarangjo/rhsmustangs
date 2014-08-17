@@ -47,6 +47,7 @@
             this.newGroupText = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.otherRadio = new System.Windows.Forms.RadioButton();
+            this.removeGrpBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // periodRadio
@@ -218,11 +219,22 @@
             this.otherRadio.UseVisualStyleBackColor = true;
             this.otherRadio.CheckedChanged += new System.EventHandler(this.otherRadio_CheckedChanged);
             // 
+            // removeGrpBtn
+            // 
+            this.removeGrpBtn.Location = new System.Drawing.Point(186, 234);
+            this.removeGrpBtn.Name = "removeGrpBtn";
+            this.removeGrpBtn.Size = new System.Drawing.Size(75, 23);
+            this.removeGrpBtn.TabIndex = 21;
+            this.removeGrpBtn.Text = "Remove Selected";
+            this.removeGrpBtn.UseVisualStyleBackColor = true;
+            this.removeGrpBtn.Click += new System.EventHandler(this.removeGrpBtn_Click);
+            // 
             // PeriodEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(405, 334);
+            this.Controls.Add(this.removeGrpBtn);
             this.Controls.Add(this.otherRadio);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.newGroupText);
@@ -270,6 +282,7 @@
         private System.Windows.Forms.TextBox newGroupText;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.RadioButton otherRadio;
+        private System.Windows.Forms.Button removeGrpBtn;
 
     }
 }

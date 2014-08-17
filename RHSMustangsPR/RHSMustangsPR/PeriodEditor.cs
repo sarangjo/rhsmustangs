@@ -164,6 +164,14 @@ namespace RHSMustangsPR
             }
         }
 
+        private void removeGrpBtn_Click(object sender, EventArgs e)
+        {
+            if (groupsListBox.SelectedIndex > 0)
+            {
+                groupsListBox.Items.RemoveAt(groupsListBox.SelectedIndex);
+            }
+        }
+
         /*private void addPeriodButton_Click(object sender, EventArgs e)
         {
             String messageBoxText = "";

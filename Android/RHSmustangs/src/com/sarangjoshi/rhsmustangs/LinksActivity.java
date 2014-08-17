@@ -38,7 +38,10 @@ public class LinksActivity extends Activity {
 		OnItemClickListener mItemListener = new OnItemClickListener() {
 			public void onItemClick(AdapterView parent, View v, int position,
 					long id) {
-				openWebURL(linkmap.get(((TextView) v).getText()));
+				if(position != 1)
+					openWebURL(linkmap.get(((TextView) v).getText()));
+				else
+					startActivity(getFacebookIntent());
 			}
 		};
 
@@ -67,6 +70,18 @@ public class LinksActivity extends Activity {
 		linkNames[1] = "Facebook";
 		linkNames[2] = "Twitter";
 		linkNames[3] = "Instagram";
+	}
+
+	public Intent getFacebookIntent() {
+		try {
+			getPackageManager()
+					.getPackageInfo("com.facebook.katana", 0);
+			return new Intent(Intent.ACTION_VIEW,
+					Uri.parse("fb://page/320359521377855"));
+		} catch (Exception e) {
+			return new Intent(Intent.ACTION_VIEW,
+					Uri.parse("https://www.facebook.com/redmondhighasb"));
+		}
 	}
 
 	public void openWebURL(String inURL) {
