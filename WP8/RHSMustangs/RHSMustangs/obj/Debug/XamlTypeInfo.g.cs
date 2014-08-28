@@ -124,17 +124,31 @@ namespace RHSMustangs.RHSMustangs_XamlTypeInfo
 
         private void InitTypeTables()
         {
-            _typeNameTable = new string[4];
-            _typeNameTable[0] = "RHSMustangs.MainPage";
+            _typeNameTable = new string[11];
+            _typeNameTable[0] = "RHSMustangs.GridTest";
             _typeNameTable[1] = "Windows.UI.Xaml.Controls.Page";
             _typeNameTable[2] = "Windows.UI.Xaml.Controls.UserControl";
-            _typeNameTable[3] = "RHSMustangs.MyWebPage";
+            _typeNameTable[3] = "RHSMustangs.LinksPage";
+            _typeNameTable[4] = "RHSMustangs.Common.NavigationHelper";
+            _typeNameTable[5] = "Windows.UI.Xaml.DependencyObject";
+            _typeNameTable[6] = "RHSMustangs.Common.ObservableDictionary";
+            _typeNameTable[7] = "Object";
+            _typeNameTable[8] = "String";
+            _typeNameTable[9] = "RHSMustangs.SchedulePage";
+            _typeNameTable[10] = "RHSMustangs.MainPageOld";
 
-            _typeTable = new global::System.Type[4];
-            _typeTable[0] = typeof(global::RHSMustangs.MainPage);
+            _typeTable = new global::System.Type[11];
+            _typeTable[0] = typeof(global::RHSMustangs.GridTest);
             _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.Page);
             _typeTable[2] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
-            _typeTable[3] = typeof(global::RHSMustangs.MyWebPage);
+            _typeTable[3] = typeof(global::RHSMustangs.LinksPage);
+            _typeTable[4] = typeof(global::RHSMustangs.Common.NavigationHelper);
+            _typeTable[5] = typeof(global::Windows.UI.Xaml.DependencyObject);
+            _typeTable[6] = typeof(global::RHSMustangs.Common.ObservableDictionary);
+            _typeTable[7] = typeof(global::System.Object);
+            _typeTable[8] = typeof(global::System.String);
+            _typeTable[9] = typeof(global::RHSMustangs.SchedulePage);
+            _typeTable[10] = typeof(global::RHSMustangs.MainPageOld);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -169,8 +183,18 @@ namespace RHSMustangs.RHSMustangs_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_MainPage() { return new global::RHSMustangs.MainPage(); }
-        private object Activate_3_MyWebPage() { return new global::RHSMustangs.MyWebPage(); }
+        private object Activate_0_GridTest() { return new global::RHSMustangs.GridTest(); }
+        private object Activate_3_LinksPage() { return new global::RHSMustangs.LinksPage(); }
+        private object Activate_6_ObservableDictionary() { return new global::RHSMustangs.Common.ObservableDictionary(); }
+        private object Activate_9_SchedulePage() { return new global::RHSMustangs.SchedulePage(); }
+        private object Activate_10_MainPageOld() { return new global::RHSMustangs.MainPageOld(); }
+        private void MapAdd_6_ObservableDictionary(object instance, object key, object item)
+        {
+            var collection = (global::System.Collections.Generic.IDictionary<global::System.String, global::System.Object>)instance;
+            var newKey = (global::System.String)key;
+            var newItem = (global::System.Object)item;
+            collection.Add(newKey, newItem);
+        }
 
         private global::Windows.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
@@ -182,9 +206,9 @@ namespace RHSMustangs.RHSMustangs_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 0:   //  RHSMustangs.MainPage
+            case 0:   //  RHSMustangs.GridTest
                 userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_0_MainPage;
+                userType.Activator = Activate_0_GridTest;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -197,9 +221,54 @@ namespace RHSMustangs.RHSMustangs_XamlTypeInfo
                 xamlType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 3:   //  RHSMustangs.MyWebPage
+            case 3:   //  RHSMustangs.LinksPage
                 userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_3_MyWebPage;
+                userType.Activator = Activate_3_LinksPage;
+                userType.AddMemberName("NavigationHelper");
+                userType.AddMemberName("DefaultViewModel");
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 4:   //  RHSMustangs.Common.NavigationHelper
+                userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.DependencyObject"));
+                userType.SetIsReturnTypeStub();
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 5:   //  Windows.UI.Xaml.DependencyObject
+                xamlType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 6:   //  RHSMustangs.Common.ObservableDictionary
+                userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.DictionaryAdd = MapAdd_6_ObservableDictionary;
+                userType.SetIsReturnTypeStub();
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 7:   //  Object
+                xamlType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 8:   //  String
+                xamlType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 9:   //  RHSMustangs.SchedulePage
+                userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_9_SchedulePage;
+                userType.AddMemberName("NavigationHelper");
+                userType.AddMemberName("DefaultViewModel");
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 10:   //  RHSMustangs.MainPageOld
+                userType = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_10_MainPageOld;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -208,11 +277,59 @@ namespace RHSMustangs.RHSMustangs_XamlTypeInfo
         }
 
 
+        private object get_0_LinksPage_NavigationHelper(object instance)
+        {
+            var that = (global::RHSMustangs.LinksPage)instance;
+            return that.NavigationHelper;
+        }
+        private object get_1_LinksPage_DefaultViewModel(object instance)
+        {
+            var that = (global::RHSMustangs.LinksPage)instance;
+            return that.DefaultViewModel;
+        }
+        private object get_2_SchedulePage_NavigationHelper(object instance)
+        {
+            var that = (global::RHSMustangs.SchedulePage)instance;
+            return that.NavigationHelper;
+        }
+        private object get_3_SchedulePage_DefaultViewModel(object instance)
+        {
+            var that = (global::RHSMustangs.SchedulePage)instance;
+            return that.DefaultViewModel;
+        }
 
         private global::Windows.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
         {
             global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlMember xamlMember = null;
-            // No Local Properties
+            global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType userType;
+
+            switch (longMemberName)
+            {
+            case "RHSMustangs.LinksPage.NavigationHelper":
+                userType = (global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType)GetXamlTypeByName("RHSMustangs.LinksPage");
+                xamlMember = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlMember(this, "NavigationHelper", "RHSMustangs.Common.NavigationHelper");
+                xamlMember.Getter = get_0_LinksPage_NavigationHelper;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "RHSMustangs.LinksPage.DefaultViewModel":
+                userType = (global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType)GetXamlTypeByName("RHSMustangs.LinksPage");
+                xamlMember = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlMember(this, "DefaultViewModel", "RHSMustangs.Common.ObservableDictionary");
+                xamlMember.Getter = get_1_LinksPage_DefaultViewModel;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "RHSMustangs.SchedulePage.NavigationHelper":
+                userType = (global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType)GetXamlTypeByName("RHSMustangs.SchedulePage");
+                xamlMember = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlMember(this, "NavigationHelper", "RHSMustangs.Common.NavigationHelper");
+                xamlMember.Getter = get_2_SchedulePage_NavigationHelper;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "RHSMustangs.SchedulePage.DefaultViewModel":
+                userType = (global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlUserType)GetXamlTypeByName("RHSMustangs.SchedulePage");
+                xamlMember = new global::RHSMustangs.RHSMustangs_XamlTypeInfo.XamlMember(this, "DefaultViewModel", "RHSMustangs.Common.ObservableDictionary");
+                xamlMember.Getter = get_3_SchedulePage_DefaultViewModel;
+                xamlMember.SetIsReadOnly();
+                break;
+            }
             return xamlMember;
         }
     }

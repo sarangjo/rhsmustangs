@@ -16,7 +16,7 @@ namespace RHSMustangsPR
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AddSchedule());
+            Application.Run(new SchedulePR());
         }
     }
 }

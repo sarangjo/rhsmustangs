@@ -20,3 +20,4 @@ C:\Users\Sarang\Documents\GitHub\rhsmustangs\RHSMustangsPR\RHSMustangsPR\obj\Deb
 C:\Users\Sarang\Documents\GitHub\rhsmustangs\RHSMustangsPR\RHSMustangsPR\obj\Debug\RHSMustangsPR.Properties.Resources.resources
 C:\Users\Sarang\Documents\GitHub\rhsmustangs\RHSMustangsPR\RHSMustangsPR\obj\Debug\RHSMustangsPR.AddSchedule.resources
 C:\Users\Sarang\Documents\GitHub\rhsmustangs\RHSMustangsPR\RHSMustangsPR\obj\Debug\RHSMustangsPR.csproj.GenerateResource.Cache
+C:\Users\Sarang\Documents\GitHub\rhsmustangs\RHSMustangsPR\RHSMustangsPR\obj\Debug\RHSMustangsPR.SchedulePR.resources

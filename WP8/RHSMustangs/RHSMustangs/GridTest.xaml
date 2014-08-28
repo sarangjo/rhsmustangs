@@ -1,0 +1,32 @@
+﻿<Page
+    x:Class="RHSMustangs.GridTest"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RHSMustangs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Width="Auto" Height="Auto" Margin="10, 10, 10, 10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Image Margin="5, 5, 5, 5" x:Name="lwsdImage" Grid.ColumnSpan="3" Grid.Row="0" Source="Assets/LWSD.png"
+               Tapped="lwsdImage_Tapped"></Image>
+        <Image Margin="5, 5, 5, 5" x:Name="facebookImage" Grid.ColumnSpan="2" Grid.RowSpan="2" Grid.Row="1" Grid.Column="0" Source="Assets/Facebook.png"
+               Tapped="facebookImage_Tapped"></Image>
+        <Image Margin="5, 5, 5, 5" x:Name="twitterImage" Grid.Column="2" Grid.Row="1" Source="Assets/Twitter.png"
+               Tapped="twitterImage_Tapped"></Image>
+        <Image Margin="5, 5, 5, 5" x:Name="instagramImage" Grid.Column="2" Grid.Row="2" Source="Assets/Instagram.png"
+               Tapped="instagramImage_Tapped"></Image>
+    </Grid>
+</Page>

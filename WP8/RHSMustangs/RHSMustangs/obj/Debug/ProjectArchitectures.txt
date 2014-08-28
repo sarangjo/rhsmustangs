@@ -1,1 +1,1 @@
-C:\Users\Sarang\documents\visual studio 2013\Projects\RHSMustangs\RHSMustangs\RHSMustangs.csproj;neutral
+C:\Users\Sarang\Documents\GitHub\rhsmustangs\WP8\RHSMustangs\RHSMustangs\RHSMustangs.csproj;neutral

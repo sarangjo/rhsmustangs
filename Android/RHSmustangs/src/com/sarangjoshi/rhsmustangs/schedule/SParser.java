@@ -221,7 +221,7 @@ public class SParser {
 
 		// Check for holidays
 		if (holName != null) {
-			Period p = new Period("HD", holName, 0, 0, 11, 59, 0);
+			Period p = Period.holiday(holName);
 			p.isCustomizable = false;
 			periods.add(p);
 			isUpdated = UPDATED_HOL;

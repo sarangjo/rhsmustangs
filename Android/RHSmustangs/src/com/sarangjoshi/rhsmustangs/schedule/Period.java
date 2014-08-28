@@ -18,8 +18,8 @@ public class Period {
 		HOMEROOM, LUNCH, CLASS, OTHER
 	}
 
-	public Period(String periodShort, String periodName, int sh, int sm, int eh,
-			int em, int gn) {
+	public Period(String periodShort, String periodName, int sh, int sm,
+			int eh, int em, int gn) {
 		mPeriodShort = periodShort;
 		mClassName = periodName;
 		mStartTime = new STime(sh, sm);
@@ -57,7 +57,7 @@ public class Period {
 
 	public PeriodStyle getPeriodStyle() {
 		if (mPeriodShort.charAt(0) == 'L')
-			return PeriodStyle.LUNCH; 
+			return PeriodStyle.LUNCH;
 		else if (mPeriodShort.equals("HR"))
 			return PeriodStyle.HOMEROOM;
 		else
@@ -82,5 +82,9 @@ public class Period {
 		default:
 			return mClassName;
 		}
+	}
+
+	public static Period holiday(String holName) {
+		return new Period("HD", holName, 0, 0, 23, 59, 0);
 	}
 }

@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -15,18 +13,22 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkID=390556
+// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
 namespace RHSMustangs
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MyWebPage : Page
+    public sealed partial class MainPageOld : Page
     {
-        public MyWebPage()
+        public String[] listObjects = { "Links", "Twitter", "Schedule" };
+
+        public MainPageOld()
         {
             this.InitializeComponent();
+
+            this.NavigationCacheMode = NavigationCacheMode.Required;
         }
 
         /// <summary>
@@ -36,26 +38,26 @@ namespace RHSMustangs
         /// This parameter is typically used to configure the page.</param>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            // TODO: Prepare page for display here.
+
+            // TODO: If your application contains multiple pages, ensure that you are
+            // handling the hardware Back button by registering for the
+            // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
+            // If you are using the NavigationHelper provided by some templates,
+            // this event is handled for you.
         }
 
-        private void loadButton_Click(object sender, RoutedEventArgs e)
+        private void linksTapped(object sender, TappedRoutedEventArgs e)
         {
-            HttpWebRequest request = WebRequest.CreateHttp("http://www.google.com/");
-
-            IAsyncResult result = (IAsyncResult)request.BeginGetResponse(ReadWebRequestCallback, request);
+            Popup p = new Popup();
+            
+            p.IsOpen = true;
         }
-        
 
-        private async void ReadWebRequestCallback(IAsyncResult result)
+        private void scheduleTapped(object sender, TappedRoutedEventArgs e)
         {
-            HttpWebRequest mRequest = (HttpWebRequest)result.AsyncState;
-            HttpWebResponse mResponse = (HttpWebResponse)mRequest.EndGetResponse(result);
-
-            StreamReader reader = new StreamReader(mResponse.GetResponseStream());
-            string page = reader.ReadToEnd();
-
-            CoreDispatcher dispatch = CoreWindow.GetForCurrentThread().Dispatcher;
-            await dispatch.RunAsync(CoreDispatcherPriority.Normal, () => { pageText.Text = page; });
+            Frame.Navigate(typeof(SchedulePage));
         }
+
     }
 }
