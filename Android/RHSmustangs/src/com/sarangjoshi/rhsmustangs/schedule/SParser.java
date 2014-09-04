@@ -35,7 +35,7 @@ public class SParser {
 		mNetwork = new SNetwork();
 	}
 
-	// UPDATES FILE
+	// UPDATES FILES
 	/**
 	 * Downloads and saves the entire online file to a local String variable.
 	 * 
@@ -213,15 +213,15 @@ public class SParser {
 	 * 
 	 * @return the timetable
 	 */
-	public ArrayList<Period> getPeriods() {
-		ArrayList<Period> periods = new ArrayList<Period>();
+	public ArrayList<SPeriod> getPeriods() {
+		ArrayList<SPeriod> periods = new ArrayList<SPeriod>();
 
 		String holName = mData.getHolidayName(scheduleDay.toString().substring(
 				0, 8));
 
 		// Check for holidays
 		if (holName != null) {
-			Period p = Period.holiday(holName);
+			SPeriod p = SPeriod.holiday(holName);
 			p.isCustomizable = false;
 			periods.add(p);
 			isUpdated = UPDATED_HOL;
@@ -233,16 +233,19 @@ public class SParser {
 			String[] result = currentSchedule.split("\n");
 
 			// Loads individual strings into the ArrayList, depending on whether
-			// the
-			// lunch is correct
+			// the lunch is correct
 			for (int i = 0; i < result.length; i++) {
 				if (!result[i].substring(0, result[i].indexOf(" ")).equals(
 						"GRP")) {
-					Period p = getPeriodFromString(result[i]);
-					// char lunch = mData.getLunch();
-					// if (p.lunchStyle == '0' || p.lunchStyle == lunch)
-					// periods.add(p);
-					int grp = mData.getGroupPref(todayShort());
+					SPeriod p = getPeriodFromString(result[i]);
+
+					// Getting group #
+					int grp = 1;
+					if (isUpdated == UPDATED_SCHED) {
+						grp = mData.getGroupPref(todayShort());
+					} else if (isUpdated == UPDATED_NO) {
+						grp = mData.getBaseGroupPref();
+					}
 					if (p.groupN == grp || p.groupN == 0)
 						periods.add(p);
 				}
@@ -287,8 +290,8 @@ public class SParser {
 	 * @param str
 	 * @return
 	 */
-	private Period getPeriodFromString(String str) {
-		Period p = new Period();
+	private SPeriod getPeriodFromString(String str) {
+		SPeriod p = new SPeriod();
 		String[] result = str.split(" ");
 		// 0 Period Number
 		p.mPeriodShort = result[0];
@@ -531,6 +534,7 @@ public class SParser {
 	 * Saves the base schedule.
 	 */
 	public boolean downloadBaseSchedules() {
+		// 1. All the base schedules
 		for (int i = Time.MONDAY; i <= Time.FRIDAY; i++) {
 			String schedule = mNetwork.getBaseDay(i);
 
@@ -540,6 +544,9 @@ public class SParser {
 				mData.saveBaseDay(i, schedule);
 			}
 		}
+		// 2. Base group names
+		mData.saveBasePeriodGroups(mNetwork.getBaseDetails());
+
 		return true;
 	}
 
@@ -586,14 +593,22 @@ public class SParser {
 	 * @return Spinner values array. null if no period groups for scheduleDay.
 	 */
 	public String[] getSpinnerValues() {
-		if (dayAdjustedIndex(scheduleDay) >= 0) {
-			String[] spinValues = mData.getPeriodGroups(todayShort());
-			for (int i = 0; i < spinValues.length; i++) {
-				spinValues[i] = SStatic.shortenGrp(spinValues[i]);
-			}
-			return spinValues;
+		String[] spinValues = null;
+		if (isUpdated == UPDATED_SCHED) {
+			spinValues = mData.getPeriodGroups(todayShort());
+			if (spinValues != null)
+				for (int i = 0; i < spinValues.length; i++) {
+					spinValues[i] = SStatic.shortenCustomGrp(spinValues[i]);
+				}
+		} else {
+			spinValues = mData.getBasePeriodGroups();
+			if (spinValues != null)
+				for (int i = 0; i < spinValues.length; i++) {
+					spinValues[i] = spinValues[i].substring(spinValues[i]
+							.indexOf(" ") + 1);
+				}
 		}
-		return null;
+		return spinValues;
 	}
 
 	/**
@@ -611,8 +626,12 @@ public class SParser {
 	 * @param groupN
 	 */
 	public void groupSelected(int groupN) {
-		String today = scheduleDay.toString().substring(0, 8);
-		mData.saveGroupPref(today, groupN);
+		if (isUpdated == UPDATED_SCHED) {
+			String today = scheduleDay.toString().substring(0, 8);
+			mData.saveGroupPref(today, groupN);
+		} else if (isUpdated == UPDATED_NO) {
+			mData.saveBaseGroupPref(groupN);
+		}
 	}
 
 	// MISC

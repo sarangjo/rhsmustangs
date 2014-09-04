@@ -18,7 +18,7 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class SNetwork {
-	public static final String BASE_DOMAIN = "https://832a98014b7c1301510632d504e2faa0bc9b2096.googledrive.com/host/0B9RPYw9KBJQEelJ1X0Q4b1dJVWs/";
+	public static final String FILE_DOMAIN = "https://832a98014b7c1301510632d504e2faa0bc9b2096.googledrive.com/host/0B9RPYw9KBJQEelJ1X0Q4b1dJVWs/";
 
 	public static final String UPDATES_FILE = "schedule.txt";
 	public static final String HOLIDAYS_FILE = "holidays.txt";
@@ -74,7 +74,7 @@ public class SNetwork {
 	 * some error, returns "".
 	 */
 	public String getLatestUpdateTime() {
-		return getFirstLine(BASE_DOMAIN + UPDATES_FILE);
+		return getFirstLine(FILE_DOMAIN + UPDATES_FILE);
 	}
 
 	/**
@@ -82,16 +82,16 @@ public class SNetwork {
 	 * "NA".
 	 */
 	public String getUpdatesFileText() {
-		String x = getFullFile(BASE_DOMAIN + UPDATES_FILE);
+		String x = getFullFile(FILE_DOMAIN + UPDATES_FILE);
 		return (x == "") ? "N/A" : x;
 	}
 
 	public String getHolidaysUpdateTime() {
-		return getFirstLine(BASE_DOMAIN + HOLIDAYS_FILE);
+		return getFirstLine(FILE_DOMAIN + HOLIDAYS_FILE);
 	}
 
 	public String getHolidaysFileText() {
-		return getFullFile(BASE_DOMAIN + HOLIDAYS_FILE);
+		return getFullFile(FILE_DOMAIN + HOLIDAYS_FILE);
 	}
 
 	/**
@@ -102,10 +102,14 @@ public class SNetwork {
 	 * @return the full base schedule
 	 */
 	public String getBaseDay(int day) {
-		return getFullFile(BASE_DOMAIN + day + ".txt");
+		return getFullFile(FILE_DOMAIN + day + ".txt");
 	}
 
+	public String getBaseDetails() {
+		return getFullFile(FILE_DOMAIN + "base.txt");
+	}
+	
 	public String getMisc() {
-		return getFullFile(BASE_DOMAIN + "misc.txt");
+		return getFullFile(FILE_DOMAIN + "misc.txt");
 	}
 }

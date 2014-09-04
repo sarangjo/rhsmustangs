@@ -136,7 +136,7 @@ public class SActivity extends FragmentActivity implements
 							// Sets the local variable to the currently selected
 							// list index
 							chosenIndex = pos;
-							Period p = periods.get(pos);
+							SPeriod p = periods.get(pos);
 							if (p.isCustomizable) {
 								// Initializes DialogFragment and sets the
 								// default text
@@ -335,7 +335,7 @@ public class SActivity extends FragmentActivity implements
 		cal.set(Calendar.HOUR_OF_DAY, 16);
 		cal.set(Calendar.MINUTE, 0);
 
-		Intent broadcastIntent = new Intent(this, AlarmReceiver.class);
+		Intent broadcastIntent = new Intent(this, SAlarmReceiver.class);
 		operation = PendingIntent.getBroadcast(this, 0, broadcastIntent, 0);
 
 		alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -375,15 +375,6 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		actionBar = menu;
-		if (mSState == ScheduleState.DEFAULT) {
-
-		}
-		return super.onPrepareOptionsMenu(actionBar);
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
@@ -400,6 +391,12 @@ public class SActivity extends FragmentActivity implements
 			return true;
 		case R.id.action_lastUpdates:
 			showLastUpdates();
+			return true;
+		case R.id.action_demo:
+			Intent i = new Intent(this, SDemoActivity.class);
+			ImageButton v = (ImageButton) findViewById(R.id.nextDay);
+			i.putExtra("y", getRelativeTop(v));
+			startActivity(i);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -431,7 +428,7 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	// LOADING PERIODS
-	public ArrayList<Period> periods;
+	public ArrayList<SPeriod> periods;
 	private PeriodsAdapter periodsAdapter;
 	String[] spinnerData;
 
@@ -496,9 +493,9 @@ public class SActivity extends FragmentActivity implements
 			}
 
 			// If oldSpinnerData is null, this is right after onCreate()
-
 			boolean a = (oldSpinnerData == null);
 			if (!a)
+				// Only update if there has been a change in the spinner data
 				a = !SStatic.areArraysEqual(oldSpinnerData, spinnerData);
 			if (a) {
 				// The third parameter is defined for the selected view
@@ -532,11 +529,11 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	private class PeriodsAdapter extends ArrayAdapter<Period> {
+	private class PeriodsAdapter extends ArrayAdapter<SPeriod> {
 		private final Context mContext;
 		private int mIsU;
 
-		public PeriodsAdapter(Context context, List<Period> objects, int isU) {
+		public PeriodsAdapter(Context context, List<SPeriod> objects, int isU) {
 			super(context, R.layout.layout_period, objects);
 
 			mIsU = isU;
@@ -577,7 +574,7 @@ public class SActivity extends FragmentActivity implements
 			}
 
 			// Setting view data
-			Period p = periods.get(position);
+			SPeriod p = periods.get(position);
 
 			periodNumView.setText(new String(p.mPeriodShort));
 			classNameView.setText(p.mClassName);
@@ -606,7 +603,7 @@ public class SActivity extends FragmentActivity implements
 		 * @param p
 		 *            the chosen period
 		 */
-		private int getPeriodRelativeTime(Period p) {
+		private int getPeriodRelativeTime(SPeriod p) {
 			SStatic.updateCurrentTime();
 			STime schedNow = SStatic.getCurrentScheduleTime();
 			int day = mParser.getScheduleDay().weekDay;
@@ -640,7 +637,7 @@ public class SActivity extends FragmentActivity implements
 	public void onDialogPositiveClick(EditPeriodFragment dialog,
 			String savedName) {
 		closeKeyboard(dialog);
-		Period p = periods.get(chosenIndex);
+		SPeriod p = periods.get(chosenIndex);
 		// Setting the period's class name
 		p.mClassName = savedName;
 		mParser.getSData().setPeriodName(p.mPeriodShort, savedName);
@@ -650,7 +647,7 @@ public class SActivity extends FragmentActivity implements
 	@Override
 	public void onDialogNeutralClick(EditPeriodFragment dialog) {
 		closeKeyboard(dialog);
-		Period p = periods.get(chosenIndex);
+		SPeriod p = periods.get(chosenIndex);
 		p.mClassName = periods.get(chosenIndex).getDefaultPeriodName();
 		mParser.getSData().deletePeriodName(p.mPeriodShort);
 		updatePeriods();
@@ -869,6 +866,21 @@ public class SActivity extends FragmentActivity implements
 		});
 
 		setPeriodEditTexts();
+	}
+
+	private int getRelativeLeft(View myView) {
+		if (myView.getParent() == myView.getRootView())
+			return myView.getLeft();
+		else
+			return myView.getLeft()
+					+ getRelativeLeft((View) myView.getParent());
+	}
+
+	private int getRelativeTop(View myView) {
+		if (myView.getParent() == myView.getRootView())
+			return myView.getTop();
+		else
+			return myView.getTop() + getRelativeTop((View) myView.getParent());
 	}
 
 	// SETTING PERIODS

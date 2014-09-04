@@ -35,6 +35,7 @@ public class SData {
 	// Internal Storage files
 	private static final String UPDATES_NAME = "updates_file";
 	private static final String BASE_NAME = "base_file_";
+	private static final String BASE_GROUPNAMES_NAME = "base_groups_file";
 	private static final String UPDATES_GROUPNAMES_NAME = "update_groupnames_file";
 
 	// SharedPreference keys
@@ -44,6 +45,7 @@ public class SData {
 	private static final String NOTIF_KEY = "notif";
 	private static final String INIT_KEY = "init";
 	private static final String LATESTDAY_KEY = "saved_day";
+	private static final String BASE_GROUP_PREF_KEY = "base_group";
 
 	public SData(Context context) {
 		mContext = context;
@@ -101,7 +103,7 @@ public class SData {
 	 *            the period
 	 * @return the period name corresponding to that period
 	 */
-	public String getPeriodName(Period p) {
+	public String getPeriodName(SPeriod p) {
 		setupPref(PrefType.PERIODS);
 		String defaultName = p.getDefaultPeriodName();
 		return mPref.getString(getKey(p.mPeriodShort), defaultName);
@@ -438,6 +440,51 @@ public class SData {
 		if (day.length() > 8)
 			day = day.substring(0, 8);
 		return mPref.getInt(day + "_GRP", 1);
+	}
+
+	public boolean saveBasePeriodGroups(String s) {
+		try {
+			FileOutputStream fos = mContext.openFileOutput(
+					BASE_GROUPNAMES_NAME, Context.MODE_PRIVATE);
+			fos.write(s.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			return false;
+		}
+		return true;
+	}
+
+	public String[] getBasePeriodGroups() {
+		ArrayList<String> allNames = new ArrayList<String>();
+
+		try {
+			FileInputStream fis = mContext.openFileInput(BASE_GROUPNAMES_NAME);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+
+			String readString = "";
+			while ((readString = br.readLine()) != null) {
+				allNames.add(readString);
+			}
+		} catch (IOException e) {
+
+		}
+		String[] allNamesArr = new String[allNames.size()];
+		allNames.toArray(allNamesArr);
+		if (allNamesArr.length == 0)
+			return null;
+		else
+			return allNamesArr;
+	}
+
+	public boolean saveBaseGroupPref(int grp) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putInt(BASE_GROUP_PREF_KEY, grp).commit();
+	}
+
+	public int getBaseGroupPref() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getInt(BASE_GROUP_PREF_KEY, 1);
 	}
 
 	// LAST DAY

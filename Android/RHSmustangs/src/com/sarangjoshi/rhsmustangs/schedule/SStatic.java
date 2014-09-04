@@ -130,7 +130,7 @@ public class SStatic {
 		return a;
 	}
 
-	public static String shortenGrp(String string) {
+	public static String shortenCustomGrp(String string) {
 		string = string.substring(string.indexOf(" ") + 1);
 		return (string = string.substring(string.indexOf(" ") + 1));
 	}
