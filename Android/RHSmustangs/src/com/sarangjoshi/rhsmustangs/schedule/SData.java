@@ -44,6 +44,7 @@ public class SData {
 	private static final String HOLIDAYSTIME_KEY = "holidays_time";
 	private static final String NOTIF_KEY = "notif";
 	private static final String INIT_KEY = "init";
+	private static final String DEMO_KEY = "demo";	
 	private static final String LATESTDAY_KEY = "saved_day";
 	private static final String BASE_GROUP_PREF_KEY = "base_group";
 
@@ -358,6 +359,16 @@ public class SData {
 		return mPref.getBoolean(INIT_KEY, false);
 	}
 
+	public boolean saveDemoWatched(boolean demoWatched) {
+		setupPref(PrefType.DEFAULT);
+		return mPref.edit().putBoolean(DEMO_KEY, demoWatched).commit();
+	}
+	
+	public boolean getDemoWatched() {
+		setupPref(PrefType.DEFAULT);
+		return mPref.getBoolean(DEMO_KEY, false);
+	}
+	
 	// MISC DETAILS
 	/**
 	 * Saves the given miscellaneous detail.

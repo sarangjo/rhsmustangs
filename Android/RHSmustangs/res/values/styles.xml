@@ -18,10 +18,10 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="Transparent" parent="@android:style/Theme.NoTitleBar">
+    <style name="DemoTheme" parent="@android:style/Theme.NoTitleBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@color/translucent</item>
+        <item name="android:windowBackground">@color/white</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>

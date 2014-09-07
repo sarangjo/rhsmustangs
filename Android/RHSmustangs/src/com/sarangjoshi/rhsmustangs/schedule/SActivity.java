@@ -268,7 +268,7 @@ public class SActivity extends FragmentActivity implements
 					SService.UPDATES_AVAILABLE_KEY, false);
 
 			if (getIntent().getBooleanExtra(INIT_KEY, false)) {
-				ua = true;
+				//ua = true;
 				Toast.makeText(this, "Base schedule initialized.",
 						Toast.LENGTH_SHORT).show();
 			}
@@ -277,6 +277,12 @@ public class SActivity extends FragmentActivity implements
 
 			if (ua)
 				new DownloadScheduleTask().execute();
+			
+			if (!mParser.getSData().getDemoWatched()) {
+				// demo hasn't been watched
+				mParser.getSData().saveDemoWatched(true);
+				startActivity(new Intent(this, SDemoActivity.class));
+			}			
 		}
 	}
 
@@ -393,10 +399,7 @@ public class SActivity extends FragmentActivity implements
 			showLastUpdates();
 			return true;
 		case R.id.action_demo:
-			Intent i = new Intent(this, SDemoActivity.class);
-			ImageButton v = (ImageButton) findViewById(R.id.nextDay);
-			i.putExtra("y", getRelativeTop(v));
-			startActivity(i);
+			startActivity(new Intent(this, SDemoActivity.class));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -852,9 +855,7 @@ public class SActivity extends FragmentActivity implements
 			public void onClick(View v) {
 				if (i)
 					mParser.getSData().saveInitialize(true);
-				Intent intent = new Intent(SActivity.this, SActivity.class);
-				intent.putExtra(INIT_KEY, i);
-				goToDefault(intent, i);
+				restartActivity(i);
 			}
 		});
 		clearPeriodsBtn.setOnClickListener(new OnClickListener() {
@@ -868,19 +869,17 @@ public class SActivity extends FragmentActivity implements
 		setPeriodEditTexts();
 	}
 
-	private int getRelativeLeft(View myView) {
-		if (myView.getParent() == myView.getRootView())
-			return myView.getLeft();
-		else
-			return myView.getLeft()
-					+ getRelativeLeft((View) myView.getParent());
-	}
-
-	private int getRelativeTop(View myView) {
-		if (myView.getParent() == myView.getRootView())
-			return myView.getTop();
-		else
-			return myView.getTop() + getRelativeTop((View) myView.getParent());
+	/**
+	 * Given whether this is initialization, goes to the default stage of the
+	 * activity.
+	 * 
+	 * @param isInit
+	 *            whether this is initialization or not
+	 */
+	private void restartActivity(boolean isInit) {
+		Intent intent = new Intent(this, SActivity.class);
+		intent.putExtra(INIT_KEY, isInit);
+		goToDefault(intent, isInit);
 	}
 
 	// SETTING PERIODS
@@ -947,9 +946,7 @@ public class SActivity extends FragmentActivity implements
 				((EditText) findViewById(R.id.periodLunch)).getText()
 						.toString());
 
-		Intent intent = new Intent(this, SActivity.class);
-		intent.putExtra(INIT_KEY, isInit);
-		goToDefault(intent, isInit);
+		restartActivity(isInit);
 	}
 
 	// HELPERS

@@ -11,19 +11,22 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Button;
 
 import com.sarangjoshi.rhsmustangs.R;
 
 public class SDemoActivity extends FragmentActivity {
 	MyPagerAdapter mAdapter;
 	ViewPager mPager;
+	Button dButton;
 
-	private static int N_OF_ITEMS = 5;
+	private static int N_OF_ITEMS = 4;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -36,9 +39,19 @@ public class SDemoActivity extends FragmentActivity {
 		mPager.setAdapter(mAdapter);
 
 		mPager.setCurrentItem(0);
+
+		dButton = (Button) findViewById(R.id.doneButton);
+		dButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+
+		});
 	}
 
-	private class MyPagerAdapter extends FragmentPagerAdapter {
+	private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
 		public MyPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -46,7 +59,7 @@ public class SDemoActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int pos) {
-			return MyFragment.newInstance(pos, getIntent().getIntExtra("y", 0));
+			return MyFragment.newInstance(pos);
 		}
 
 		@Override
@@ -57,19 +70,17 @@ public class SDemoActivity extends FragmentActivity {
 
 	public static class MyFragment extends Fragment {
 		int mNum = 0;
-		int mY = 0;
 
 		/**
 		 * Create a new instance of CountingFragment, providing "num" as an
 		 * argument.
 		 */
-		static MyFragment newInstance(int num, int newY) {
+		static MyFragment newInstance(int num) {
 			MyFragment f = new MyFragment();
 
 			// Supply num input as an argument.
 			Bundle args = new Bundle();
 			args.putInt("num", num);
-			args.putInt("y", newY);
 			f.setArguments(args);
 
 			return f;
@@ -94,36 +105,21 @@ public class SDemoActivity extends FragmentActivity {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.pager_item_fragment,
-					container, false);
-			
-			TextView tv = (TextView) v.findViewById(R.id.pagerTView);
-			tv.setText(getDemoText(mNum));
-			tv.setY(mY);
-
-			return v;
-		}
-
-		private String getDemoText(int n) {
-			switch (n) {
+			switch (mNum) {
 			case 0:
-				return "These are the periods. Hold a period to customize it.";
+				return inflater.inflate(R.layout.pager_item_fragment0,
+						container, false);
 			case 1:
-				return "Tap the title to return to today's most relevant schedule. Tap the gift to go to the next upcoming holiday. Move forward and back using arrows...";
+				return inflater.inflate(R.layout.pager_item_fragment1,
+						container, false);
 			case 2:
-				return "... or by swiping left and right.";
+				return inflater.inflate(R.layout.pager_item_fragment2,
+						container, false);
 			case 3:
-				return "Tap here to check for schedule updates. Choose your period group here.";
-			case 4:
-				return "To see all updated schedule days, and more, tap here. All done!";
-			default:
-				return "LOL WE JUST GOT #HACKED";
+				return inflater.inflate(R.layout.pager_item_fragment3,
+						container, false);
 			}
-		}
-
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
+			return null;
 		}
 	}
 }

@@ -60,8 +60,8 @@
         <activity
             android:name="com.sarangjoshi.rhsmustangs.schedule.SDemoActivity"
             android:label="Schedule Demo"
-            android:parentActivityName="com.sarangjoshi.rhsmustangs.schedule.SActivity"
-            android:theme="@style/Transparent" >
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.schedule.SActivity" 
+            android:theme="@style/DemoTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sarangjoshi.rhsmustangs.schedule.SActivity" />
