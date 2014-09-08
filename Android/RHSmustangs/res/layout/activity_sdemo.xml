@@ -11,21 +11,26 @@
         android:layout_height="0px"
         android:layout_weight="1" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:measureWithLargestChild="true"
-        android:orientation="horizontal" >
+        android:measureWithLargestChild="true" >
 
         <Button
-            android:id="@+id/doneButton"
-            style="android:buttonStyle"
+            android:id="@+id/skipDemoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Done" >
+            android:layout_alignParentLeft="true"
+            android:text="Skip"
+            android:visibility="visible" />
 
-        </Button>
-    </LinearLayout>
+        <Button
+            android:id="@+id/doneDemoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="Done"
+            android:visibility="gone" />
+    </RelativeLayout>
 
 </LinearLayout>

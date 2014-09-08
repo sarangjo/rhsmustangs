@@ -12,8 +12,7 @@
         android:layout_height="match_parent"
         android:actionViewClass="android.widget.Spinner"
         android:showAsAction="always"
-        android:title="Choose Period Group"
-        android:visibility="gone"/>
+        android:title="Choose Period Group"/>
     <item
         android:id="@+id/action_updatedDays"
         android:showAsAction="never"
@@ -29,7 +28,7 @@
     <item
         android:id="@+id/action_resetEverything"
         android:showAsAction="never"
-        android:title="Reset"/>
+        android:title="Reset Base"/>
     <item
         android:id="@+id/action_demo"
         android:showAsAction="never"

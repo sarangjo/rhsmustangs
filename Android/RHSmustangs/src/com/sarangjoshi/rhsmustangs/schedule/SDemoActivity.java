@@ -18,15 +18,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.sarangjoshi.rhsmustangs.R;
 
 public class SDemoActivity extends FragmentActivity {
 	MyPagerAdapter mAdapter;
 	ViewPager mPager;
-	Button dButton;
+	Button dButton, sButton;
 
-	private static int N_OF_ITEMS = 4;
+	private static int N_OF_ITEMS = 5;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -38,20 +39,38 @@ public class SDemoActivity extends FragmentActivity {
 		mPager = (ViewPager) findViewById(R.id.myPager);
 		mPager.setAdapter(mAdapter);
 
-		mPager.setCurrentItem(0);
-
-		dButton = (Button) findViewById(R.id.doneButton);
-		dButton.setOnClickListener(new OnClickListener() {
+		OnClickListener t = new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				finish();
 			}
 
+		};
+		dButton = (Button) findViewById(R.id.doneDemoButton);
+		sButton = (Button) findViewById(R.id.skipDemoButton);
+		dButton.setOnClickListener(t);
+		sButton.setOnClickListener(t);
+
+		mPager.setCurrentItem(0);
+		mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+
+			@Override
+			public void onPageSelected(int pos) {
+				if (pos == N_OF_ITEMS - 1) {
+					dButton.setVisibility(View.VISIBLE);
+					sButton.setVisibility(View.GONE);
+				} else {
+					dButton.setVisibility(View.GONE);
+					sButton.setVisibility(View.VISIBLE);
+				}
+			}
+
 		});
+		mPager.setPageTransformer(true, new MyTransformer());
 	}
 
-	private class MyPagerAdapter extends FragmentStatePagerAdapter {
+	private class MyPagerAdapter extends FragmentPagerAdapter {
 
 		public MyPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -59,7 +78,7 @@ public class SDemoActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int pos) {
-			return MyFragment.newInstance(pos);
+			return SDemoFragment.newInstance(pos);
 		}
 
 		@Override
@@ -68,58 +87,19 @@ public class SDemoActivity extends FragmentActivity {
 		}
 	}
 
-	public static class MyFragment extends Fragment {
-		int mNum = 0;
+	private class MyTransformer implements ViewPager.PageTransformer {
 
-		/**
-		 * Create a new instance of CountingFragment, providing "num" as an
-		 * argument.
-		 */
-		static MyFragment newInstance(int num) {
-			MyFragment f = new MyFragment();
-
-			// Supply num input as an argument.
-			Bundle args = new Bundle();
-			args.putInt("num", num);
-			f.setArguments(args);
-
-			return f;
-		}
-
-		/**
-		 * When creating, retrieve this instance's number from its arguments.
-		 */
 		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			if (getArguments() != null) {
-				mNum = getArguments().getInt("num");
-				mNum = ((getArguments() != null) ? getArguments().getInt("num")
-						: 1);
+		public void transformPage(View v, float position) {
+			if (position < -1) {
+				v.setAlpha(0);
+			} else if (position <= 1) {
+				v.setAlpha(1 - Math.abs(position));
+			} else {
+				v.setAlpha(0);
 			}
 		}
 
-		/**
-		 * The Fragment is created here.
-		 */
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			switch (mNum) {
-			case 0:
-				return inflater.inflate(R.layout.pager_item_fragment0,
-						container, false);
-			case 1:
-				return inflater.inflate(R.layout.pager_item_fragment1,
-						container, false);
-			case 2:
-				return inflater.inflate(R.layout.pager_item_fragment2,
-						container, false);
-			case 3:
-				return inflater.inflate(R.layout.pager_item_fragment3,
-						container, false);
-			}
-			return null;
-		}
 	}
+
 }
