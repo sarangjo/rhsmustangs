@@ -585,6 +585,12 @@ public class SParser {
 		mData.deletePeriods();
 		mData.deleteAllPrefs();
 	}
+	
+	public void resetBase() {
+		mData.saveInitialize(false);
+		mData.deleteBase();
+		mData.deletePeriods();
+	}
 
 	// SPINNER/GROUP STUFF
 	/**

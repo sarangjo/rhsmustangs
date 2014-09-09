@@ -10,15 +10,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import com.sarangjoshi.rhsmustangs.R;
 
@@ -70,7 +66,7 @@ public class SDemoActivity extends FragmentActivity {
 		mPager.setPageTransformer(true, new MyTransformer());
 	}
 
-	private class MyPagerAdapter extends FragmentPagerAdapter {
+	private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
 		public MyPagerAdapter(FragmentManager fm) {
 			super(fm);

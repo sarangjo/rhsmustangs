@@ -80,6 +80,7 @@ public class SActivity extends FragmentActivity implements
 	private int chosenIndex = -1;
 
 	public static final int PICK_SCHEDULE_REQUEST = 0;
+	public static final int RESET_BASE_REQUEST = 1;
 	public static final String SCHEDULE_INDEX_KEY = "si_key";
 
 	public static final String INIT_KEY = "just-init";
@@ -268,7 +269,7 @@ public class SActivity extends FragmentActivity implements
 					SService.UPDATES_AVAILABLE_KEY, false);
 
 			if (getIntent().getBooleanExtra(INIT_KEY, false)) {
-				//ua = true;
+				// ua = true;
 				Toast.makeText(this, "Base schedule initialized.",
 						Toast.LENGTH_SHORT).show();
 			}
@@ -277,12 +278,12 @@ public class SActivity extends FragmentActivity implements
 
 			if (ua)
 				new DownloadScheduleTask().execute();
-			
+
 			if (!mParser.getSData().getDemoWatched()) {
 				// demo hasn't been watched
 				mParser.getSData().saveDemoWatched(true);
 				startActivity(new Intent(this, SDemoActivity.class));
-			}			
+			}
 		}
 	}
 
@@ -310,9 +311,9 @@ public class SActivity extends FragmentActivity implements
 
 	@Override
 	public void onActivityResult(int request, int result, Intent data) {
-		if (request == PICK_SCHEDULE_REQUEST) {
-			if (result == RESULT_OK) {
-				// we're good.
+		if (result == RESULT_OK) {
+			// we're good.
+			if (request == PICK_SCHEDULE_REQUEST) {
 				int n = data.getIntExtra(SCHEDULE_INDEX_KEY, -1);
 				if (n >= 0) {
 					// Alt day selected
@@ -325,6 +326,8 @@ public class SActivity extends FragmentActivity implements
 						goToDefault(i, false);
 					}
 				}
+			} else if (request == RESET_BASE_REQUEST) {
+				resetBase();
 			}
 		}
 	}
@@ -393,7 +396,8 @@ public class SActivity extends FragmentActivity implements
 			goToSettingPeriod(false);
 			return true;
 		case R.id.action_resetEverything:
-			resetEverything();
+			// resetEverything();
+			showResetConfirm();
 			return true;
 		case R.id.action_lastUpdates:
 			showLastUpdates();
@@ -406,8 +410,13 @@ public class SActivity extends FragmentActivity implements
 		}
 	}
 
-	public void resetEverything() {
-		mParser.resetEverything();
+	public void showResetConfirm() {
+		ConfirmResetFragment dialog = new ConfirmResetFragment();
+		dialog.show(getSupportFragmentManager(), "ConfirmResetFragment");
+	}
+
+	public void resetBase() {
+		mParser.resetBase();//resetEverything();
 		recreate();
 	}
 

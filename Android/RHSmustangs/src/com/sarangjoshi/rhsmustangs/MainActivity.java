@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
 	WebParser parse;
 	ListView listView;
 
-	String[] viewNames = { "Links", "Schedule", "Schedule Demo" };
+	String[] viewNames = { "Links", "Schedule" };
 	ArrayAdapter<String> adapter;
 
 	public final static String EXTRA_MESSAGE = "com.sarangjoshi.rhsmustangs.MESSAGE";
@@ -69,9 +69,6 @@ public class MainActivity extends Activity {
 			break;
 		case 1:
 			intent = new Intent(this, SActivity.class);
-			break;
-		case 2:
-			intent = new Intent(this, SDemoActivity.class);
 			break;
 		}
 		if (intent != null)
