@@ -279,11 +279,11 @@ public class SActivity extends FragmentActivity implements
 			if (ua)
 				new DownloadScheduleTask().execute();
 
-			if (!mParser.getSData().getDemoWatched()) {
-				// demo hasn't been watched
-				mParser.getSData().saveDemoWatched(true);
-				startActivity(new Intent(this, SDemoActivity.class));
-			}
+			/*
+			 * if (!mParser.getSData().getDemoWatched()) { // demo hasn't been
+			 * watched mParser.getSData().saveDemoWatched(true);
+			 * startActivity(new Intent(this, SDemoActivity.class)); }
+			 */
 		}
 	}
 
@@ -416,7 +416,7 @@ public class SActivity extends FragmentActivity implements
 	}
 
 	public void resetBase() {
-		mParser.resetBase();//resetEverything();
+		mParser.resetBase();// resetEverything();
 		recreate();
 	}
 

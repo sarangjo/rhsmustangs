@@ -6,11 +6,18 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.sarangjoshi.rhsmustangs.R;
@@ -49,27 +56,20 @@ public class SDemoFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.pager_item_fragment, container,
-				false);
-		ImageView x = (ImageView) v.findViewById(R.id.pagerItemImage);
+		final View v = inflater.inflate(R.layout.pager_item_fragment,
+				container, false);
+		final ImageView x = (ImageView) v.findViewById(R.id.pagerItemImage);
 
-		switch (mNum) {
-		case 0:
-			x.setImageResource(R.drawable.demo0);
-			break;
-		case 1:
-			x.setImageResource(R.drawable.demo1);
-			break;
-		case 2:
-			x.setImageResource(R.drawable.demo2);
-			break;
-		case 3:
-			x.setImageResource(R.drawable.demo3);
-			break;
-		case 4:
-			x.setImageResource(R.drawable.demo4);
-			break;
-		}
+		Bitmap b = ((SDemoActivity) getActivity()).getBitmap(mNum);
+		x.setImageBitmap(b);
+		/*
+		 * switch (mNum) { case 0: x.setImageResource(R.drawable.demo0); break;
+		 * case 1: x.setImageResource(R.drawable.demo1); break; case 2:
+		 * x.setImageResource(R.drawable.demo2); break; case 3:
+		 * x.setImageResource(R.drawable.demo3); break; case 4:
+		 * x.setImageResource(R.drawable.demo4); break; }
+		 */
+
 		return x;
 
 	}

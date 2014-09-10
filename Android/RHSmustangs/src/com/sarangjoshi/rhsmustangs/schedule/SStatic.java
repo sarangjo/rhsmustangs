@@ -8,6 +8,9 @@ package com.sarangjoshi.rhsmustangs.schedule;
 
 import java.util.ArrayList;
 
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.format.Time;
 
 public class SStatic {
@@ -18,7 +21,7 @@ public class SStatic {
 	public static String lunch_short = "LN";
 	public static String hr_short = "HR";
 	public static String COLOR_UPDATE = "#006600";
-	public static String COLOR_HOLIDAY = "#D4AF37";//"#FFD700";
+	public static String COLOR_HOLIDAY = "#D4AF37";// "#FFD700";
 
 	public static String[] months = { "January", "February", "March", "April",
 			"May", "June", "July", "August", "September", "October",
@@ -68,6 +71,8 @@ public class SStatic {
 	}
 
 	public static String getTimeString(Time t) {
+		if (t == null)
+			return "N/A";
 		String s = months[t.month] + " " + t.monthDay + ", " + t.year + " ";
 		s += t.hour + ":" + ((t.minute < 10) ? "0" + t.minute : t.minute);
 		return s;
@@ -143,7 +148,7 @@ public class SStatic {
 			t.parse(s);
 			t.normalize(false);
 		} catch (Exception e) {
-			t.setToNow();
+			return null;
 		}
 		return t;
 	}
@@ -153,5 +158,41 @@ public class SStatic {
 				time.year);
 		time.normalize(false);
 		return null;
+	}
+
+	public static Bitmap decodeBitmapFromRes(Resources res, int resId, int w,
+			int h) {
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeResource(res, resId, options);
+
+		options.inSampleSize = calculateInSampleSize(options, w, h);
+
+		options.inJustDecodeBounds = false;
+		return BitmapFactory.decodeResource(res, resId, options);
+	}
+
+	public static int calculateInSampleSize(BitmapFactory.Options options,
+			int reqWidth, int reqHeight) {
+		// Raw height and width of image
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+
+			final int halfHeight = height / 2;
+			final int halfWidth = width / 2;
+
+			// Calculate the largest inSampleSize value that is a power of 2 and
+			// keeps both
+			// height and width larger than the requested height and width.
+			while ((halfHeight / inSampleSize) > reqHeight
+					&& (halfWidth / inSampleSize) > reqWidth) {
+				inSampleSize *= 2;
+			}
+		}
+
+		return inSampleSize;
 	}
 }

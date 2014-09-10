@@ -623,7 +623,10 @@ public class SParser {
 	 * @return the groupN, 1-n
 	 */
 	public int getSelectedGroupN() {
-		return mData.getGroupPref(todayShort());
+		if(isUpdated == UPDATED_SCHED)
+			return mData.getGroupPref(todayShort());
+		else
+			return mData.getBaseGroupPref();
 	}
 
 	/**

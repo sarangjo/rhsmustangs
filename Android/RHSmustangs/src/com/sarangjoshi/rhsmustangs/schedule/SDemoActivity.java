@@ -6,13 +6,19 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.LruCache;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
@@ -24,6 +30,10 @@ public class SDemoActivity extends FragmentActivity {
 	Button dButton, sButton;
 
 	private static int N_OF_ITEMS = 5;
+
+	private LruCache<String, Bitmap> mMemoryCache;
+	
+	Bitmap[] mBitmaps = new Bitmap[N_OF_ITEMS];
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +74,46 @@ public class SDemoActivity extends FragmentActivity {
 
 		});
 		mPager.setPageTransformer(true, new MyTransformer());
+		
+		// Loading bitmaps
+		for(int i = 0; i < N_OF_ITEMS; i++) {
+			mBitmaps[i] = loadBitmapFromPos(i);
+		}
+	}
+
+	public Bitmap getBitmap(int pos) {
+		return mBitmaps[pos];
+	}
+	
+	public Bitmap loadBitmapFromPos(int pos) {
+		int w, h;
+
+		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		Point p = new Point();
+		display.getSize(p);
+		w = p.x;
+		h = p.y;
+
+		switch (pos) {
+		case 0:
+			return SStatic.decodeBitmapFromRes(getResources(),
+					R.drawable.demo0, w, h);
+		case 1:
+			return SStatic.decodeBitmapFromRes(getResources(),
+					R.drawable.demo1, w, h);
+		case 2:
+			return SStatic.decodeBitmapFromRes(getResources(),
+					R.drawable.demo2, w, h);
+		case 3:
+			return SStatic.decodeBitmapFromRes(getResources(),
+					R.drawable.demo3, w, h);
+		case 4:
+			return SStatic.decodeBitmapFromRes(getResources(),
+					R.drawable.demo4, w, h);
+		}
+
+		return null;
 	}
 
 	private class MyPagerAdapter extends FragmentStatePagerAdapter {
