@@ -46,6 +46,7 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
+import com.sarangjoshi.rhsmustangs.schedule.demo.SDemoActivity;
 import com.sarangjoshi.rhsmustangs.schedule.fragments.ConfirmResetFragment;
 import com.sarangjoshi.rhsmustangs.schedule.fragments.EditPeriodFragment;
 import com.sarangjoshi.rhsmustangs.schedule.fragments.LastUpdatesFragment;
@@ -115,6 +116,8 @@ public class SActivity extends FragmentActivity implements
 
 		mParser = new SParser(this);
 
+		stopAlarm();
+
 		if (!mParser.getSData().getIsInitialized()) {
 			goToInit();
 		} else {
@@ -173,27 +176,11 @@ public class SActivity extends FragmentActivity implements
 					updatePeriods();
 				}
 			});
-			previousDay.setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					Toast.makeText(SActivity.this, "Previous Day",
-							Toast.LENGTH_SHORT).show();
-					return true;
-				}
-			});
 			nextDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
 					mParser.shiftDay(1);
 					updatePeriods();
-				}
-			});
-			nextDay.setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					Toast.makeText(SActivity.this, "Next Day",
-							Toast.LENGTH_SHORT).show();
-					return true;
 				}
 			});
 			scheduleTitle.setOnClickListener(new OnClickListener() {
@@ -205,14 +192,6 @@ public class SActivity extends FragmentActivity implements
 				}
 
 			});
-			scheduleTitle.setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					Toast.makeText(SActivity.this, "Go to Today",
-							Toast.LENGTH_SHORT).show();
-					return true;
-				}
-			});
 			scheduleWeekDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -221,14 +200,6 @@ public class SActivity extends FragmentActivity implements
 					updatePeriods();
 				}
 
-			});
-			scheduleWeekDay.setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					Toast.makeText(SActivity.this, "Go to Today",
-							Toast.LENGTH_SHORT).show();
-					return true;
-				}
 			});
 			nextHol.setOnClickListener(new OnClickListener() {
 				@Override
@@ -239,6 +210,39 @@ public class SActivity extends FragmentActivity implements
 						Toast.makeText(SActivity.this,
 								"No holidays in the near future. :(",
 								Toast.LENGTH_SHORT).show();
+				}
+			});
+			//
+			previousDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Previous Day",
+							Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
+			nextDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Next Day",
+							Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
+			scheduleTitle.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Go to Today",
+							Toast.LENGTH_SHORT).show();
+					return true;
+				}
+			});
+			scheduleWeekDay.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast.makeText(SActivity.this, "Go to Today",
+							Toast.LENGTH_SHORT).show();
+					return true;
 				}
 			});
 			nextHol.setOnLongClickListener(new OnLongClickListener() {
@@ -274,16 +278,15 @@ public class SActivity extends FragmentActivity implements
 						Toast.LENGTH_SHORT).show();
 			}
 
-			stopAlarm();
-
 			if (ua)
 				new DownloadScheduleTask().execute();
 
-			/*
-			 * if (!mParser.getSData().getDemoWatched()) { // demo hasn't been
-			 * watched mParser.getSData().saveDemoWatched(true);
-			 * startActivity(new Intent(this, SDemoActivity.class)); }
-			 */
+			if (!mParser.getSData().getDemoWatched()) { // demo hasn't been
+														// watched
+				mParser.getSData().saveDemoWatched(true);
+				startActivity(new Intent(this, SDemoActivity.class));
+			}
+
 		}
 	}
 
@@ -505,11 +508,12 @@ public class SActivity extends FragmentActivity implements
 			}
 
 			// If oldSpinnerData is null, this is right after onCreate()
-			boolean a = (oldSpinnerData == null);
-			if (!a)
-				// Only update if there has been a change in the spinner data
-				a = !SStatic.areArraysEqual(oldSpinnerData, spinnerData);
-			if (a) {
+			boolean shouldUpdate = (oldSpinnerData == null);
+
+			if (!shouldUpdate)
+				shouldUpdate = mParser.getShouldUpdateSpinner();
+
+			if (shouldUpdate) {
 				// The third parameter is defined for the selected view
 				// (default)
 				ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(

@@ -21,7 +21,8 @@ public class ConfirmResetFragment extends DialogFragment {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setMessage("Confirm reset base? You'll have to enter your schedule again.")
+		builder.setMessage(
+				"This will reset the default base schedule.\nCaution: This will also reset your schedule!")
 				.setPositiveButton(android.R.string.yes, new OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sarangjoshi.rhsmustangs"
-    android:versionCode="4"
-    android:versionName="1.0.3.1" >
+    android:versionCode="5"
+    android:versionName="1.0.3.2" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -58,7 +58,7 @@
                 android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
         <activity
-            android:name="com.sarangjoshi.rhsmustangs.schedule.SDemoActivity"
+            android:name="com.sarangjoshi.rhsmustangs.schedule.demo.SDemoActivity"
             android:label="Schedule Demo"
             android:parentActivityName="com.sarangjoshi.rhsmustangs.schedule.SActivity" 
             android:theme="@style/DemoTheme">

@@ -16,6 +16,7 @@ public class SParser {
 	private SNetwork mNetwork;
 	private SData mData;
 
+	private String oldScheduleDay;
 	/**
 	 * The current day that the schedule is showing.
 	 */
@@ -24,6 +25,7 @@ public class SParser {
 	private String[] updatedDays;
 	private ArrayList<String> holidays = new ArrayList<String>();
 
+	private int oldIsUpdated = -1;
 	private int isUpdated;
 	public static int UPDATED_NO = 0;
 	public static int UPDATED_SCHED = 1;
@@ -214,6 +216,8 @@ public class SParser {
 	 * @return the timetable
 	 */
 	public ArrayList<SPeriod> getPeriods() {
+		oldIsUpdated = isUpdated;
+		
 		ArrayList<SPeriod> periods = new ArrayList<SPeriod>();
 
 		String holName = mData.getHolidayName(scheduleDay.toString().substring(
@@ -454,9 +458,10 @@ public class SParser {
 	 *            the change in days
 	 */
 	public void shiftDay(int d) {
-		updateScheduleDay(SStatic.shiftDay(scheduleDay, d, mData), (d >= 0));
+		Time t = SStatic.shiftDay(scheduleDay, d, mData);
+		updateScheduleDay(t, (d >= 0));
 	}
-
+	
 	/**
 	 * Updates the local scheduleDay variable to the appropriate time, given the
 	 * desired time.
@@ -467,6 +472,9 @@ public class SParser {
 	 *            whether the schedule is moving forward
 	 */
 	public void updateScheduleDay(Time now, boolean isForward) {
+		oldScheduleDay = (scheduleDay == null) ? "" : scheduleDay.toString()
+				.substring(0, 8);
+		
 		// scheduleDay reflects whatever schedule is being shown
 		scheduleDay = now;
 
@@ -585,7 +593,7 @@ public class SParser {
 		mData.deletePeriods();
 		mData.deleteAllPrefs();
 	}
-	
+
 	public void resetBase() {
 		mData.saveInitialize(false);
 		mData.deleteBase();
@@ -623,7 +631,7 @@ public class SParser {
 	 * @return the groupN, 1-n
 	 */
 	public int getSelectedGroupN() {
-		if(isUpdated == UPDATED_SCHED)
+		if (isUpdated == UPDATED_SCHED)
 			return mData.getGroupPref(todayShort());
 		else
 			return mData.getBaseGroupPref();
@@ -699,5 +707,20 @@ public class SParser {
 			}
 		}
 		return index;
+	}
+
+	public boolean getShouldUpdateSpinner() {
+		if (oldIsUpdated == -1)
+			return true;
+
+		if (!oldScheduleDay.equals(scheduleDay.toString().substring(0, 8))) {
+			oldScheduleDay = scheduleDay.toString().substring(0, 8);
+			if (isUpdated == SParser.UPDATED_SCHED)
+				return true;
+			else if (oldIsUpdated == SParser.UPDATED_SCHED)
+				return true;
+		}
+
+		return false;
 	}
 }

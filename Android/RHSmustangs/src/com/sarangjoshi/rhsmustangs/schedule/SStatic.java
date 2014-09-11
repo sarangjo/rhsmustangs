@@ -63,11 +63,12 @@ public class SStatic {
 	 * @return shifted time
 	 */
 	public static Time shiftDay(Time time, int dayChange, SData data) {
-		time.set(0, data.getMiscDetail("shifted_min"),
+		Time t = new Time();
+		t.set(0, data.getMiscDetail("shifted_min"),
 				data.getMiscDetail("shifted_hour"), time.monthDay + dayChange,
 				time.month, time.year);
-		time.normalize(false);
-		return time;
+		t.normalize(false);
+		return t;
 	}
 
 	public static String getTimeString(Time t) {

@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.sarangjoshi.rhsmustangs.schedule.SActivity;
-import com.sarangjoshi.rhsmustangs.schedule.SDemoActivity;
+import com.sarangjoshi.rhsmustangs.schedule.demo.SDemoActivity;
 import com.sarangjoshi.rhsmustangs.twitter.TActivity;
 
 public class MainActivity extends Activity {
