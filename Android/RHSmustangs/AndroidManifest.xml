@@ -60,11 +60,19 @@
         <activity
             android:name="com.sarangjoshi.rhsmustangs.schedule.demo.SDemoActivity"
             android:label="Schedule Demo"
-            android:parentActivityName="com.sarangjoshi.rhsmustangs.schedule.SActivity" 
-            android:theme="@style/DemoTheme">
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.schedule.SActivity"
+            android:theme="@style/DemoTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sarangjoshi.rhsmustangs.schedule.SActivity" />
+        </activity>
+        <activity
+            android:name="com.sarangjoshi.rhsmustangs.SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName="com.sarangjoshi.rhsmustangs.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sarangjoshi.rhsmustangs.MainActivity" />
         </activity>
 
         <receiver android:name="com.sarangjoshi.rhsmustangs.schedule.SAlarmReceiver" >

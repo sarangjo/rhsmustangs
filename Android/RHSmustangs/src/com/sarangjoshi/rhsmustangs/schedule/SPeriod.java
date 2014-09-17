@@ -6,6 +6,8 @@
 
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import android.text.format.Time;
+
 public class SPeriod {
 	public String mPeriodShort = "0";
 	public String mClassName = "Period";
@@ -30,28 +32,40 @@ public class SPeriod {
 	public SPeriod() {
 	}
 
-	public String getStartTimeAsString() {
-		return parseTime(mStartTime);
+	public String getStartTimeAsString(boolean is24hr) {
+		return parseTime(mStartTime, is24hr);
 	}
 
-	public String getEndTimeAsString() {
-		return parseTime(mEndTime);
+	public String getEndTimeAsString(boolean is24hr) {
+		return parseTime(mEndTime, is24hr);
 	}
 
-	private String parseTime(STime t) {
-		int minutes = t.minute;// getMinutes();
-		if (minutes < 10)
-			return t.hour + ":0" + t.minute;
-		else
-			return t.hour + ":" + t.minute;
+	private String parseTime(STime t, boolean is24hr) {
+		String h = "", p = "";
+		if (is24hr) {
+			h += t.hour;
+		} else {
+			p = "am";
+			if (t.hour == 0)
+				h += 12;
+			else if (t.hour > 12) {
+				h += (t.hour % 12);
+				p = "pm";
+			} else
+				h += t.hour;
+		}
+		String m = "";
+		m += (t.minute < 10) ? ("0" + t.minute) : t.minute;
+
+		return h + ":" + m + p;
 	}
 
 	@Override
 	public String toString() {
 		String s = new String(mPeriodShort);
 		s += " " + mClassName;
-		s += ", " + getStartTimeAsString();
-		s += "-" + getEndTimeAsString();
+		s += ", " + getStartTimeAsString(true);
+		s += "-" + getEndTimeAsString(true);
 		return s;
 	}
 

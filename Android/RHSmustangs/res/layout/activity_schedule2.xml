@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scheduleLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" 
-    android:id="@+id/scheduleLayout" >
+    android:orientation="vertical" >
 
     <RelativeLayout
         android:id="@+id/daySelector"
@@ -18,8 +18,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_action_back_dark"
-            android:contentDescription="Previous Day" />
+            android:contentDescription="Previous Day"
+            android:src="@drawable/ic_action_back_dark" />
 
         <TextView
             android:id="@+id/title"
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/title"
             android:layout_centerHorizontal="true" />
-        
+
         <ImageButton
             android:id="@+id/nextHol"
             android:layout_width="wrap_content"
@@ -43,18 +43,17 @@
             android:layout_marginRight="8dp"
             android:layout_toLeftOf="@+id/nextDay"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/holiday_icon"
-            android:contentDescription="Next Holiday" />
-        
+            android:contentDescription="Next Holiday"
+            android:src="@drawable/holiday_icon" />
+
         <ImageButton
             android:id="@+id/nextDay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_action_forward_dark"
-            android:contentDescription="Next Day" />
-
+            android:contentDescription="Next Day"
+            android:src="@drawable/ic_action_forward_dark" />
     </RelativeLayout>
 
     <ListView

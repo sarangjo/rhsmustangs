@@ -19,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.text.format.Time;
 import android.view.LayoutInflater;
@@ -37,7 +38,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -46,6 +46,7 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.Network;
 import com.sarangjoshi.rhsmustangs.OnSwipeListener;
 import com.sarangjoshi.rhsmustangs.R;
+import com.sarangjoshi.rhsmustangs.SettingsActivity.SettingsFragment;
 import com.sarangjoshi.rhsmustangs.schedule.demo.SDemoActivity;
 import com.sarangjoshi.rhsmustangs.schedule.fragments.ConfirmResetFragment;
 import com.sarangjoshi.rhsmustangs.schedule.fragments.EditPeriodFragment;
@@ -70,7 +71,6 @@ public class SActivity extends FragmentActivity implements
 	ListView periodList;
 	ImageButton nextDay, previousDay, nextHol;
 	TextView scheduleTitle, scheduleWeekDay;
-	LinearLayout scheduleLayout;
 	Button setPeriodsBtn, skipPeriodsBtn, clearPeriodsBtn;
 	Spinner groupSpin;
 	Menu actionBar;
@@ -116,19 +116,16 @@ public class SActivity extends FragmentActivity implements
 
 		mParser = new SParser(this);
 
-		stopAlarm();
-
 		if (!mParser.getSData().getIsInitialized()) {
 			goToInit();
 		} else {
+			PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
 			mSState = ScheduleState.DEFAULT;
 			updateLayout();
 
 			mParser.parseUpdatesFile();
 			mParser.readHolidays();
-
-			scheduleLayout = (LinearLayout) findViewById(R.id.scheduleLayout);
-			scheduleLayout.setOnTouchListener(new MySwipeListener());
 
 			periodList = (ListView) findViewById(R.id.periodsListView);
 			periodList
@@ -168,7 +165,6 @@ public class SActivity extends FragmentActivity implements
 			scheduleTitle = (TextView) findViewById(R.id.title);
 			scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 			nextHol = (ImageButton) findViewById(R.id.nextHol);
-
 			previousDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
@@ -254,8 +250,6 @@ public class SActivity extends FragmentActivity implements
 				}
 			});
 
-			// nextHol.setColorFilter(Color.GREEN);
-
 			SStatic.updateCurrentTime();
 
 			int n = getIntent().getIntExtra(GOTOALTDAY_KEY, -1);
@@ -288,6 +282,14 @@ public class SActivity extends FragmentActivity implements
 			}
 
 		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		stopAlarm();
+		SStatic.updateCurrentTime();
 	}
 
 	@Override
@@ -390,6 +392,7 @@ public class SActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh_schedule:
+			SStatic.updateCurrentTime();
 			new DownloadScheduleTask().execute();
 			return true;
 		case R.id.action_updatedDays:
@@ -594,8 +597,12 @@ public class SActivity extends FragmentActivity implements
 
 			periodNumView.setText(new String(p.mPeriodShort));
 			classNameView.setText(p.mClassName);
-			startTimeView.setText(p.getStartTimeAsString());
-			endTimeView.setText(p.getEndTimeAsString());
+
+			boolean is24hr = PreferenceManager.getDefaultSharedPreferences(
+					SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,
+					true);
+			startTimeView.setText(p.getStartTimeAsString(is24hr));
+			endTimeView.setText(p.getEndTimeAsString(is24hr));
 
 			int relTime = getPeriodRelativeTime(p);
 
