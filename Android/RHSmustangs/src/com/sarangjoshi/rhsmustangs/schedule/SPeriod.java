@@ -41,16 +41,14 @@ public class SPeriod {
 	}
 
 	private String parseTime(STime t, boolean is24hr) {
-		String h = "", p = "";
+		String h = "", p = (t.hour >= 12) ? "pm" : "am";
 		if (is24hr) {
 			h += t.hour;
 		} else {
-			p = "am";
 			if (t.hour == 0)
 				h += 12;
 			else if (t.hour > 12) {
 				h += (t.hour % 12);
-				p = "pm";
 			} else
 				h += t.hour;
 		}
@@ -101,4 +99,44 @@ public class SPeriod {
 	public static SPeriod holiday(String holName) {
 		return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
 	}
+
+	public static class STime {
+		public int hour;
+		public int minute;
+
+		public STime(int nH, int nM) {
+			hour = nH % 24;
+			if (minute >= 60) {
+				hour += (int) (minute / 60);
+				minute = nM % 60;
+			} else if (minute < 0) {
+				hour += (int) (minute / 60);
+				minute = nM % 60;
+			} else
+				minute = nM;
+		}
+
+		public STime(Time time) {
+			this(time.hour, time.minute);
+		}
+
+		public boolean isBefore(STime t) {
+			if (hour < t.hour)
+				return true;
+			else if (hour == t.hour && minute < t.minute)
+				return true;
+			else
+				return false;
+		}
+
+		public boolean isAfter(STime t) {
+			if (hour > t.hour)
+				return true;
+			else if (hour == t.hour && minute > t.minute)
+				return true;
+			else
+				return false;
+		}
+	}
+
 }

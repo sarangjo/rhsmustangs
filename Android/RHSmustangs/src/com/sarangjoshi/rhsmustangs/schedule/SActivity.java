@@ -628,7 +628,7 @@ public class SActivity extends FragmentActivity implements
 		 */
 		private int getPeriodRelativeTime(SPeriod p) {
 			SStatic.updateCurrentTime();
-			STime schedNow = SStatic.getCurrentScheduleTime();
+			SPeriod.STime schedNow = SStatic.getCurrentScheduleTime();
 			int day = mParser.getScheduleDay().weekDay;
 			int julian = SStatic.getJulianDay(mParser.getScheduleDay())
 					- SStatic.getJulianDay(SStatic.now);

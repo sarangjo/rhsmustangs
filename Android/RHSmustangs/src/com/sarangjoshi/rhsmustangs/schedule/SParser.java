@@ -332,8 +332,8 @@ public class SParser {
 			eMin = 20;
 		}
 
-		p.mStartTime = new STime(sHours, sMin);
-		p.mEndTime = new STime(eHours, eMin);
+		p.mStartTime = new SPeriod.STime(sHours, sMin);
+		p.mEndTime = new SPeriod.STime(eHours, eMin);
 
 		// length-1 Group Number
 		try {

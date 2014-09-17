@@ -49,8 +49,8 @@ public class SStatic {
 	 * 
 	 * @return a ScheduleTime object of the current time
 	 */
-	public static STime getCurrentScheduleTime() {
-		return new STime(now.hour, now.minute);
+	public static SPeriod.STime getCurrentScheduleTime() {
+		return new SPeriod.STime(now.hour, now.minute);
 	}
 
 	/**
