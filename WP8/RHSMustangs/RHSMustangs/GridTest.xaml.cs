@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.System.*;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkID=390556
 
@@ -48,7 +49,6 @@ namespace RHSMustangs
 
         private void twitterImage_Tapped(object sender, TappedRoutedEventArgs e)
         {
-
         }
 
         private void instagramImage_Tapped(object sender, TappedRoutedEventArgs e)

@@ -159,41 +159,35 @@ public class SActivity extends FragmentActivity implements
 					});
 			periodList.setOnTouchListener(new MySwipeListener());
 
-			// Sets up the click listeners of the next and previous day buttons
 			previousDay = (ImageButton) findViewById(R.id.previousDay);
 			nextDay = (ImageButton) findViewById(R.id.nextDay);
 			scheduleTitle = (TextView) findViewById(R.id.title);
 			scheduleWeekDay = (TextView) findViewById(R.id.scheduleDay);
 			nextHol = (ImageButton) findViewById(R.id.nextHol);
+			// Sets up the simple click listeners
 			previousDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					mParser.shiftDay(-1);
-					updatePeriods();
+					titleButtonClicked(-1);
 				}
 			});
 			nextDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View arg0) {
-					mParser.shiftDay(1);
-					updatePeriods();
+					titleButtonClicked(1);
 				}
 			});
 			scheduleTitle.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					SStatic.updateCurrentTime();
-					mParser.updateScheduleDay(SStatic.now, true);
-					updatePeriods();
+					titleButtonClicked(0);
 				}
 
 			});
 			scheduleWeekDay.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					SStatic.updateCurrentTime();
-					mParser.updateScheduleDay(SStatic.now, true);
-					updatePeriods();
+					titleButtonClicked(0);
 				}
 
 			});
@@ -208,7 +202,7 @@ public class SActivity extends FragmentActivity implements
 								Toast.LENGTH_SHORT).show();
 				}
 			});
-			//
+			// Long clicks
 			previousDay.setOnLongClickListener(new OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View v) {
@@ -985,5 +979,22 @@ public class SActivity extends FragmentActivity implements
 		for (TextView v : views) {
 			v.setTextColor(c);
 		}
+	}
+
+	/**
+	 * The actions to be taken when a title button is pressed.
+	 * 
+	 * @param d the number of days to be "shifted" (roughly)<br>0 - title,<br>1 - next day,<br>-1 - previous day
+	 */
+	private void titleButtonClicked(int d) {
+		SStatic.updateCurrentTime();
+		if(d == 0) {
+			// Title tapped
+			mParser.updateScheduleDay(SStatic.now, true);
+		} else {
+			// Previous/next day
+			mParser.shiftDay(d);
+		}
+		updatePeriods();
 	}
 }
