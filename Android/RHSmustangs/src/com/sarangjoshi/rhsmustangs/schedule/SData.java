@@ -490,7 +490,7 @@ public class SData {
 		return mPref.getInt(BASE_GROUP_PREF_KEY, 1);
 	}
 
-	// LAST DAY
+	// LATEST DAY VIEWED
 	public boolean saveLatestDay(String lDay) {
 		setupPref(PrefType.DEFAULT);
 		return mPref.edit().putString(LATESTDAY_KEY, lDay).commit();

@@ -100,6 +100,11 @@ public class SPeriod {
 		return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
 	}
 
+	/**
+	 * A class to be used for the timings of periods; independent of date.
+	 * 
+	 * @author Sarang Joshi
+	 */
 	public static class STime {
 		public int hour;
 		public int minute;

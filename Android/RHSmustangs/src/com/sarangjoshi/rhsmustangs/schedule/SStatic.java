@@ -196,4 +196,20 @@ public class SStatic {
 
 		return inSampleSize;
 	}
+
+	/**
+	 * Trims off the end open and close carrots, if any.
+	 */
+	public static String trimCarrots(String s) {
+		int iOfOpen = s.indexOf('<');
+		int iOfClose = s.indexOf('>');
+		if (iOfOpen >= 0) {
+			s = s.substring(iOfOpen + 2);
+		}
+		if (iOfClose >= 0) {
+			s = s.substring(0, iOfClose - 2);
+		}
+		return s;
+	}
+
 }

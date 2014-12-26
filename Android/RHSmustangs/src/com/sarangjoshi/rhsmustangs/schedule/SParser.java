@@ -217,7 +217,7 @@ public class SParser {
 	 */
 	public ArrayList<SPeriod> getPeriods() {
 		oldIsUpdated = isUpdated;
-		
+
 		ArrayList<SPeriod> periods = new ArrayList<SPeriod>();
 
 		String holName = mData.getHolidayName(scheduleDay.toString().substring(
@@ -461,7 +461,7 @@ public class SParser {
 		Time t = SStatic.shiftDay(scheduleDay, d, mData);
 		updateScheduleDay(t, (d >= 0));
 	}
-	
+
 	/**
 	 * Updates the local scheduleDay variable to the appropriate time, given the
 	 * desired time.
@@ -474,7 +474,7 @@ public class SParser {
 	public void updateScheduleDay(Time now, boolean isForward) {
 		oldScheduleDay = (scheduleDay == null) ? "" : scheduleDay.toString()
 				.substring(0, 8);
-		
+
 		// scheduleDay reflects whatever schedule is being shown
 		scheduleDay = now;
 
@@ -656,7 +656,13 @@ public class SParser {
 		return scheduleDay.toString().substring(0, 8);
 	}
 
-	public void setToLatestDay(boolean isForward) {
+	/**
+	 * Sets scheduleDay to the latest day viewed.
+	 * 
+	 * @param isForward
+	 *            whether the navigation is forward or not.
+	 */
+	public void setToLatestDay() {
 		Time t = new Time();
 		String s = mData.getLatestDay();
 		if (!s.equals("")) {
@@ -669,7 +675,7 @@ public class SParser {
 		} else {
 			t = SStatic.now;
 		}
-		updateScheduleDay(t, isForward);
+		updateScheduleDay(t, true);
 	}
 
 	// HOLIDAYS

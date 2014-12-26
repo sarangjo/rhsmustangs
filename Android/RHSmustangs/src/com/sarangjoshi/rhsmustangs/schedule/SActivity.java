@@ -124,6 +124,7 @@ public class SActivity extends FragmentActivity implements
 			mSState = ScheduleState.DEFAULT;
 			updateLayout();
 
+			// Offline operations
 			mParser.parseUpdatesFile();
 			mParser.readHolidays();
 
@@ -250,7 +251,7 @@ public class SActivity extends FragmentActivity implements
 			if (n >= 0) {
 				mParser.setAltDay(n - 1);
 			} else {
-				mParser.setToLatestDay(true);
+				mParser.setToLatestDay();
 				// mParser.updateScheduleDay(SStaticData.now, true);
 			}
 
