@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:isScrollContainer="true"
+        android:orientation="vertical" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/titleSetPeriods"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_margin="15dp"
+                android:text="Set Periods"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <Button
+                android:id="@+id/setPeriodsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="15dp"
+                android:text="Set" />
+
+            <Button
+                android:id="@+id/skipBtn"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="0dp"
+                android:layout_toLeftOf="@+id/setPeriodsBtn"
+                android:text="Skip" />
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/period1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 1"
+            android:inputType="textCapSentences" >
+
+            <requestFocus />
+        </EditText>
+
+        <EditText
+            android:id="@+id/period2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 2"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/period3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 3"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/period4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 4"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/period5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 5"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/period6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Period 6"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/periodLunch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Lunch"
+            android:inputType="textCapSentences" >
+        </EditText>
+
+        <Button
+            android:id="@+id/clearPeriodsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear" />
+    </LinearLayout>
+
+</ScrollView>

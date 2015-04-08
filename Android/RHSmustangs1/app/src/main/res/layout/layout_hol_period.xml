@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="400dp"
+    android:padding="5dp" >
+
+    <TextView
+        android:id="@+id/periodNumHol"
+        android:layout_width="60dip"
+        android:layout_height="match_parent"
+        android:text="P1"
+        android:textSize="40sp" />
+
+    <TextView
+        android:id="@+id/startTimeHol"
+        android:layout_width="wrap_content"
+        android:layout_height="25dip"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="Start Time"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/endTimeHol"
+        android:layout_width="wrap_content"
+        android:layout_height="25dip"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/startTimeHol"
+        android:text="End Time"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/classNameHol"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignTop="@+id/periodNumHol"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/startTimeHol"
+        android:layout_toRightOf="@+id/periodNumHol"
+        android:layout_weight="1"
+        android:ellipsize="none"
+        android:maxLines="100"
+        android:scrollHorizontally="false"
+        android:text="Class Name"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</RelativeLayout>
