@@ -14,12 +14,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import java.util.*;
-import com.sarangjoshi.rhsmustangs.content.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A fragment representing a list of Items.
  * <p/>

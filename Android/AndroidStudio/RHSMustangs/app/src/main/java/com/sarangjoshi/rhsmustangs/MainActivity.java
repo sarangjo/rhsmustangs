@@ -19,6 +19,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sarangjoshi.rhsmustangs.schedule.ScheduleFragment;
+
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, LinksFragment.OnFragmentInteractionListener {
@@ -55,6 +57,8 @@ public class MainActivity extends ActionBarActivity
         Fragment selected = null;
         switch(position) {
             case 1:
+                selected = ScheduleFragment.newInstance();
+                break;
             case 2:
                 selected = PlaceholderFragment.newInstance(position+1);
                 break;
