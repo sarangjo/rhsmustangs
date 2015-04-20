@@ -66,4 +66,28 @@ public class SDay {
     public int getDayOfWeek() {
         return mDayOfWeek;
     }
+
+    /**
+     * Gets the day of week of this SDay in String form.
+     * @return day of week (Sunday - Saturday)
+     */
+    public String getDayOfWeekAsString() {
+        switch (mDayOfWeek) {
+            case 0:
+                return "Sunday";
+            case 1:
+                return "Monday";
+            case 2:
+                return "Tuesday";
+            case 3:
+                return "Wednesday";
+            case 4:
+                return "Thursday";
+            case 5:
+                return "Friday";
+            case 6:
+                return "Saturday";
+        }
+        return "Invalid day.";
+    }
 }

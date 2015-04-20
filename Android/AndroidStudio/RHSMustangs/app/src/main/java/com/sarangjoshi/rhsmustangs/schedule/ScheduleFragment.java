@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
+import android.support.v4.view.ViewPager;
 import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ public class ScheduleFragment extends Fragment {
     private ScheduleAdapter mAdapter;
 
     private ListView mPeriodsList;
+    private TextView mDayOfWeek;
 
     private Time mToday;
 
@@ -62,6 +64,10 @@ public class ScheduleFragment extends Fragment {
         // Set up adapter
         mPeriodsList = (ListView) v.findViewById(R.id.periodsListView);
         mPeriodsList.setAdapter(mAdapter);
+
+        // Other views in the schedule
+        mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
+        mDayOfWeek.setText(mBaseSchedule.getToday().getDayOfWeekAsString());
 
         return v;
     }
@@ -149,6 +155,7 @@ public class ScheduleFragment extends Fragment {
             return rowView;
         }
 
+        // TODO: move this to SPeriod
         /**
          * Given the time and current time, gets the relative time style.
          *
@@ -166,10 +173,10 @@ public class ScheduleFragment extends Fragment {
             } else {
                 // Present day
                 if (day != Time.SATURDAY && day != Time.SUNDAY) {
-                    if (schedNow.isAfter(p.mEndTime)) {
+                    if (p.mEndTime.compareTo(schedNow) < 0) {
                         return -1;
-                    } else if (schedNow.isAfter(p.mStartTime)
-                            && schedNow.isBefore(p.mEndTime)) {
+                    } else if ((p.mStartTime.compareTo(schedNow) >= 0)
+                            && (p.mEndTime.compareTo(schedNow) <= 0)) {
                         return 0;
                     } else {
                         return 1;
