@@ -154,3 +154,9 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+/assets/*
+/android/APKs
+/android/Demos
+/android/legacy
+/android/Screenshots

@@ -11,8 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.SDay;
@@ -29,6 +32,7 @@ public class ScheduleFragment extends Fragment {
 
     private ListView mPeriodsList;
     private TextView mDayOfWeek;
+    private ImageButton mPrevDay, mNextDay;
 
     private Time mToday;
 
@@ -53,7 +57,8 @@ public class ScheduleFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAdapter = new ScheduleAdapter(getActivity(), mBaseSchedule.getDay(mToday.weekDay));
+        mBaseSchedule.updateCurrentDay(mToday.weekDay);
+        mAdapter = new ScheduleAdapter(getActivity());
     }
 
     @Override
@@ -67,9 +72,38 @@ public class ScheduleFragment extends Fragment {
 
         // Other views in the schedule
         mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
-        mDayOfWeek.setText(mBaseSchedule.getToday().getDayOfWeekAsString());
+        mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
+        mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
+
+        setTitle();
+
+        View.OnClickListener l = new DayChangeClickListener();
+        mPrevDay.setOnClickListener(l);
+        mNextDay.setOnClickListener(l);
 
         return v;
+    }
+
+    private void setTitle() {
+        mDayOfWeek.setText(mBaseSchedule.getToday().getDayOfWeekAsString());
+    }
+
+    private class DayChangeClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            // Actual shifting
+            int nOfDays = ((v.getId() == mPrevDay.getId()) ? -1 : 1);
+            mBaseSchedule.shiftCurrentDay(nOfDays);
+            setTitle();
+
+            // debug
+            Toast.makeText(getActivity(), nOfDays + " days shifted to " + mBaseSchedule.getToday().getDayOfWeek(), Toast.LENGTH_LONG).show();
+
+            // Updates adapter to reflect changes
+            mAdapter = new ScheduleAdapter(getActivity());
+            mPeriodsList.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     /**
@@ -88,12 +122,10 @@ public class ScheduleFragment extends Fragment {
      */
     private class ScheduleAdapter extends ArrayAdapter<SPeriod> {
         private final Context mContext;
-        private SDay mDay;
 
-        public ScheduleAdapter(Context context, SDay day) {
-            super(context, R.layout.layout_period, day.getPeriods());
+        public ScheduleAdapter(Context context) {
+            super(context, R.layout.layout_period, mBaseSchedule.getToday().getPeriods());
             mContext = context;
-            mDay = day;
         }
 
         @Override
@@ -104,10 +136,14 @@ public class ScheduleFragment extends Fragment {
             View rowView;
             TextView periodNumView, classNameView, startTimeView, endTimeView;
 
+            // Update day reference
+            //mDay = mSchedule.getToday();
+
             // Holiday?
             /*if (mIsU == SParser.UPDATED_HOL) {
                 rowView = inflater.inflate(R.layout.layout_hol_period, parent,
                         false);
+
 
                 // Individual views
                 periodNumView = (TextView) rowView
@@ -130,7 +166,7 @@ public class ScheduleFragment extends Fragment {
             //}
 
             // Setting view data
-            SPeriod p = mDay.getPeriod(pos);
+            SPeriod p = mBaseSchedule.getToday().getPeriod(pos);
 
             periodNumView.setText(new String(p.mPeriodShort));
             classNameView.setText(p.mClassName);
@@ -156,16 +192,16 @@ public class ScheduleFragment extends Fragment {
         }
 
         // TODO: move this to SPeriod
+
         /**
          * Given the time and current time, gets the relative time style.
          *
-         * @param p
-         *            the chosen period
+         * @param p the chosen period
          */
         private int getPeriodRelativeTime(SPeriod p) {
             SStatic.updateCurrentTime();
             SPeriod.STime schedNow = SStatic.getCurrentScheduleTime();
-            int day = mDay.getDayOfWeek();
+            int day = mBaseSchedule.getToday().getDayOfWeek();
             int julian = SStatic.getJulianDay(mToday) - SStatic.getJulianDay(SStatic.now);
             if (julian != 0) {
                 // Past day
@@ -188,4 +224,3 @@ public class ScheduleFragment extends Fragment {
     }
 
 }
-

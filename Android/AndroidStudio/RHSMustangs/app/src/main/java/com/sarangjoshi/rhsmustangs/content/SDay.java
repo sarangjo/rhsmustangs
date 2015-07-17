@@ -9,12 +9,12 @@ import java.util.List;
  * Created by Sarang on 4/6/2015.
  */
 public class SDay {
-    List<SPeriod> mPeriods;
-    int mDayOfWeek;
+    private List<SPeriod> mPeriods;
+    private int mDayOfWeek;
 
     public SDay(int dayOfWeek) {
-        mDayOfWeek = dayOfWeek;
-        mPeriods = new ArrayList<>();
+        this.mDayOfWeek = dayOfWeek;
+        this.mPeriods = new ArrayList<>();
     }
 
     public void addPeriod(int i, SPeriod period) {
@@ -25,8 +25,14 @@ public class SDay {
         addPeriod(mPeriods.size(), period);
     }
 
+    // TODO: fix
+    /**
+     * Loads the default periods, based on the day of the week.
+     *
+     * @return the loaded SDay object, for chaining
+     */
     public SDay loadDefaultPeriods() {
-        switch(mDayOfWeek) {
+        switch (mDayOfWeek) {
             case Time.MONDAY:
             case Time.TUESDAY:
             case Time.THURSDAY:
@@ -69,6 +75,7 @@ public class SDay {
 
     /**
      * Gets the day of week of this SDay in String form.
+     *
      * @return day of week (Sunday - Saturday)
      */
     public String getDayOfWeekAsString() {

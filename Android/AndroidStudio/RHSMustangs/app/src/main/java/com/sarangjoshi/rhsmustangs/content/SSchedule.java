@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This object keeps track of a collection of days, representing a full schedule.
  * Created by Sarang on 4/6/2015.
  */
 public class SSchedule {
@@ -67,7 +68,20 @@ public class SSchedule {
         return mDays.get(getIndex(currentDay));
     }
 
+    /**
+     * Updates the current day of the week to the given day of the week.
+     *
+     * @param dayOfWeek
+     */
     public void updateCurrentDay(int dayOfWeek) {
         currentDay = dayOfWeek;
+    }
+
+    /**
+     * Shifts the current day of the week by the given number of days.
+     * @param nOfDays
+     */
+    public void shiftCurrentDay(int nOfDays) {
+        updateCurrentDay(currentDay + nOfDays);
     }
 }
