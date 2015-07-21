@@ -6,18 +6,27 @@ import android.text.format.Time;
  * Created by Sarang on 4/6/2015.
  */
 public class SPeriod {
-    public String mPeriodShort = "0";
-    public String mClassName = "Period";
-    public boolean isCustomizable = true;
-    public STime mStartTime = new STime(6, 30);
-    public STime mEndTime = new STime(7, 24);
-    public int groupN = '0';
+    public String mPeriodShort;
+    public String mClassName;
+    public boolean isCustomizable;
+    public STime mStartTime;
+    public STime mEndTime;
+    public int groupN;
 
     public enum PeriodStyle {
         HOMEROOM, LUNCH, CLASS, OTHER
     }
     public enum TimeStyle {
         START, END
+    }
+
+    public SPeriod() {
+        mPeriodShort = "0";
+        mClassName = "Period";
+        isCustomizable = true;
+        mStartTime = new STime(6, 30);
+        mEndTime = new STime(7, 24);
+        groupN = '0';
     }
 
     /**
@@ -88,6 +97,11 @@ public class SPeriod {
         }
     }
 
+    /**
+     * Gets a holiday SPeriod.
+     *
+     * @param holName the name of the holiday
+     */
     public static SPeriod holiday(String holName) {
         return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
     }
@@ -117,24 +131,6 @@ public class SPeriod {
             this(time.hour, time.minute);
         }
 
-        /*public boolean isBefore(STime t) {
-            if (hour < t.hour)
-                return true;
-            else if (hour == t.hour && minute < t.minute)
-                return true;
-            else
-                return false;
-        }
-
-        public boolean isAfter(STime t) {
-            if (hour > t.hour)
-                return true;
-            else if (hour == t.hour && minute > t.minute)
-                return true;
-            else
-                return false;
-        }*/
-
         /**
          * -1 if this is less than other
          * @param t the other
@@ -152,7 +148,7 @@ public class SPeriod {
          * @return
          */
         public String toString(boolean is24hr) {
-            String h = "", p = (hour >= 12) ? "pm" : "am";
+            String h = "", amPm = (hour >= 12) ? "pm" : "am";
             if (is24hr) {
                 h += hour;
             } else {
@@ -166,7 +162,7 @@ public class SPeriod {
             String m = "";
             m += (minute < 10) ? ("0" + minute) : minute;
 
-            return h + ":" + m + p;
+            return h + ":" + m + amPm;
         }
     }
 }

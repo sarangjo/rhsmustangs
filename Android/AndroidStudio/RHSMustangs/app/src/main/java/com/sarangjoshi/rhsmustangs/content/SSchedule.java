@@ -6,82 +6,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This object keeps track of a collection of days, representing a full schedule.
- * Created by Sarang on 4/6/2015.
+ * Created by Sarang on 7/21/2015.
  */
 public class SSchedule {
-    private List<SDay> mDays;
-    private int currentDay;
+    // TODO: Decide whether a list of weeks is needed
+    //private List<SWeek> mLoadedWeeks;
+    private SWeek mCurrentWeek;
 
-    public SSchedule() {
-        mDays = new ArrayList<>();
-    }
+    private Time mToday;
 
-    /**
-     * Loads the default schedule based on the default periods as per the {@link SDay} default
-     * periods.
-     */
-    public SSchedule loadDefaultSchedule() {
-        for (int i = Time.MONDAY; i <= Time.FRIDAY; i++) {
-            mDays.add(new SDay(i).loadDefaultPeriods());
-        }
-        return this;
-    }
-
-    /**
-     * Returns a deep copy of this schedule's days.
-     *
-     * @return a deep copy of this schedule's days.
-     */
-    public List<SDay> getDays() {
-        List<SDay> days = new ArrayList<SDay>();
-        for(SDay d : mDays) {
-            days.add(d);
-        }
-        return days;
-    }
-
-    /**
-     * Gets the day from the schedule given a day of the week.
-     *
-     * @param dayOfWeek Monday = 1
-     */
-    public SDay getDay(int dayOfWeek) {
-        return mDays.get(getIndex(dayOfWeek));
-    }
-
-    /**
-     * Given a day-of-week (1-5) gives the corresponding index in the day list. Automatically
-     * rounds up for Saturday and Sunday.
-     *
-     * @param dayOfWeek the day of the week, Monday = 1
-     * @return
-     */
-    private int getIndex(int dayOfWeek) {
-        if(dayOfWeek < 1 || dayOfWeek > 5) {
-            return 0;
-        }
-        return dayOfWeek - 1;
+    public SSchedule(SWeek currentWeek, Time today) {
+        mCurrentWeek = currentWeek;
+        mToday = today;
     }
 
     public SDay getToday() {
-        return mDays.get(getIndex(currentDay));
+        return mCurrentWeek.getDay(mToday.weekDay);
     }
 
     /**
-     * Updates the current day of the week to the given day of the week.
+     * Shifts the current day of the week by a single day, forward or backward.
      *
-     * @param dayOfWeek
+     * @return whether the week was changed
      */
-    public void updateCurrentDay(int dayOfWeek) {
-        currentDay = dayOfWeek;
+    public boolean shiftCurrentDayBy1(boolean isForward) {
+        // Shift the actual date
+        mToday.monthDay += (isForward) ? 1 : -1;
+        // Update the other fields
+        mToday.normalize(false);
+
+        boolean weekChanged = false;
+        // If there's a change in week, update the current day and week
+        if (isForward && mToday.weekDay == Time.SATURDAY) {
+            // shift week forward by one
+            mToday.monthDay += 2;
+            weekChanged = true;
+        } else if (!isForward && mToday.weekDay == Time.SUNDAY) {
+            // shift week back by one
+            mToday.monthDay -= 2;
+            weekChanged = true;
+        }
+
+        if(weekChanged) {
+            mToday.normalize(false);
+            // TODO: update week
+        }
+
+        return weekChanged;
     }
 
-    /**
-     * Shifts the current day of the week by the given number of days.
-     * @param nOfDays
-     */
-    public void shiftCurrentDay(int nOfDays) {
-        updateCurrentDay(currentDay + nOfDays);
+    public Time getTodayAsTime() {
+        return mToday;
     }
 }

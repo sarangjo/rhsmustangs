@@ -4,46 +4,35 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
-import android.support.v4.view.ViewPager;
 import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
-import com.sarangjoshi.rhsmustangs.content.SDay;
-import com.sarangjoshi.rhsmustangs.content.SPeriod;
-import com.sarangjoshi.rhsmustangs.content.SSchedule;
+import com.sarangjoshi.rhsmustangs.content.*;
 
 /**
  * Created by Sarang on 4/8/2015.
  */
 public class ScheduleFragment extends Fragment {
-    private SSchedule mBaseSchedule;
+    private SSchedule mSchedule;
 
     private ScheduleAdapter mAdapter;
 
     private ListView mPeriodsList;
-    private TextView mDayOfWeek;
+    private TextView mTitle, mDayOfWeek;
     private ImageButton mPrevDay, mNextDay;
-
-    private Time mToday;
 
     /**
      * Default empty constructor.
      */
     public ScheduleFragment() {
-        mBaseSchedule = new SSchedule();
-        mBaseSchedule.loadDefaultSchedule();
-        mToday = new Time();
-        mToday.setToNow();
     }
 
     /**
@@ -57,7 +46,9 @@ public class ScheduleFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mBaseSchedule.updateCurrentDay(mToday.weekDay);
+        Time today = new Time();
+        today.setToNow();
+        mSchedule = new SSchedule(SWeek.getDefaultWeek(), today);
         mAdapter = new ScheduleAdapter(getActivity());
     }
 
@@ -71,6 +62,7 @@ public class ScheduleFragment extends Fragment {
         mPeriodsList.setAdapter(mAdapter);
 
         // Other views in the schedule
+        mTitle = (TextView) v.findViewById(R.id.title);
         mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
         mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
         mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
@@ -85,19 +77,19 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void setTitle() {
-        mDayOfWeek.setText(mBaseSchedule.getToday().getDayOfWeekAsString());
+        mTitle.setText(mSchedule.getTodayAsTime().format3339(true));
+        mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
     }
 
     private class DayChangeClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             // Actual shifting
-            int nOfDays = ((v.getId() == mPrevDay.getId()) ? -1 : 1);
-            mBaseSchedule.shiftCurrentDay(nOfDays);
-            setTitle();
+            if (mSchedule.shiftCurrentDayBy1(v.getId() == mNextDay.getId()))
+                // debug
+                Toast.makeText(getActivity(), "Week shifted.", Toast.LENGTH_SHORT).show();
 
-            // debug
-            Toast.makeText(getActivity(), nOfDays + " days shifted to " + mBaseSchedule.getToday().getDayOfWeek(), Toast.LENGTH_LONG).show();
+            setTitle();
 
             // Updates adapter to reflect changes
             mAdapter = new ScheduleAdapter(getActivity());
@@ -124,7 +116,7 @@ public class ScheduleFragment extends Fragment {
         private final Context mContext;
 
         public ScheduleAdapter(Context context) {
-            super(context, R.layout.layout_period, mBaseSchedule.getToday().getPeriods());
+            super(context, R.layout.layout_period, mSchedule.getToday().getPeriods());
             mContext = context;
         }
 
@@ -166,7 +158,7 @@ public class ScheduleFragment extends Fragment {
             //}
 
             // Setting view data
-            SPeriod p = mBaseSchedule.getToday().getPeriod(pos);
+            SPeriod p = mSchedule.getToday().getPeriod(pos);
 
             periodNumView.setText(new String(p.mPeriodShort));
             classNameView.setText(p.mClassName);
@@ -191,7 +183,7 @@ public class ScheduleFragment extends Fragment {
             return rowView;
         }
 
-        // TODO: move this to SPeriod
+        // TODO: Clean this the hell up
 
         /**
          * Given the time and current time, gets the relative time style.
@@ -201,26 +193,24 @@ public class ScheduleFragment extends Fragment {
         private int getPeriodRelativeTime(SPeriod p) {
             SStatic.updateCurrentTime();
             SPeriod.STime schedNow = SStatic.getCurrentScheduleTime();
-            int day = mBaseSchedule.getToday().getDayOfWeek();
-            int julian = SStatic.getJulianDay(mToday) - SStatic.getJulianDay(SStatic.now);
+            int day = mSchedule.getToday().getDayOfWeek();
+            int julian = SStatic.getJulianDay(mSchedule.getTodayAsTime()) - SStatic.getJulianDay(SStatic.now);
             if (julian != 0) {
                 // Past day
                 return julian;
-            } else {
-                // Present day
-                if (day != Time.SATURDAY && day != Time.SUNDAY) {
-                    if (p.mEndTime.compareTo(schedNow) < 0) {
-                        return -1;
-                    } else if ((p.mStartTime.compareTo(schedNow) >= 0)
-                            && (p.mEndTime.compareTo(schedNow) <= 0)) {
-                        return 0;
-                    } else {
-                        return 1;
-                    }
-                }
-                return -1;
             }
+            // Present day
+            if (day != Time.SATURDAY && day != Time.SUNDAY) {
+                if (p.mEndTime.compareTo(schedNow) < 0) {
+                    return -1;
+                } else if ((p.mStartTime.compareTo(schedNow) >= 0)
+                        && (p.mEndTime.compareTo(schedNow) <= 0)) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+            return -1;
         }
     }
-
 }
