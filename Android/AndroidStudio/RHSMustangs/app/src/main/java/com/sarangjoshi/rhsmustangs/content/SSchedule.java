@@ -2,7 +2,6 @@ package com.sarangjoshi.rhsmustangs.content;
 
 import android.text.format.Time;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,16 +11,25 @@ public class SSchedule {
     // TODO: Decide whether a list of weeks is needed
     //private List<SWeek> mLoadedWeeks;
     private SWeek mCurrentWeek;
-
     private Time mToday;
+    private int mGroupN;
 
-    public SSchedule(SWeek currentWeek, Time today) {
+    public SSchedule(SWeek currentWeek, Time today, int groupN) {
         mCurrentWeek = currentWeek;
         mToday = today;
+        mGroupN = groupN;
     }
 
     public SDay getToday() {
         return mCurrentWeek.getDay(mToday.weekDay);
+    }
+
+    /**
+     * Gets today's periods with the previously set group number.
+     * @return
+     */
+    public List<SPeriod> getTodayPeriods() {
+        return getToday().getPeriods(mGroupN);
     }
 
     /**
@@ -57,5 +65,13 @@ public class SSchedule {
 
     public Time getTodayAsTime() {
         return mToday;
+    }
+
+    public int getGroupN() {
+        return mGroupN;
+    }
+
+    public void setGroupN(int groupN) {
+        this.mGroupN = groupN;
     }
 }

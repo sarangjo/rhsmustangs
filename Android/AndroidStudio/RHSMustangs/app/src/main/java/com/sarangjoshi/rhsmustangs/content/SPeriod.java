@@ -6,16 +6,35 @@ import android.text.format.Time;
  * Created by Sarang on 4/6/2015.
  */
 public class SPeriod {
-    public String mPeriodShort;
-    public String mClassName;
-    public boolean isCustomizable;
-    public STime mStartTime;
-    public STime mEndTime;
-    public int groupN;
+    private String mPeriodShort;
+    private String mClassName;
+    private boolean isCustomizable;
+    private STime mStartTime;
+    private STime mEndTime;
+    private int groupN;
+
+    public static final int BASE_GROUPN = 0;
+
+    public String getShort() {
+        return mPeriodShort;
+    }
+
+    public String getClassName() {
+        return mClassName;
+    }
+
+    public STime getStart() {
+        return mStartTime;
+    }
+
+    public STime getEnd() {
+        return mEndTime;
+    }
 
     public enum PeriodStyle {
         HOMEROOM, LUNCH, CLASS, OTHER
     }
+
     public enum TimeStyle {
         START, END
     }
@@ -26,23 +45,25 @@ public class SPeriod {
         isCustomizable = true;
         mStartTime = new STime(6, 30);
         mEndTime = new STime(7, 24);
-        groupN = '0';
+        groupN = BASE_GROUPN;
     }
 
     /**
      * Creates a new Period with the given parameters.
+     *
      * @param periodShort short name for the period
-     * @param periodName period name
-     * @param sh start hour
-     * @param sm start minute
-     * @param eh end hour
-     * @param em end minute
-     * @param gn group number
+     * @param periodName  period name
+     * @param sh          start hour
+     * @param sm          start minute
+     * @param eh          end hour
+     * @param em          end minute
+     * @param gn          group number
      */
     public SPeriod(String periodShort, String periodName, int sh, int sm,
                    int eh, int em, int gn) {
         mPeriodShort = periodShort;
         mClassName = periodName;
+        isCustomizable = true;
         mStartTime = new STime(sh, sm);
         mEndTime = new STime(eh, em);
         groupN = gn;
@@ -50,7 +71,8 @@ public class SPeriod {
 
     /**
      * Gets the start or end time as a string
-     * @param style start or end
+     *
+     * @param style  start or end
      * @param is24hr 24hr style or not
      */
     public String getTimeAsString(TimeStyle style, boolean is24hr) {
@@ -68,6 +90,7 @@ public class SPeriod {
 
     /**
      * Gets this period's period style.
+     *
      * @return
      */
     public PeriodStyle getPeriodStyle() {
@@ -95,6 +118,16 @@ public class SPeriod {
             default:
                 return mClassName;
         }
+    }
+
+    /**
+     * Checks to see if the period is in the given group number.
+     *
+     * @param groupN
+     * @return
+     */
+    public boolean isInGroup(int groupN) {
+        return this.groupN == BASE_GROUPN || this.groupN == groupN;
     }
 
     /**
@@ -133,6 +166,7 @@ public class SPeriod {
 
         /**
          * -1 if this is less than other
+         *
          * @param t the other
          * @return
          */
@@ -144,6 +178,7 @@ public class SPeriod {
 
         /**
          * Given whether this time is 24 hour or not, returns a String representation.
+         *
          * @param is24hr
          * @return
          */
@@ -165,5 +200,5 @@ public class SPeriod {
             return h + ":" + m + amPm;
         }
     }
-}
 
+}

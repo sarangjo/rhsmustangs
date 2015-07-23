@@ -9,6 +9,14 @@ public class SDay {
     private List<SPeriod> mPeriods;
     private int mDayOfWeek;
 
+    private List<SPeriod> mTruncatedPeriods;
+    private int groupN = -1;
+
+    /**
+     * Creates a new SDay with the given day of the week.
+     *
+     * @param dayOfWeek
+     */
     public SDay(int dayOfWeek) {
         this.mDayOfWeek = dayOfWeek;
         this.mPeriods = new ArrayList<>();
@@ -22,13 +30,27 @@ public class SDay {
         addPeriod(mPeriods.size(), period);
     }
 
-    public List<SPeriod> getPeriods() {
-        return mPeriods;
+    /**
+     * Gets the periods of this day given the current group number. Fast; saves the periods every
+     * time the method is called.
+     *
+     * @param groupN the current group number
+     * @return
+     */
+    public List<SPeriod> getPeriods(int groupN) {
+        if(groupN != -1 || this.groupN != groupN) {
+            this.groupN = groupN;
+            mTruncatedPeriods = new ArrayList<SPeriod>();
+            for (SPeriod p : mPeriods) {
+                if (p.isInGroup(groupN)) mTruncatedPeriods.add(p);
+            }
+        }
+        return mTruncatedPeriods;
     }
 
-    public SPeriod getPeriod(int pos) {
+    /*public SPeriod getPeriod(int pos) {
         return mPeriods.get(pos);
-    }
+    }*/
 
     public int getDayOfWeek() {
         return mDayOfWeek;
