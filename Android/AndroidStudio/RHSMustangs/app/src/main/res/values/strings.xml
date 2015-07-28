@@ -11,7 +11,7 @@
     <string name="action_switch">Switch</string>
 
     <string name="action_settings">Settings</string>
-    <string name="group_prompt">Choose Period Group</string>
+    <string name="group_prompt">Group</string>
 
     <string-array name="groups_array">
         <item>O</item>

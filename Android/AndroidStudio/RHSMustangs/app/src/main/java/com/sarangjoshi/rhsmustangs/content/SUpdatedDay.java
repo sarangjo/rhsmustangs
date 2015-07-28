@@ -8,8 +8,8 @@ import android.text.format.Time;
 public class SUpdatedDay extends SDay {
     Time mDate;
 
-    public SUpdatedDay(Time date) {
-        super(date.weekDay);
+    public SUpdatedDay(Time date, String[] groupNames) {
+        super(date.weekDay, groupNames);
         mDate = date;
     }
 }

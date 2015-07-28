@@ -8,27 +8,42 @@ import java.util.List;
 public class SDay {
     private List<SPeriod> mPeriods;
     private int mDayOfWeek;
+    private String[] mGroupNames;
 
     private List<SPeriod> mTruncatedPeriods;
     private int groupN = -1;
 
     /**
-     * Creates a new SDay with the given day of the week.
+     * Creates a new {@link SDay} with the given day of the week and given group names.
+     *
+     * @param dayOfWeek
+     * @param groupNames
+     */
+    public SDay(int dayOfWeek, String[] groupNames) {
+        this.mDayOfWeek = dayOfWeek;
+        this.mPeriods = new ArrayList<>();
+        this.mGroupNames = groupNames;
+    }
+
+    /**
+     * Creates a new {@link SDay} with the given day of the week and no groups.
      *
      * @param dayOfWeek
      */
     public SDay(int dayOfWeek) {
-        this.mDayOfWeek = dayOfWeek;
-        this.mPeriods = new ArrayList<>();
+        this(dayOfWeek, NO_GROUPS);
     }
 
-    public void addPeriod(int i, SPeriod period) {
-        mPeriods.add(i, period);
-    }
-
+    /**
+     * Adds a period to the day.
+     *
+     * @param period {@link SPeriod} to be added
+     */
     public void addPeriod(SPeriod period) {
-        addPeriod(mPeriods.size(), period);
+        mPeriods.add(period);
     }
+
+    ///// GETTERS /////
 
     /**
      * Gets the periods of this day given the current group number. Fast; saves the periods every
@@ -38,7 +53,7 @@ public class SDay {
      * @return
      */
     public List<SPeriod> getPeriods(int groupN) {
-        if(groupN != -1 || this.groupN != groupN) {
+        if (groupN != -1 || this.groupN != groupN) {
             this.groupN = groupN;
             mTruncatedPeriods = new ArrayList<SPeriod>();
             for (SPeriod p : mPeriods) {
@@ -47,10 +62,6 @@ public class SDay {
         }
         return mTruncatedPeriods;
     }
-
-    /*public SPeriod getPeriod(int pos) {
-        return mPeriods.get(pos);
-    }*/
 
     public int getDayOfWeek() {
         return mDayOfWeek;
@@ -81,21 +92,34 @@ public class SDay {
         return "Invalid day.";
     }
 
+    /**
+     * Returns the names of the groups, with the item in the 0th index empty.
+     *
+     * @return the group names for this day
+     */
+    public String[] getGroupNames() {
+        return mGroupNames;
+    }
+
     // TODO: fix
 
+    public static final String[] DEFAULT_GROUPS = new String[]{"Lunch A", "Lunch B"};
+    public static final String[] NO_GROUPS = new String[]{"No groups"};
+
     /**
-     * Loads the default periods, based on the day of the week.
+     * Gets a default day, based on the day of the week.
      *
-     * @return the loaded SDay object, for chaining
+     * @return the loaded SDay object. null if the given day of week is invalid
      */
     public static SDay getDefaultDay(int dayOfWeek) {
-        SDay day = new SDay(dayOfWeek);
+        SDay day = null;
 
         switch (dayOfWeek) {
             case Time.MONDAY:
             case Time.TUESDAY:
             case Time.THURSDAY:
             case Time.FRIDAY:
+                day = new SDay(dayOfWeek, DEFAULT_GROUPS);
                 day.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
                 day.addPeriod(new SPeriod("2", "-", 8, 30, 9, 24, 0));
                 day.addPeriod(new SPeriod("3", "-", 9, 30, 10, 24, 0));
@@ -107,6 +131,7 @@ public class SDay {
                 day.addPeriod(new SPeriod("6", "-", 13, 6, 14, 0, 0));
                 break;
             case Time.WEDNESDAY:
+                day = new SDay(dayOfWeek);
                 day.addPeriod(new SPeriod("1", "-", 7, 30, 8, 10, 0));
                 day.addPeriod(new SPeriod("2", "-", 8, 16, 8, 56, 0));
                 day.addPeriod(new SPeriod("HR", "Homeroom", 9, 2, 9, 12, 0));
@@ -120,4 +145,7 @@ public class SDay {
         return day;
     }
 
+    public boolean hasGroups() {
+        return mGroupNames.length > 1;
+    }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -63,46 +65,59 @@ public class ScheduleFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.schedule_menu, menu);
 
-        MenuItem spinner = menu.findItem(R.id.group_spinner);
-        groupSpin = (Spinner) spinner.getActionView();
-        if (groupSpin != null) {
-            groupSpin.setVisibility(View.VISIBLE);
+        MenuItem item = menu.findItem(R.id.group_spinner);
+        groupSpin = (Spinner) MenuItemCompat.getActionView(item);
 
-            String[] spinnerData = new String[]{"O", "G"};
-
-            // The third parameter is defined for the selected view
-            // (default)
-            ArrayAdapter<String> spinAdapter = //ArrayAdapter.createFromResource(getActivity(), R.array.groups_array, R.layout.spinner_dropdown_default);
-                    new ArrayAdapter<>(getActivity(), R.layout.spinner_dropdown_default, spinnerData);
-
-            // This is for all the drop down resources
-            spinAdapter
-                    .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            groupSpin.setAdapter(spinAdapter);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_switch:
-                mSchedule.setGroupN((mSchedule.getGroupN() == 2) ? 1 : 2);
-                refreshList();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
+        updateSpinner();
     }
 
     /**
-     * Refreshes the title and list.
+     * Updates the spinner.
      */
-    private void refreshList() {
-        updateTitle();
+    private void updateSpinner() {
+        if (groupSpin != null) {
+            // Retrieve data
+            String[] spinnerData = mSchedule.getToday().getGroupNames();
 
+            ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_dropdown_default, spinnerData);
+            spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            groupSpin.setAdapter(spinAdapter);
+
+            groupSpin.setOnItemSelectedListener(new GroupSpinnerListener());
+
+            if(mSchedule.getToday().hasGroups())
+                groupSpin.setSelection(mSchedule.getGroupN() - 1);
+            else
+                groupSpin.setSelection(0);
+        }
+    }
+
+    private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if (mSchedule.setGroupN(position + 1)) {
+                Toast.makeText(getActivity(), "" + (position + 1), Toast.LENGTH_SHORT).show();
+                refreshPeriods();
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            // do nothing
+        }
+    }
+
+    /**
+     * Refreshes the periods.
+     */
+    private void refreshPeriods() {
         // Updates adapter to reflect changes
         mAdapter = new ScheduleAdapter(getActivity());
         mPeriodsList.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
+
+        // Update other UI
+        updateTitle();
     }
 
     @Override
@@ -145,7 +160,9 @@ public class ScheduleFragment extends Fragment {
                 // debug
                 Toast.makeText(getActivity(), "Week shifted.", Toast.LENGTH_SHORT).show();
 
-            refreshList();
+            // Updating
+            refreshPeriods();
+            updateSpinner();
         }
     }
 

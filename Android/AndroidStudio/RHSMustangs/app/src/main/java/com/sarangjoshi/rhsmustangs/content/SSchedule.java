@@ -71,7 +71,23 @@ public class SSchedule {
         return mGroupN;
     }
 
-    public void setGroupN(int groupN) {
-        this.mGroupN = groupN;
+    /**
+     * Sets the current group number
+     *
+     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
+     * day
+     * @param groupN the group number
+     * @returns whether the group number was actually updated
+     */
+    public boolean setGroupN(int groupN) {
+        if(getToday().hasGroups()) {
+            if (groupN == 0)
+                throw new IllegalArgumentException();
+            if (this.mGroupN != groupN) {
+                this.mGroupN = groupN;
+                return true;
+            }
+        }
+        return false;
     }
 }
