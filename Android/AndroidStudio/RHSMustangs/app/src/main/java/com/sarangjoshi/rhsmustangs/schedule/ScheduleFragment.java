@@ -54,10 +54,48 @@ public class ScheduleFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        mSchedule = new SSchedule(SWeek.getDefaultWeek(),
+                SStatic.updateCurrentTime(), 1);
+        //mAdapter = new ScheduleAdapter(getActivity());
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.layout_schedule, container, false);
+
+        // Initialize views
+        mPeriodsList = (ListView) v.findViewById(R.id.periodsListView);
+        mTitle = (TextView) v.findViewById(R.id.title);
+        mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
+        mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
+        mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
+
+        // UI dynamic setup
         Time today = new Time();
         today.setToNow();
         mSchedule = new SSchedule(SWeek.getDefaultWeek(), today, 1);
-        mAdapter = new ScheduleAdapter(getActivity());
+
+        View.OnClickListener dcl = new DayChangeClickListener();
+        mPrevDay.setOnClickListener(dcl);
+        mNextDay.setOnClickListener(dcl);
+
+        View.OnClickListener tcl = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSchedule.setToday(SStatic.updateCurrentTime());
+                refreshPeriods();
+                updateSpinner();
+            }
+        };
+        mTitle.setOnClickListener(tcl);
+        mDayOfWeek.setOnClickListener(tcl);
+
+        // And finally actually show data
+        refreshPeriods();
+        updateSpinner();
+
+        return v;
     }
 
     @Override
@@ -85,7 +123,7 @@ public class ScheduleFragment extends Fragment {
 
             groupSpin.setOnItemSelectedListener(new GroupSpinnerListener());
 
-            if(mSchedule.getToday().hasGroups())
+            if (mSchedule.getToday().hasGroups())
                 groupSpin.setSelection(mSchedule.getGroupN() - 1);
             else
                 groupSpin.setSelection(0);
@@ -120,35 +158,11 @@ public class ScheduleFragment extends Fragment {
         updateTitle();
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.layout_schedule, container, false);
-
-        // Set up adapter
-        mPeriodsList = (ListView) v.findViewById(R.id.periodsListView);
-        mPeriodsList.setAdapter(mAdapter);
-
-        // Other views in the schedule
-        mTitle = (TextView) v.findViewById(R.id.title);
-        mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
-        mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
-        mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
-
-        updateTitle();
-
-        View.OnClickListener l = new DayChangeClickListener();
-        mPrevDay.setOnClickListener(l);
-        mNextDay.setOnClickListener(l);
-
-        return v;
-    }
-
     /**
      * Updates the title of the current schedule.
      */
     private void updateTitle() {
-        mTitle.setText(mSchedule.getTodayAsTime().format3339(true));
+        mTitle.setText(mSchedule.getTodayAsString());
         mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
     }
 
@@ -213,22 +227,20 @@ public class ScheduleFragment extends Fragment {
             periodNumView.setText(new String(p.getShort()));
             classNameView.setText(p.getClassName());
 
-            boolean is24hr = true; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
+            boolean is24hr = false; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
             int relTime = getPeriodRelativeTime(p);
 
             // Colors stuff based on time
-            if (relTime < 0) {
-                periodNumView.setTextColor(Color.GRAY);
-            } else if (relTime == 0) {
-                int gold = Color.rgb(255, 215, 0);
-                setTextColor(gold, periodNumView, classNameView, startTimeView,
-                        endTimeView);
+            int color = Color.GRAY; // relTime < 0
+            if (relTime == 0) {
+                color = Color.rgb(255, 215, 0);
             } else if (relTime > 0) {
-                periodNumView.setTextColor(Color.BLACK);
+                color = Color.BLACK;
             }
+            setTextColor(color, periodNumView, classNameView, startTimeView, endTimeView);
 
             return rowView;
         }

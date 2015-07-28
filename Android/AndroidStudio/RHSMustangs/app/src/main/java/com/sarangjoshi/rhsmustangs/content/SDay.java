@@ -120,26 +120,26 @@ public class SDay {
             case Time.THURSDAY:
             case Time.FRIDAY:
                 day = new SDay(dayOfWeek, DEFAULT_GROUPS);
-                day.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
-                day.addPeriod(new SPeriod("2", "-", 8, 30, 9, 24, 0));
-                day.addPeriod(new SPeriod("3", "-", 9, 30, 10, 24, 0));
-                day.addPeriod(new SPeriod("LA", "-", 10, 30, 11, 0, 1));
-                day.addPeriod(new SPeriod("4", "-", 11, 6, 12, 0, 1));
-                day.addPeriod(new SPeriod("4", "-", 10, 30, 11, 24, 2));
-                day.addPeriod(new SPeriod("LB", "-", 11, 30, 12, 0, 2));
-                day.addPeriod(new SPeriod("5", "-", 12, 6, 13, 0, 0));
-                day.addPeriod(new SPeriod("6", "-", 13, 6, 14, 0, 0));
+                day.addPeriod(new SPeriod("1", 7, 30, 8, 24, 0));
+                day.addPeriod(new SPeriod("2", 8, 30, 9, 24, 0));
+                day.addPeriod(new SPeriod("3", 9, 30, 10, 24, 0));
+                day.addPeriod(new SPeriod("LA", 10, 30, 11, 0, 1));
+                day.addPeriod(new SPeriod("4", 11, 6, 12, 0, 1));
+                day.addPeriod(new SPeriod("4", 10, 30, 11, 24, 2));
+                day.addPeriod(new SPeriod("LB", 11, 30, 12, 0, 2));
+                day.addPeriod(new SPeriod("5", 12, 6, 13, 0, 0));
+                day.addPeriod(new SPeriod("6", 13, 6, 14, 0, 0));
                 break;
             case Time.WEDNESDAY:
                 day = new SDay(dayOfWeek);
-                day.addPeriod(new SPeriod("1", "-", 7, 30, 8, 10, 0));
-                day.addPeriod(new SPeriod("2", "-", 8, 16, 8, 56, 0));
-                day.addPeriod(new SPeriod("HR", "Homeroom", 9, 2, 9, 12, 0));
-                day.addPeriod(new SPeriod("3", "-", 9, 12, 9, 52, 0));
-                day.addPeriod(new SPeriod("4", "-", 9, 58, 10, 38, 0));
-                day.addPeriod(new SPeriod("5", "-", 10, 44, 11, 24, 0));
-                day.addPeriod(new SPeriod("6", "-", 11, 30, 12, 10, 0));
-                day.addPeriod(new SPeriod("LN", "-", 12, 10, 12, 30, 0));
+                day.addPeriod(new SPeriod("1", 7, 30, 8, 10, 0));
+                day.addPeriod(new SPeriod("2", 8, 16, 8, 56, 0));
+                day.addPeriod(new SPeriod("HR", 9, 2, 9, 12, 0));
+                day.addPeriod(new SPeriod("3", 9, 12, 9, 52, 0));
+                day.addPeriod(new SPeriod("4", 9, 58, 10, 38, 0));
+                day.addPeriod(new SPeriod("5", 10, 44, 11, 24, 0));
+                day.addPeriod(new SPeriod("6", 11, 30, 12, 10, 0));
+                day.addPeriod(new SPeriod("LN", 12, 10, 12, 30, 0));
                 break;
         }
         return day;

@@ -2,6 +2,8 @@ package com.sarangjoshi.rhsmustangs.content;
 
 import android.text.format.Time;
 
+import com.sarangjoshi.rhsmustangs.schedule.SStatic;
+
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ public class SSchedule {
 
     public SSchedule(SWeek currentWeek, Time today, int groupN) {
         mCurrentWeek = currentWeek;
-        mToday = today;
+        setToday(today);
         mGroupN = groupN;
     }
 
@@ -25,7 +27,19 @@ public class SSchedule {
     }
 
     /**
+     * Sets today for the given day.
+     *
+     * @param today
+     * @return if the week changed
+     */
+    public boolean setToday(Time today) {
+        mToday = today;
+        return dayChanged(true);
+    }
+
+    /**
      * Gets today's periods with the previously set group number.
+     *
      * @return
      */
     public List<SPeriod> getTodayPeriods() {
@@ -43,6 +57,10 @@ public class SSchedule {
         // Update the other fields
         mToday.normalize(false);
 
+        return dayChanged(isForward);
+    }
+
+    private boolean dayChanged(boolean isForward) {
         boolean weekChanged = false;
         // If there's a change in week, update the current day and week
         if (isForward && mToday.weekDay == Time.SATURDAY) {
@@ -55,11 +73,10 @@ public class SSchedule {
             weekChanged = true;
         }
 
-        if(weekChanged) {
+        if (weekChanged) {
             mToday.normalize(false);
             // TODO: update week
         }
-
         return weekChanged;
     }
 
@@ -74,13 +91,13 @@ public class SSchedule {
     /**
      * Sets the current group number
      *
-     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
-     * day
      * @param groupN the group number
+     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
+     *                                  day
      * @returns whether the group number was actually updated
      */
     public boolean setGroupN(int groupN) {
-        if(getToday().hasGroups()) {
+        if (getToday().hasGroups()) {
             if (groupN == 0)
                 throw new IllegalArgumentException();
             if (this.mGroupN != groupN) {
@@ -89,5 +106,21 @@ public class SSchedule {
             }
         }
         return false;
+    }
+
+    /**
+     * @return
+     */
+    public String getTodayAsString() {
+        SStatic.updateCurrentTime();
+        int diff = SStatic.getJulianDay(SStatic.now)
+                - SStatic.getJulianDay(mToday);
+        if (diff == 0)
+            return "Today";
+        else if (diff == -1)
+            return "Tomorrow";
+        else if (diff == 1)
+            return "Yesterday";
+        return SStatic.getDateString(mToday);
     }
 }

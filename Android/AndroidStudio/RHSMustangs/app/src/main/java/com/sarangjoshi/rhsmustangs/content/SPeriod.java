@@ -8,12 +8,40 @@ import android.text.format.Time;
 public class SPeriod {
     private String mPeriodShort;
     private String mClassName;
-    private boolean isCustomizable;
     private STime mStartTime;
     private STime mEndTime;
-    private int groupN;
+    private int mGroupN;
 
     public static final int BASE_GROUPN = 0;
+
+    /**
+     * Creates a new Period with the given parameters.
+     *
+     * @param periodShort short name for the period
+     * @param periodName  period name
+     * @param sh          start hour
+     * @param sm          start minute
+     * @param eh          end hour
+     * @param em          end minute
+     * @param gn          group number
+     */
+    public SPeriod(String periodShort, String periodName, int sh, int sm,
+                   int eh, int em, int gn) {
+        mPeriodShort = periodShort;
+        mClassName = periodName;
+        mStartTime = new STime(sh, sm);
+        mEndTime = new STime(eh, em);
+        mGroupN = gn;
+    }
+
+    public SPeriod(String periodShort, int sh, int sm,
+                   int eh, int em, int gn) {
+        mPeriodShort = periodShort;
+        mClassName = getDefaultPeriodName();
+        mStartTime = new STime(sh, sm);
+        mEndTime = new STime(eh, em);
+        mGroupN = gn;
+    }
 
     public String getShort() {
         return mPeriodShort;
@@ -39,36 +67,6 @@ public class SPeriod {
         START, END
     }
 
-    public SPeriod() {
-        mPeriodShort = "0";
-        mClassName = "Period";
-        isCustomizable = true;
-        mStartTime = new STime(6, 30);
-        mEndTime = new STime(7, 24);
-        groupN = BASE_GROUPN;
-    }
-
-    /**
-     * Creates a new Period with the given parameters.
-     *
-     * @param periodShort short name for the period
-     * @param periodName  period name
-     * @param sh          start hour
-     * @param sm          start minute
-     * @param eh          end hour
-     * @param em          end minute
-     * @param gn          group number
-     */
-    public SPeriod(String periodShort, String periodName, int sh, int sm,
-                   int eh, int em, int gn) {
-        mPeriodShort = periodShort;
-        mClassName = periodName;
-        isCustomizable = true;
-        mStartTime = new STime(sh, sm);
-        mEndTime = new STime(eh, em);
-        groupN = gn;
-    }
-
     /**
      * Gets the start or end time as a string
      *
@@ -81,10 +79,10 @@ public class SPeriod {
 
     @Override
     public String toString() {
-        String s = new String(mPeriodShort);
+        String s = mPeriodShort;
         s += " " + mClassName;
-        s += ", " + getTimeAsString(TimeStyle.START, true);
-        s += "-" + getTimeAsString(TimeStyle.END, true);
+        s += ", " + getTimeAsString(TimeStyle.START, false);
+        s += "-" + getTimeAsString(TimeStyle.END, false);
         return s;
     }
 
@@ -127,7 +125,7 @@ public class SPeriod {
      * @return
      */
     public boolean isInGroup(int groupN) {
-        return this.groupN == BASE_GROUPN || this.groupN == groupN;
+        return this.mGroupN == BASE_GROUPN || this.mGroupN == groupN;
     }
 
     /**
@@ -197,8 +195,9 @@ public class SPeriod {
             String m = "";
             m += (minute < 10) ? ("0" + minute) : minute;
 
-            return h + ":" + m + amPm;
+            return h + ":" + m + ((!is24hr) ? amPm : "");
         }
     }
 
+    public static String[] RESTRICTED_SHORTS = new String[] { "HR", "LN", "LA", "LB" };
 }
