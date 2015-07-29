@@ -18,17 +18,17 @@ public class SPeriod {
      * Creates a new Period with the given parameters.
      *
      * @param periodShort short name for the period
-     * @param periodName  period name
+     * @param name  period name
      * @param sh          start hour
      * @param sm          start minute
      * @param eh          end hour
      * @param em          end minute
      * @param gn          group number
      */
-    public SPeriod(String periodShort, String periodName, int sh, int sm,
+    public SPeriod(String periodShort, String name, int sh, int sm,
                    int eh, int em, int gn) {
         mPeriodShort = periodShort;
-        mClassName = periodName;
+        mClassName = name;
         mStartTime = new STime(sh, sm);
         mEndTime = new STime(eh, em);
         mGroupN = gn;

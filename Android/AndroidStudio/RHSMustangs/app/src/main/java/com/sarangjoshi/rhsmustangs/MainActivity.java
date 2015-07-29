@@ -19,8 +19,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.ParseObject;
 import com.sarangjoshi.rhsmustangs.schedule.ScheduleFragment;
-
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, LinksFragment.OnFragmentInteractionListener {
