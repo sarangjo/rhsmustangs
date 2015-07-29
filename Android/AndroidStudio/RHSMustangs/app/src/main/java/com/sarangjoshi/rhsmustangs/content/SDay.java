@@ -1,12 +1,11 @@
 package com.sarangjoshi.rhsmustangs.content;
 
-import android.text.format.Time;
-
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class SDay {
-    private List<SPeriod> mPeriods;
+    protected List<SPeriod> mPeriods;
     private int mDayOfWeek;
     private String[] mGroupNames;
 
@@ -47,7 +46,7 @@ public class SDay {
 
     /**
      * Gets the periods of this day given the current group number. Fast; saves the periods every
-     * time the method is called.
+     * Calendar the method is called.
      *
      * @param groupN the current group number
      * @return
@@ -74,19 +73,19 @@ public class SDay {
      */
     public String getDayOfWeekAsString() {
         switch (mDayOfWeek) {
-            case Time.SUNDAY:
+            case Calendar.SUNDAY:
                 return "Sunday";
-            case Time.MONDAY:
+            case Calendar.MONDAY:
                 return "Monday";
-            case Time.TUESDAY:
+            case Calendar.TUESDAY:
                 return "Tuesday";
-            case Time.WEDNESDAY:
+            case Calendar.WEDNESDAY:
                 return "Wednesday";
-            case Time.THURSDAY:
+            case Calendar.THURSDAY:
                 return "Thursday";
-            case Time.FRIDAY:
+            case Calendar.FRIDAY:
                 return "Friday";
-            case Time.SATURDAY:
+            case Calendar.SATURDAY:
                 return "Saturday";
         }
         return "Invalid day.";
@@ -115,10 +114,10 @@ public class SDay {
         SDay day = null;
 
         switch (dayOfWeek) {
-            case Time.MONDAY:
-            case Time.TUESDAY:
-            case Time.THURSDAY:
-            case Time.FRIDAY:
+            case Calendar.MONDAY:
+            case Calendar.TUESDAY:
+            case Calendar.THURSDAY:
+            case Calendar.FRIDAY:
                 day = new SDay(dayOfWeek, DEFAULT_GROUPS);
                 day.addPeriod(new SPeriod("1", 7, 30, 8, 24, 0));
                 day.addPeriod(new SPeriod("2", 8, 30, 9, 24, 0));
@@ -130,7 +129,7 @@ public class SDay {
                 day.addPeriod(new SPeriod("5", 12, 6, 13, 0, 0));
                 day.addPeriod(new SPeriod("6", 13, 6, 14, 0, 0));
                 break;
-            case Time.WEDNESDAY:
+            case Calendar.WEDNESDAY:
                 day = new SDay(dayOfWeek);
                 day.addPeriod(new SPeriod("1", 7, 30, 8, 10, 0));
                 day.addPeriod(new SPeriod("2", 8, 16, 8, 56, 0));

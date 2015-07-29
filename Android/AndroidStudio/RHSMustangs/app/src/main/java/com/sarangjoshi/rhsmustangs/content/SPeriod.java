@@ -1,6 +1,9 @@
 package com.sarangjoshi.rhsmustangs.content;
 
-import android.text.format.Time;
+import com.parse.ParseObject;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Sarang on 4/6/2015.
@@ -18,7 +21,7 @@ public class SPeriod {
      * Creates a new Period with the given parameters.
      *
      * @param periodShort short name for the period
-     * @param name  period name
+     * @param name        period name
      * @param sh          start hour
      * @param sm          start minute
      * @param eh          end hour
@@ -137,6 +140,20 @@ public class SPeriod {
         return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
     }
 
+    public static SPeriod newFromParse(ParseObject obj) {
+        try {
+            return new SPeriod(obj.getString(SHORT_KEY),
+            obj.getString(NAME_KEY),
+            obj.getInt(START_HR_KEY),
+            obj.getInt(START_MIN_KEY),
+            obj.getInt(END_HR_KEY),
+            obj.getInt(END_MIN_KEY),
+            obj.getInt(GROUP_KEY));
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     /**
      * A class to be used for the timings of periods; independent of date.
      *
@@ -158,8 +175,8 @@ public class SPeriod {
                 minute = nM;
         }
 
-        public STime(Time time) {
-            this(time.hour, time.minute);
+        public STime(Calendar time) {
+            this(time.get(GregorianCalendar.HOUR_OF_DAY), time.get(GregorianCalendar.MINUTE));
         }
 
         /**
@@ -199,5 +216,12 @@ public class SPeriod {
         }
     }
 
-    public static String[] RESTRICTED_SHORTS = new String[] { "HR", "LN", "LA", "LB" };
+    public static String[] RESTRICTED_SHORTS = new String[]{"HR", "LN", "LA", "LB"};
+    public static String SHORT_KEY = "short";
+    public static String NAME_KEY = "name";
+    public static String GROUP_KEY = "groupN";
+    public static String START_HR_KEY = "startHr";
+    public static String START_MIN_KEY = "startMin";
+    public static String END_HR_KEY = "endHr";
+    public static String END_MIN_KEY = "endMin";
 }

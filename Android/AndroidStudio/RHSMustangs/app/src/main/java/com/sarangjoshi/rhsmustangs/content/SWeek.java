@@ -1,8 +1,7 @@
 package com.sarangjoshi.rhsmustangs.content;
 
-import android.text.format.Time;
-
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -59,7 +58,7 @@ public class SWeek {
      */
     public static SWeek getDefaultWeek() {
         SWeek week = new SWeek();
-        for (int i = Time.MONDAY; i <= Time.FRIDAY; i++) {
+        for (int i = Calendar.MONDAY; i <= Calendar.FRIDAY; i++) {
             week.mDays.add(SDay.getDefaultDay(i));
         }
         return week;
