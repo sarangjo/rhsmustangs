@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
-import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,10 +22,13 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 /**
  * Created by Sarang on 4/8/2015.
  */
-public class ScheduleFragment extends Fragment {
+public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener {
     private SSchedule mSchedule;
 
     private ScheduleAdapter mAdapter;
@@ -35,6 +37,8 @@ public class ScheduleFragment extends Fragment {
     private TextView mTitle, mDayOfWeek;
     private ImageButton mPrevDay, mNextDay;
     private Spinner groupSpin;
+
+    private ProgressDialog dialog;
 
     /**
      * Default empty constructor.
@@ -55,8 +59,7 @@ public class ScheduleFragment extends Fragment {
         setHasOptionsMenu(true);
 
         mSchedule = new SSchedule(SWeek.getDefaultWeek(),
-                SStatic.updateCurrentTime(), 1);
-        //mAdapter = new ScheduleAdapter(getActivity());
+                new GregorianCalendar(), 1, this);
     }
 
     @Override
@@ -72,10 +75,6 @@ public class ScheduleFragment extends Fragment {
         mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
 
         // UI dynamic setup
-        Time today = new Time();
-        today.setToNow();
-        mSchedule = new SSchedule(SWeek.getDefaultWeek(), today, 1);
-
         View.OnClickListener dcl = new DayChangeClickListener();
         mPrevDay.setOnClickListener(dcl);
         mNextDay.setOnClickListener(dcl);
@@ -83,7 +82,7 @@ public class ScheduleFragment extends Fragment {
         View.OnClickListener tcl = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSchedule.setToday(SStatic.updateCurrentTime());
+                mSchedule.setToday(new GregorianCalendar());
                 refreshPeriods();
                 updateSpinner();
             }
@@ -110,6 +109,24 @@ public class ScheduleFragment extends Fragment {
     }
 
     /**
+     * Whether the selection is handled.
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.action_refresh:
+                dialog = ProgressDialog.show(getActivity(), "",
+                    "Checking for updates...");
+
+                mSchedule.updateUpdatedDays();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
      * Updates the spinner.
      */
     private void updateSpinner() {
@@ -128,6 +145,11 @@ public class ScheduleFragment extends Fragment {
             else
                 groupSpin.setSelection(0);
         }
+    }
+
+    @Override
+    public void updateCompleted() {
+        dialog.dismiss();
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -253,16 +275,14 @@ public class ScheduleFragment extends Fragment {
          * @param p the chosen period
          */
         private int getPeriodRelativeTime(SPeriod p) {
-            SStatic.updateCurrentTime();
-            SPeriod.STime schedNow = SStatic.getCurrentScheduleTime();
+            SPeriod.STime schedNow = new SPeriod.STime(new GregorianCalendar());
             int day = mSchedule.getToday().getDayOfWeek();
-            int julian = SStatic.getJulianDay(mSchedule.getTodayAsTime()) - SStatic.getJulianDay(SStatic.now);
-            if (julian != 0) {
-                // Past day
-                return julian;
-            }
+            int julianDiff = SStatic.getAbsDay(mSchedule.getTodayAsTime())
+                - SStatic.getAbsDay(new GregorianCalendar());
+            if (julianDiff != 0)
+                return julianDiff;
             // Present day
-            if (day != Time.SATURDAY && day != Time.SUNDAY) {
+            if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
                 if (p.getEnd().compareTo(schedNow) < 0) {
                     return -1;
                 } else if ((p.getStart().compareTo(schedNow) >= 0)

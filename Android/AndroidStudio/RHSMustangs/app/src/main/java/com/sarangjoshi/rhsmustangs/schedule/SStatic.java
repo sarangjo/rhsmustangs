@@ -7,6 +7,7 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.format.Time;
 
 import com.sarangjoshi.rhsmustangs.content.*;
 
@@ -60,6 +61,15 @@ public class SStatic {
         return t;
     }*/
 
+    /**
+     * Gets the absolute day.
+     *
+     * @param time
+     * @return
+     */
+    public static int getAbsDay(Calendar time) {
+        return Time.getJulianDay(time.getTimeInMillis(), time.getTimeZone().getRawOffset() / 1000);
+    }
 
     public static ArrayList<String> getArrayListFromArray(String[] s) {
         ArrayList<String> a = new ArrayList<String>();

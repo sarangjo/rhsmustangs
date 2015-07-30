@@ -8,6 +8,7 @@ import org.json.JSONException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by Sarang on 4/6/2015.
@@ -21,8 +22,8 @@ public class SUpdatedDay extends SDay {
     }
 
     public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
-        Date parseDate = (Date) obj.get(DATE_KEY);
-        JSONArray parseGroupNames = (JSONArray) obj.get(GRP_NAMES_KEY);
+        Date parseDate = obj.getDate(DATE_KEY);
+        JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
         Calendar date = new GregorianCalendar(parseDate.getYear(), parseDate.getMonth(),
                 parseDate.getDay());
@@ -39,6 +40,19 @@ public class SUpdatedDay extends SDay {
         for(ParseObject p : periods) {
             uDay.addPeriod(SPeriod.newFromParse(p));
         }
+
+        return uDay;
+    }
+
+    public static SUpdatedDay test() {
+        Calendar date = new GregorianCalendar(2015, 7, 31);
+        String[] groupNames = new String[] { "Grp1", "Grp2" };
+
+        SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
+
+        uDay.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
+        uDay.addPeriod(new SPeriod("2", "-", 8, 30, 9, 24, 1));
+        uDay.addPeriod(new SPeriod("2", "-", 8, 30, 10, 24, 2));
 
         return uDay;
     }

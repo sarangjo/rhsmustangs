@@ -7,6 +7,11 @@
         app:showAsAction="withText|ifRoom" />-->
 
     <item
+        android:id="@+id/action_refresh"
+        android:title="@string/action_refresh"
+        app:showAsAction="withText|ifRoom" />
+
+    <item
         android:id="@+id/group_spinner"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

@@ -1,5 +1,6 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.Calendar;
@@ -141,17 +142,13 @@ public class SPeriod {
     }
 
     public static SPeriod newFromParse(ParseObject obj) {
-        try {
-            return new SPeriod(obj.getString(SHORT_KEY),
+        return new SPeriod(obj.getString(SHORT_KEY),
             obj.getString(NAME_KEY),
             obj.getInt(START_HR_KEY),
             obj.getInt(START_MIN_KEY),
             obj.getInt(END_HR_KEY),
             obj.getInt(END_MIN_KEY),
             obj.getInt(GROUP_KEY));
-        } catch (ParseException e) {
-            return null;
-        }
     }
 
     /**
