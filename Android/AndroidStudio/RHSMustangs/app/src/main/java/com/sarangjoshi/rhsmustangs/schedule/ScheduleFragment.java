@@ -1,5 +1,6 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -118,7 +119,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         switch(item.getItemId()) {
             case R.id.action_refresh:
                 dialog = ProgressDialog.show(getActivity(), "",
-                    "Checking for updates...");
+                        "Checking for updates...");
 
                 mSchedule.updateUpdatedDays();
                 return true;

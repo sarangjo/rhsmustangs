@@ -29,27 +29,31 @@ public class SWeek {
         return days;
     }
 
+    public void addDay(SDay day) {
+        mDays.add(day);
+    }
+
     /**
      * Gets the day from the schedule given a day of the week.
      *
-     * @param dayOfWeek Monday = 1
+     * @param dayOfWeek based on {@link Calendar}
      */
     public SDay getDay(int dayOfWeek) {
         return mDays.get(getIndex(dayOfWeek));
     }
 
     /**
-     * Given a day-of-week (1-5) gives the corresponding index in the day list. Automatically
-     * rounds up for Saturday and Sunday.
+     * Given a day-of-week (MONDAY to FRIDAY) gives the corresponding index in the day list. Automatically
+     * rounds up for SATURDAY and SUNDAY.
      *
-     * @param dayOfWeek the day of the week, Monday = 1
+     * @param dayOfWeek the day of the week, according to {@link Calendar}.
      * @return
      */
     private int getIndex(int dayOfWeek) {
-        if (dayOfWeek < 1 || dayOfWeek > 5) {
+        if (dayOfWeek < Calendar.MONDAY || dayOfWeek > Calendar.FRIDAY) {
             return 0;
         }
-        return dayOfWeek - 1;
+        return dayOfWeek - Calendar.MONDAY;
     }
 
     /**
@@ -59,7 +63,7 @@ public class SWeek {
     public static SWeek getDefaultWeek() {
         SWeek week = new SWeek();
         for (int i = Calendar.MONDAY; i <= Calendar.FRIDAY; i++) {
-            week.mDays.add(SDay.getDefaultDay(i));
+            week.addDay(SDay.getDefaultDay(i));
         }
         return week;
     }

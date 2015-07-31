@@ -21,6 +21,11 @@ public class SUpdatedDay extends SDay {
         mDate = date;
     }
 
+    public boolean isToday(Calendar today) {
+        // TODO: implement
+        return false;
+    }
+
     public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
         Date parseDate = obj.getDate(DATE_KEY);
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
@@ -37,7 +42,7 @@ public class SUpdatedDay extends SDay {
         }
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
 
-        for(ParseObject p : periods) {
+        for (ParseObject p : periods) {
             uDay.addPeriod(SPeriod.newFromParse(p));
         }
 
@@ -46,7 +51,7 @@ public class SUpdatedDay extends SDay {
 
     public static SUpdatedDay test() {
         Calendar date = new GregorianCalendar(2015, 7, 31);
-        String[] groupNames = new String[] { "Grp1", "Grp2" };
+        String[] groupNames = new String[]{"Grp1", "Grp2"};
 
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
 

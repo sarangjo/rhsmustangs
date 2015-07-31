@@ -14,6 +14,7 @@ import com.sarangjoshi.rhsmustangs.content.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class SStatic {
     public static int RFC2445_DATE_LENGTH = 15;
@@ -136,4 +137,11 @@ public class SStatic {
         return s;
     }
 
+    public static String getDisplayString(Calendar date) {
+        String str = "" + date.get(Calendar.MONTH);//DisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
+        str += " " + date.get(Calendar.DAY_OF_MONTH);
+        str += ", " + date.get(Calendar.YEAR);
+
+        return str;
+    }
 }

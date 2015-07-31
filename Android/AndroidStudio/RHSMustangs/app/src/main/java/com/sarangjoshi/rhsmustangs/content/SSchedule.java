@@ -5,6 +5,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
+import com.sarangjoshi.rhsmustangs.schedule.SStatic;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,9 +37,14 @@ public class SSchedule {
      * Gets the current day.
      */
     public SDay getToday() {
-        SDay today = mCurrentWeek.getDay(mToday.get(Calendar.DAY_OF_WEEK));
-        if(todayIsUpdated())
-
+        SDay today = null;/*
+        for(SUpdatedDay day : mUpdatedDays) {
+            if(day.isToday(mToday))
+                today = day;
+        }*/
+        
+        if(today == null)
+            today = mCurrentWeek.getDay(mToday.get(Calendar.DAY_OF_WEEK));
         return today;
     }
 
@@ -128,15 +134,15 @@ public class SSchedule {
      * @return
      */
     public String getTodayAsString() {
-        Calendar now = new GregorianCalendar();
-        int diff = now.compareTo(mToday);
+        /*Calendar now = new GregorianCalendar();
+        int diff = SStatic.getAbsDay(now) - SStatic.getAbsDay(mToday); //now.compareTo(mToday);
         if (diff == 0)
             return "Today";
         else if (diff == -1)
             return "Tomorrow";
         else if (diff == 1)
-            return "Yesterday";
-        return mToday.toString();
+            return "Yesterday";*/
+        return SStatic.getDisplayString(mToday);
     }
 
     /**
@@ -145,7 +151,7 @@ public class SSchedule {
     public void updateUpdatedDays() {
         mUpdatedDays.clear();
         mUpdatedDays.add(SUpdatedDay.test());
-        updateCompleted();
+        finishedListener.updateCompleted();
 
         /*
         ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery("UpdatedDay");
