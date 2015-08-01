@@ -138,7 +138,7 @@ public class SStatic {
     }
 
     public static String getDisplayString(Calendar date) {
-        String str = "" + date.get(Calendar.MONTH);//DisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
+        String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
         str += " " + date.get(Calendar.DAY_OF_MONTH);
         str += ", " + date.get(Calendar.YEAR);
 

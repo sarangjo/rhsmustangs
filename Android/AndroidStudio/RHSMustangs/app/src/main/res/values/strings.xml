@@ -13,6 +13,7 @@
     <string name="action_settings">Settings</string>
     <string name="group_prompt">Group</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_updated_days">Updated Days</string>
 
     <string-array name="groups_array">
         <item>O</item>

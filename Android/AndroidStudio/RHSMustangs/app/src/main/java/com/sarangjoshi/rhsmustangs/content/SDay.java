@@ -72,7 +72,6 @@ public class SDay {
      * @return day of week (Sunday - Saturday)
      */
     public String getDayOfWeekAsString() {
-        return mDayOfWeek + ""; /*
         switch (mDayOfWeek) {
             case Calendar.SUNDAY:
                 return "Sunday";
@@ -89,7 +88,7 @@ public class SDay {
             case Calendar.SATURDAY:
                 return "Saturday";
         }
-        return "Invalid day.";*/
+        return "Invalid day.";
     }
 
     /**

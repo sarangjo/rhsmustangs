@@ -18,4 +18,9 @@
         app:actionViewClass="android.widget.Spinner"
         app:showAsAction="ifRoom"
         android:title="@string/group_prompt"/>
+
+    <item
+        android:id="@+id/action_see_updated_days"
+        android:title="@string/action_updated_days"
+        app:showAsAction="never" />
 </menu>

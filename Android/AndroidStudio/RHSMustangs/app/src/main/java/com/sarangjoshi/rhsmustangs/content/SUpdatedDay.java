@@ -22,8 +22,9 @@ public class SUpdatedDay extends SDay {
     }
 
     public boolean isToday(Calendar today) {
-        // TODO: implement
-        return false;
+        return mDate.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+                && mDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)
+                && mDate.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH);
     }
 
     public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
@@ -50,7 +51,7 @@ public class SUpdatedDay extends SDay {
     }
 
     public static SUpdatedDay test() {
-        Calendar date = new GregorianCalendar(2015, 7, 31);
+        Calendar date = new GregorianCalendar(2015, Calendar.JULY, 31);
         String[] groupNames = new String[]{"Grp1", "Grp2"};
 
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
@@ -62,7 +63,22 @@ public class SUpdatedDay extends SDay {
         return uDay;
     }
 
+    public static SUpdatedDay test2() {
+        Calendar date = new GregorianCalendar(2015, Calendar.JULY, 30);
+        String[] groupNames = new String[]{"Grp1", "Grp2"};
+
+        SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
+
+        uDay.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
+
+        return uDay;
+    }
+
     public static final String DATE_KEY = "date";
     public static final String GRP_NAMES_KEY = "groupNames";
     public static final String PERIODS_KEY = "periods";
+
+    public Calendar getDate() {
+        return mDate;
+    }
 }

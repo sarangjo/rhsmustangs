@@ -30,6 +30,8 @@ import java.util.GregorianCalendar;
  * Created by Sarang on 4/8/2015.
  */
 public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener {
+    private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
+
     private SSchedule mSchedule;
 
     private ScheduleAdapter mAdapter;
@@ -123,6 +125,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
                 mSchedule.updateUpdatedDays();
                 return true;
+            case R.id.action_see_updated_days:
+                UpdatedDaysFragment dialog = new UpdatedDaysFragment();
+                dialog.setData(mSchedule.getUpdatedDays());
+                dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -151,6 +158,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     @Override
     public void updateCompleted() {
         dialog.dismiss();
+        refreshPeriods();
+        updateSpinner();
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -173,7 +182,10 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      */
     private void refreshPeriods() {
         // Updates adapter to reflect changes
-        mAdapter = new ScheduleAdapter(getActivity());
+        if(mAdapter == null)
+            mAdapter = new ScheduleAdapter(getActivity());
+
+        mAdapter.updateData();
         mPeriodsList.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
 
@@ -186,16 +198,14 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      */
     private void updateTitle() {
         mTitle.setText(mSchedule.getTodayAsString());
-        mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
+        mDayOfWeek.setText(mSchedule.getTodayDayOfWeekAsString());
     }
 
     private class DayChangeClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            // Actual shifting
-            if (mSchedule.shiftCurrentDayBy1(v.getId() == mNextDay.getId()))
-                // debug
-                Toast.makeText(getActivity(), "Week shifted.", Toast.LENGTH_SHORT).show();
+            // Actual shifting - result can be captured to note week shift
+            mSchedule.shiftCurrentDayBy(1, v.getId() == mNextDay.getId());
 
             // Updating
             refreshPeriods();
@@ -221,7 +231,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         private final Context mContext;
 
         public ScheduleAdapter(Context context) {
-            super(context, R.layout.layout_period, mSchedule.getTodayPeriods());
+            super(context, R.layout.layout_period);
             mContext = context;
         }
 
@@ -245,7 +255,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             //}
 
             // Setting view data
-            SPeriod p = mSchedule.getTodayPeriods().get(pos);
+            SPeriod p = getItem(pos);
 
             periodNumView.setText(new String(p.getShort()));
             classNameView.setText(p.getClassName());
@@ -266,6 +276,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             setTextColor(color, periodNumView, classNameView, startTimeView, endTimeView);
 
             return rowView;
+        }
+
+        public void updateData() {
+            super.clear();
+            super.addAll(mSchedule.getTodayPeriods());
         }
 
         // TODO: Clean this the hell up
