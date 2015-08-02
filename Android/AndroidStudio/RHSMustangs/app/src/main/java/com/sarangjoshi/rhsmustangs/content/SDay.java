@@ -10,7 +10,7 @@ public class SDay {
     private String[] mGroupNames;
 
     private List<SPeriod> mTruncatedPeriods;
-    private int groupN = -1;
+    private int groupN = SPeriod.BASE_GROUPN;
 
     /**
      * Creates a new {@link SDay} with the given day of the week and given group names.

@@ -18,19 +18,6 @@ public class SWeek {
         mDays = new ArrayList<>();
     }
 
-    /**
-     * Returns a deep copy of this schedule's days.
-     *
-     * @return a deep copy of this schedule's days.
-     */
-    public List<SDay> getDays() {
-        List<SDay> days = new ArrayList<SDay>();
-        for (SDay d : mDays) {
-            days.add(d);
-        }
-        return days;
-    }
-
     public void addDay(SDay day) {
         mDays.add(day);
     }

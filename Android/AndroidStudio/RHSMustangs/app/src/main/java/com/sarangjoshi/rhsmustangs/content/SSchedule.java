@@ -52,12 +52,34 @@ public class SSchedule {
     }
 
     /**
+     * Sets the current group number.
+     *
+     * @param groupN the group number
+     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
+     *                                  day
+     * @returns whether the group number was actually updated
+     */
+    public boolean setGroupN(int groupN) {
+        if (getToday().hasGroups()) {
+            if (groupN == SPeriod.BASE_GROUPN)
+                throw new IllegalArgumentException();
+            if(getToday().getClass() == SUpdatedDay.class) {
+                return ((SUpdatedDay) getToday()).setGroupN(groupN);
+            } else if (this.mGroupN != groupN) {
+                this.mGroupN = groupN;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Gets today's periods with the previously set group number.
      *
      * @return
      */
     public List<SPeriod> getTodayPeriods() {
-        return getToday().getPeriods(mGroupN);
+        return getToday().getPeriods(getGroupN());
     }
 
     /**
@@ -84,7 +106,10 @@ public class SSchedule {
      * @return
      */
     public int getGroupN() {
-        return mGroupN;
+        if (getToday().getClass() == SUpdatedDay.class)
+            return ((SUpdatedDay) getToday()).getGroupN();
+        else
+            return mGroupN;
     }
 
     /**
@@ -109,26 +134,6 @@ public class SSchedule {
      */
     public String getTodayDayOfWeekAsString() {
         return getToday().getDayOfWeekAsString();
-    }
-
-    /**
-     * Sets the current group number
-     *
-     * @param groupN the group number
-     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
-     *                                  day
-     * @returns whether the group number was actually updated
-     */
-    public boolean setGroupN(int groupN) {
-        if (getToday().hasGroups()) {
-            if (groupN == 0)
-                throw new IllegalArgumentException();
-            if (this.mGroupN != groupN) {
-                this.mGroupN = groupN;
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
