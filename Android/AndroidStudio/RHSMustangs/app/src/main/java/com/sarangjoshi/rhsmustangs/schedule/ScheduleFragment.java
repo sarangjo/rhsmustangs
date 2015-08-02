@@ -61,8 +61,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(SWeek.getDefaultWeek(),
-                new GregorianCalendar(), 1, this);
+        mSchedule = new SSchedule(new GregorianCalendar(), 1, this);
     }
 
     @Override
@@ -205,7 +204,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         @Override
         public void onClick(View v) {
             // Actual shifting - result can be captured to note week shift
-            mSchedule.shiftCurrentDayBy(1, v.getId() == mNextDay.getId());
+            mSchedule.shiftTodayBy(1, v.getId() == mNextDay.getId());
 
             // Updating
             refreshPeriods();

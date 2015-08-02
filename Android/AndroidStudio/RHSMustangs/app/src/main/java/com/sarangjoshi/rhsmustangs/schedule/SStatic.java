@@ -137,11 +137,23 @@ public class SStatic {
         return s;
     }
 
+    /**
+     * Gets the display String.
+     *
+     * @param date
+     * @return
+     */
     public static String getDisplayString(Calendar date) {
         String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
         str += " " + date.get(Calendar.DAY_OF_MONTH);
         str += ", " + date.get(Calendar.YEAR);
 
         return str;
+    }
+
+    public static Calendar getRelativeDay(Calendar today, int day) {
+        Calendar relative = (Calendar) today.clone();
+        relative.add(Calendar.DAY_OF_MONTH, day - today.get(Calendar.DAY_OF_WEEK));
+        return relative;
     }
 }

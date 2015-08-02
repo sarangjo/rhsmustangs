@@ -55,9 +55,9 @@ public class UpdatedDaysFragment extends DialogFragment {
             View rowView;
             TextView content;
 
-            rowView = inflater.inflate(R.layout.layout_updated_day, parent,
+            rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent,
                     false);
-            content = (TextView) rowView.findViewById(R.id.content);
+            content = (TextView) rowView.findViewById(android.R.id.text1);
 
             content.setText(SStatic.getDisplayString(super.getItem(pos).getDate()));
 

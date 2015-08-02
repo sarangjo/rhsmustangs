@@ -1,6 +1,7 @@
 package com.sarangjoshi.rhsmustangs.content;
 
 import com.parse.ParseObject;
+import com.sarangjoshi.rhsmustangs.schedule.SStatic;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Created by Sarang on 4/6/2015.
  */
-public class SUpdatedDay extends SDay {
+public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     private Calendar mDate;
 
     public SUpdatedDay(Calendar date, String[] groupNames) {
@@ -21,12 +22,20 @@ public class SUpdatedDay extends SDay {
         mDate = date;
     }
 
+    // TODO: rewrite using SStatic.getAbsDay()
     public boolean isToday(Calendar today) {
         return mDate.get(Calendar.YEAR) == today.get(Calendar.YEAR)
                 && mDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)
                 && mDate.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH);
     }
 
+    /**
+     * Creates a new {@link SUpdatedDay} from Parse data.
+     *
+     * @param obj a downloaded ParseObject of the class {@link }
+     * @param periods downloaded ParseObjects of the class {@link }
+     * @return
+     */
     public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
         Date parseDate = obj.getDate(DATE_KEY);
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
@@ -78,7 +87,18 @@ public class SUpdatedDay extends SDay {
     public static final String GRP_NAMES_KEY = "groupNames";
     public static final String PERIODS_KEY = "periods";
 
+    public static final String UPDATED_DAY_CLASS = "UpdatedDay";
+
     public Calendar getDate() {
         return mDate;
+    }
+
+    public int compareTo(Calendar otherDay) {
+        return SStatic.getAbsDay(this.getDate()) - SStatic.getAbsDay(otherDay);
+    }
+
+    @Override
+    public int compareTo(SUpdatedDay another) {
+        return compareTo(another.getDate());
     }
 }

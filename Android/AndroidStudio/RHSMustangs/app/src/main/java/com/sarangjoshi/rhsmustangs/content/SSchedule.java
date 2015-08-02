@@ -18,55 +18,32 @@ public class SSchedule {
     //private List<SWeek> mLoadedWeeks;
     private SWeek mCurrentWeek;
     private Calendar mTodayTime;
-    /**
-     * Set to null if mTodayTime changes.
-     */
     private SDay mToday;
     private int mGroupN;
 
     private List<SUpdatedDay> mUpdatedDays;
     private UpdateFinishedListener finishedListener;
 
-    public SSchedule(SWeek currentWeek, Calendar today, int groupN, UpdateFinishedListener l) {
-        mCurrentWeek = currentWeek;
-        setToday(today);
+    /**
+     * Constructs a new {@link SSchedule} object.
+     * @param today
+     * @param groupN
+     * @param l
+     */
+    public SSchedule(Calendar today, int groupN, UpdateFinishedListener l) {
         mGroupN = groupN;
         mUpdatedDays = new ArrayList<>();
         this.finishedListener = l;
+
+        setToday(today);
+        updateWeek();
     }
 
     /**
      * Gets the current day.
      */
     public SDay getToday() {
-        return ((mToday == null) ? retrieveToday() : mToday);
-    }
-
-    /**
-     * Retrieves today if the day has changed.
-     * @return
-     */
-    private SDay retrieveToday() {
-        SDay today = null;
-        for(SUpdatedDay day : mUpdatedDays) {
-            if(day.isToday(mTodayTime))
-                today = day;
-        }
-
-        if(today == null)
-            today = mCurrentWeek.getDay(mTodayTime.get(Calendar.DAY_OF_WEEK));
-        return today;
-    }
-
-    /**
-     * Sets today for the given day.
-     *
-     * @param today
-     * @return if the week changed
-     */
-    public boolean setToday(Calendar today) {
-        mTodayTime = today;
-        return dayChanged(true);
+        return mToday;
     }
 
     /**
@@ -79,55 +56,49 @@ public class SSchedule {
     }
 
     /**
-     * Shifts the current day of the week by a single day, forward or backward.
+     * Gets today as a {@link Calendar} object.
      *
-     * @return whether the week was changed
+     * @return the current day
      */
-    public boolean shiftCurrentDayBy(int n, boolean isForward) {
-        // Shift the actual date
-        mTodayTime.add(Calendar.DAY_OF_MONTH, (isForward) ? n : -n);
-        // Update the other fields
-        //mTodayTime.normalize(false);
-
-        return dayChanged(isForward);
-    }
-
-    /**
-     * Call this when mTodayTime is changed.
-     *
-     * @param isForward which direction the day was changed
-     * @return if the week was changed
-     */
-    private boolean dayChanged(boolean isForward) {
-        // Local SDay reset
-        mToday = null;
-
-        // Week changing algorithm
-        boolean weekChanged = false;
-        // If there's a change in week, update the current day and week
-        if (isForward && mTodayTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
-            // shift week forward by one
-            mTodayTime.add(Calendar.DAY_OF_MONTH, 2);
-            weekChanged = true;
-        } else if (!isForward && mTodayTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-            // shift week back by one
-            mTodayTime.add(Calendar.DAY_OF_MONTH, -2);
-            weekChanged = true;
-        }
-
-        if (weekChanged) {
-            //mTodayTime.normalize(false);
-            // TODO: update week
-        }
-        return weekChanged;
-    }
-
     public Calendar getTodayAsTime() {
         return mTodayTime;
     }
 
+    /**
+     * Gets a list of updated days.
+     *
+     * @return a list of updated days
+     */
+    public List<SUpdatedDay> getUpdatedDays() {
+        return mUpdatedDays;
+    }
+
+    /**
+     * Gets the currently selected group number.
+     *
+     * @return
+     */
     public int getGroupN() {
         return mGroupN;
+    }
+
+    /**
+     * @return
+     */
+    public String getTodayAsString() {
+        /*Calendar now = new GregorianCalendar();
+        int diff = SStatic.getAbsDay(now) - SStatic.getAbsDay(mTodayTime); //now.compareTo(mTodayTime);
+        if (diff == 0)
+            return "Today";
+        else if (diff == -1)
+            return "Tomorrow";
+        else if (diff == 1)
+            return "Yesterday";*/
+        return SStatic.getDisplayString(mTodayTime);
+    }
+
+    public String getTodayDayOfWeekAsString() {
+        return getToday().getDayOfWeekAsString();
     }
 
     /**
@@ -151,18 +122,73 @@ public class SSchedule {
     }
 
     /**
-     * @return
+     * Sets today for the given day.
+     *
+     * @param today
+     * @return if the week changed
      */
-    public String getTodayAsString() {
-        /*Calendar now = new GregorianCalendar();
-        int diff = SStatic.getAbsDay(now) - SStatic.getAbsDay(mTodayTime); //now.compareTo(mTodayTime);
-        if (diff == 0)
-            return "Today";
-        else if (diff == -1)
-            return "Tomorrow";
-        else if (diff == 1)
-            return "Yesterday";*/
-        return SStatic.getDisplayString(mTodayTime);
+    public boolean setToday(Calendar today) {
+        mTodayTime = today;
+        return dayChanged(true);
+    }
+
+    /**
+     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
+     * updates.
+     */
+    private void updateWeek() {
+        // Based on today, establish MONDAY
+        mCurrentWeek = SWeek.getDefaultWeek();
+        mCurrentWeek.update(mTodayTime, mUpdatedDays);
+    }
+
+    /**
+     * Shifts the current day of the week by a single day, forward or backward.
+     *
+     * @return whether the week was changed
+     */
+    public boolean shiftTodayBy(int n, boolean isForward) {
+        // Shift the actual date
+        mTodayTime.add(Calendar.DAY_OF_MONTH, (isForward) ? n : -n);
+        // Update the other fields
+        //mTodayTime.normalize(false);
+
+        return dayChanged(isForward);
+    }
+
+    /**
+     * ALWAYS call this when mTodayTime is changed.
+     *
+     * @param isForward which direction the day was changed
+     * @return if the week was changed
+     */
+    private boolean dayChanged(boolean isForward) {
+        // Local SDay reset
+        //mToday = null;
+
+        // Week changing algorithm
+        boolean weekChanged = false;
+        // If there's a change in week, update the current day and week
+        if (isForward && mTodayTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+            // shift week forward by one
+            mTodayTime.add(Calendar.DAY_OF_MONTH, 2);
+            weekChanged = true;
+        } else if (!isForward && mTodayTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+            // shift week back by one
+            mTodayTime.add(Calendar.DAY_OF_MONTH, -2);
+            weekChanged = true;
+        }
+
+        if (weekChanged) {
+            //mTodayTime.normalize(false);
+            // TODO: update week
+            updateWeek();
+        }
+
+        // Update mToday
+        mToday = mCurrentWeek.getDay(mTodayTime.get(Calendar.DAY_OF_WEEK));
+
+        return weekChanged;
     }
 
     /**
@@ -174,10 +200,12 @@ public class SSchedule {
         mUpdatedDays.add(SUpdatedDay.test());
         mUpdatedDays.add(SUpdatedDay.test2());
 
+        updateWeek();
+
         finishedListener.updateCompleted();
 
         /*
-        ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery("UpdatedDay");
+        ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
         updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> updatedDays, ParseException e) {
                 if(e == null) {
@@ -188,10 +216,6 @@ public class SSchedule {
                 }
             }
         });*/
-    }
-
-    public List<SUpdatedDay> getUpdatedDays() {
-        return mUpdatedDays;
     }
 
     private void setUpdatedDaysFromParse(List<ParseObject> dayObjects) {
@@ -209,10 +233,6 @@ public class SSchedule {
             }
         });
         //}
-    }
-
-    public String getTodayDayOfWeekAsString() {
-        return getToday().getDayOfWeekAsString();
     }
 
     public interface UpdateFinishedListener {
