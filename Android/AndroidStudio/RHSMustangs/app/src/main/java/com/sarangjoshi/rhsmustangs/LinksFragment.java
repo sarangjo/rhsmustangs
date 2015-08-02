@@ -27,8 +27,8 @@ public class LinksFragment extends Fragment implements AbsListView.OnItemClickLi
 
     private OnFragmentInteractionListener mListener;
 
-    private String[] mLinkNames = { "LWSD Page", "Facebook", "Twitter", "Instagram" };
-    private String[] mLinks = { "http://www.lwsd.org/school/rhs/Pages/default.aspx",
+    private String[] mLinkNames = {"LWSD Page", "Facebook", "Twitter", "Instagram"};
+    private String[] mLinks = {"http://www.lwsd.org/school/rhs/Pages/default.aspx",
             "http://www.facebook.com/RedmondHighASB",
             "http://www.twitter.com/RedmondASB",
             "http://www.instagram.com/RedmondASB"
@@ -136,7 +136,6 @@ public class LinksFragment extends Fragment implements AbsListView.OnItemClickLi
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onFragmentInteraction(String id);
     }
 

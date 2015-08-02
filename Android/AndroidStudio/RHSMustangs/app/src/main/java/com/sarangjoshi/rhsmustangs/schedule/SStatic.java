@@ -160,4 +160,15 @@ public class SStatic {
     public static int getAbsDifference(Calendar first, Calendar second) {
         return getAbsDay(first) - getAbsDay(second);
     }
+
+    /**
+     * Checks whether the given {@link Calendar}s are in the same week.
+     * @param first
+     * @param second
+     * @return
+     */
+    public static boolean sameWeek(Calendar first, Calendar second) {
+        // TODO: fix
+        return first.get(Calendar.WEEK_OF_YEAR) == second.get(Calendar.WEEK_OF_YEAR);
+    }
 }

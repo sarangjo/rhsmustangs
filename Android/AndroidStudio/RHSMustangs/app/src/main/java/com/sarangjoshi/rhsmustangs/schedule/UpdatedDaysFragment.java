@@ -14,9 +14,11 @@ import java.util.List;
 
 public class UpdatedDaysFragment extends DialogFragment {
     private List<SUpdatedDay> mUpdatedDays;
+    private UpdatedDaySelectedListener mListener;
 
-    public void setData(List<SUpdatedDay> updatedDays) {
+    public UpdatedDaysFragment(List<SUpdatedDay> updatedDays, UpdatedDaySelectedListener l) {
         this.mUpdatedDays = updatedDays;
+        this.mListener = l;
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -26,12 +28,29 @@ public class UpdatedDaysFragment extends DialogFragment {
 
         ListView updatedDaysView = (ListView) v.findViewById(R.id.updated_days_list);
 
+        updatedDaysView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                dismiss();
+                mListener.updatedDaySelected(position);
+            }
+        });
+
         UpdatedDaysAdapter adapter = new UpdatedDaysAdapter(getActivity(),
                 android.R.layout.simple_list_item_1);
         adapter.updateData();
         updatedDaysView.setAdapter(adapter);
 
         return v;
+    }
+
+    public interface UpdatedDaySelectedListener {
+        /**
+         * Called when the updated day has been selected.
+         *
+         * @param index the index of the selected updated day
+         */
+        void updatedDaySelected(int index);
     }
 
     private class UpdatedDaysAdapter extends ArrayAdapter<SUpdatedDay> {

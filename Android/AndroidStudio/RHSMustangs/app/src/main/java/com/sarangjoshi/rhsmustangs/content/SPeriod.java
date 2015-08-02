@@ -9,6 +9,8 @@ import java.util.GregorianCalendar;
  * Created by Sarang on 4/6/2015.
  */
 public class SPeriod {
+    private static final String DEFAULT_NAME = "-";
+
     private String mPeriodShort;
     private String mClassName;
     private STime mStartTime;
@@ -39,11 +41,7 @@ public class SPeriod {
 
     public SPeriod(String periodShort, int sh, int sm,
                    int eh, int em, int gn) {
-        mPeriodShort = periodShort;
-        mClassName = getDefaultPeriodName();
-        mStartTime = new STime(sh, sm);
-        mEndTime = new STime(eh, em);
-        mGroupN = gn;
+        this(periodShort, DEFAULT_NAME, sh, sm, eh, em, gn);
     }
 
     public String getShort() {
@@ -51,6 +49,9 @@ public class SPeriod {
     }
 
     public String getClassName() {
+        if(mClassName.equals(DEFAULT_NAME))
+            return getDefaultPeriodName();
+
         return mClassName;
     }
 

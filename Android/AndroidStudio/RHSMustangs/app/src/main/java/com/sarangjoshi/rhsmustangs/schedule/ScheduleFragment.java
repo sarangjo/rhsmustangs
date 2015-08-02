@@ -31,7 +31,8 @@ import java.util.TimeZone;
 /**
  * Created by Sarang on 4/8/2015.
  */
-public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener {
+public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
+        UpdatedDaysFragment.UpdatedDaySelectedListener {
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
 
     private SSchedule mSchedule;
@@ -86,9 +87,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         View.OnClickListener tcl = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSchedule.setToday(new GregorianCalendar());
-                refreshPeriods();
-                updateSpinner();
+                setToday(new GregorianCalendar());
             }
         };
         mTitle.setOnClickListener(tcl);
@@ -128,8 +127,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 mSchedule.updateUpdatedDays();
                 return true;
             case R.id.action_see_updated_days:
-                UpdatedDaysFragment dialog = new UpdatedDaysFragment();
-                dialog.setData(mSchedule.getUpdatedDays());
+                UpdatedDaysFragment dialog =
+                        new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
                 dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
                 return true;
         }
@@ -160,6 +159,20 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     @Override
     public void updateCompleted() {
         dialog.dismiss();
+        refreshPeriods();
+        updateSpinner();
+    }
+
+    @Override
+    public void updatedDaySelected(int index) {
+        Toast.makeText(getActivity(), "" + index, Toast.LENGTH_SHORT).show();
+
+        SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
+        setToday(day.getDate());
+    }
+
+    private void setToday(Calendar today) {
+        mSchedule.setToday(today);
         refreshPeriods();
         updateSpinner();
     }

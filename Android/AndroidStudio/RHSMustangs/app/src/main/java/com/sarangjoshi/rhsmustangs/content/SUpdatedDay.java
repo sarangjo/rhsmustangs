@@ -40,6 +40,11 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         return mDate;
     }
 
+    @Override
+    public String toString() {
+        return SStatic.getDisplayString(mDate);
+    }
+
     public int compareTo(Calendar otherDay) {
         return SStatic.getAbsDay(this.getDate()) - SStatic.getAbsDay(otherDay);
     }
@@ -91,28 +96,34 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         return uDay;
     }
 
-    public static SUpdatedDay test() {
-        Calendar date = new GregorianCalendar(2015, Calendar.JULY, 31);
-        String[] groupNames = new String[]{"Grp1", "Grp2", "Grp3"};
-
+    public static SUpdatedDay test(Calendar date, String[] groupNames,
+                                   SPeriod... periods) {
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
-
-        uDay.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
-        uDay.addPeriod(new SPeriod("2", "-", 8, 30, 9, 24, 1));
-        uDay.addPeriod(new SPeriod("2", "-", 8, 30, 10, 24, 2));
-        uDay.addPeriod(new SPeriod("2", "-", 8, 30, 11, 24, 3));
-
+        for (SPeriod p : periods) {
+            uDay.addPeriod(p);
+        }
         return uDay;
     }
 
+    public static SUpdatedDay test1() {
+        return test(new GregorianCalendar(2015, Calendar.JULY, 31),
+                new String[]{"Grp1", "Grp2", "Grp3"},
+                new SPeriod("1", 7, 30, 8, 24, 0),
+                new SPeriod("2", 8, 30, 9, 24, 1),
+                new SPeriod("2", 8, 30, 10, 24, 2),
+                new SPeriod("2", 8, 30, 11, 24, 3));
+    }
+
     public static SUpdatedDay test2() {
-        Calendar date = new GregorianCalendar(2015, Calendar.JULY, 30);
-        String[] groupNames = new String[]{"Grp1", "Grp2"};
+        return test(new GregorianCalendar(2015, Calendar.JULY, 30),
+                new String[]{"Grp1", "Grp2"},
+                new SPeriod("1", 7, 30, 8, 24, 0));
+    }
 
-        SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
-
-        uDay.addPeriod(new SPeriod("1", "-", 7, 30, 8, 24, 0));
-
-        return uDay;
+    public static SUpdatedDay test3() {
+        return test(new GregorianCalendar(2015, Calendar.JULY, 23),
+                new String[] {"Grp1", "Grp2"},
+                new SPeriod("1", "OMG", 7, 30, 14, 30, 1),
+                new SPeriod("1", "OMG", 14, 30, 20, 30, 2));
     }
 }

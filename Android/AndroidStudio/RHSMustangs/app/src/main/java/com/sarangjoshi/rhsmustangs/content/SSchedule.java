@@ -6,8 +6,9 @@ import com.parse.ParseObject;
 import com.parse.ParseRelation;
 import com.sarangjoshi.rhsmustangs.schedule.SStatic;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class SSchedule {
      */
     public SSchedule(Calendar today, int groupN, UpdateFinishedListener l) {
         mGroupN = groupN;
-        mUpdatedDays = new ArrayList<>();
+        mUpdatedDays = new LinkedList<>();
         this.finishedListener = l;
 
         // Then, set the current day within that week.
@@ -63,7 +64,7 @@ public class SSchedule {
         if (getToday().hasGroups()) {
             if (groupN == SPeriod.BASE_GROUPN)
                 throw new IllegalArgumentException();
-            if(getToday().getClass() == SUpdatedDay.class) {
+            if (getToday().getClass() == SUpdatedDay.class) {
                 return ((SUpdatedDay) getToday()).setGroupN(groupN);
             } else if (this.mGroupN != groupN) {
                 this.mGroupN = groupN;
@@ -116,6 +117,7 @@ public class SSchedule {
      * @return
      */
     public String getTodayAsString() {
+        // TODO: fix
         /*Calendar now = new GregorianCalendar();
         int diff = SStatic.getAbsDay(now) - SStatic.getAbsDay(mToday); //now.compareTo(mToday);
         if (diff == 0)
@@ -142,9 +144,19 @@ public class SSchedule {
      * @param today
      * @return if the week changed
      */
-    public boolean setToday(Calendar today) {
+    public void setToday(Calendar today) {
+        Calendar oldToday = mToday;
         mToday = today;
-        return dayChanged(true);
+
+        // Check for Saturday/Sunday overflow
+        boolean weekChanged = updateDay(true);
+
+        // Check to see if the week has been completely changed
+        if (oldToday != null)
+            weekChanged |= !SStatic.sameWeek(oldToday, mToday);
+
+        // If week changed, change the damn week
+        if (weekChanged) updateWeek(mToday);
     }
 
     /**
@@ -152,6 +164,7 @@ public class SSchedule {
      * updates.
      */
     private void updateWeek(Calendar today) {
+        // TODO: make more efficient by not changing week appropriately
         // Based on today, establish MONDAY
         mCurrentWeek = SWeek.getDefaultWeek();
         mCurrentWeek.update(today, mUpdatedDays);
@@ -162,13 +175,12 @@ public class SSchedule {
      *
      * @return whether the week was changed
      */
-    public boolean shiftTodayBy(int n) {
+    public void shiftTodayBy(int n) {
         // Shift the actual date
         mToday.add(Calendar.DAY_OF_MONTH, n);
-        // Update the other fields
-        //mToday.normalize(false);
 
-        return dayChanged(n >= 0);
+        if (updateDay(n >= 0))
+            updateWeek(mToday);
     }
 
     /**
@@ -177,7 +189,7 @@ public class SSchedule {
      * @param isForward which direction the day was changed
      * @return if the week was changed
      */
-    private boolean dayChanged(boolean isForward) {
+    private boolean updateDay(boolean isForward) {
         // Week changing algorithm
         boolean weekChanged = false;
         // If there's a change in week, update the current day and week
@@ -196,10 +208,6 @@ public class SSchedule {
             }
         }
 
-        if (weekChanged) {
-            updateWeek(mToday);
-        }
-
         return weekChanged;
     }
 
@@ -209,8 +217,13 @@ public class SSchedule {
     public void updateUpdatedDays() {
         mUpdatedDays.clear();
 
-        mUpdatedDays.add(SUpdatedDay.test());
-        mUpdatedDays.add(SUpdatedDay.test2());
+        addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
+                new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
+                new SPeriod("1", 7, 30, 8, 30, 0),
+                new SPeriod("2", 9, 30, 18, 30, 3)));
+        addUpdatedDay(SUpdatedDay.test1());
+        addUpdatedDay(SUpdatedDay.test2());
+        addUpdatedDay(SUpdatedDay.test3());
 
         updateWeek(mToday);
 
@@ -228,6 +241,22 @@ public class SSchedule {
                 }
             }
         });*/
+    }
+
+    /**
+     * Adds a new {@link SUpdatedDay} in a sorted location.
+     *
+     * @param day
+     */
+    private void addUpdatedDay(SUpdatedDay day) {
+        int i;
+        for (i = 0; i < mUpdatedDays.size(); i++) {
+            int d = day.compareTo(mUpdatedDays.get(i));
+            if (d < 0) {
+                break;
+            }
+        }
+        mUpdatedDays.add(i/*(i - 1 < 0) ? 0 : i - 1*/, day);
     }
 
     private void setUpdatedDaysFromParse(List<ParseObject> dayObjects) {
