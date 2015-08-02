@@ -25,6 +25,8 @@ import com.sarangjoshi.rhsmustangs.content.*;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 /**
  * Created by Sarang on 4/8/2015.
@@ -112,12 +114,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
     /**
      * Whether the selection is handled.
+     *
      * @param item
      * @return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.action_refresh:
                 dialog = ProgressDialog.show(getActivity(), "",
                         "Checking for updates...");
@@ -181,7 +184,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      */
     private void refreshPeriods() {
         // Updates adapter to reflect changes
-        if(mAdapter == null)
+        if (mAdapter == null)
             mAdapter = new ScheduleAdapter(getActivity());
 
         mAdapter.updateData();
@@ -204,7 +207,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         @Override
         public void onClick(View v) {
             // Actual shifting - result can be captured to note week shift
-            mSchedule.shiftTodayBy(1, v.getId() == mNextDay.getId());
+            mSchedule.shiftTodayBy((v.getId() == mNextDay.getId()) ? 1 : -1);
 
             // Updating
             refreshPeriods();
@@ -292,10 +295,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         private int getPeriodRelativeTime(SPeriod p) {
             SPeriod.STime schedNow = new SPeriod.STime(new GregorianCalendar());
             int day = mSchedule.getToday().getDayOfWeek();
-            int julianDiff = SStatic.getAbsDay(mSchedule.getTodayAsTime())
-                - SStatic.getAbsDay(new GregorianCalendar());
-            if (julianDiff != 0)
-                return julianDiff;
+            int absDiff = SStatic.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
+            if (absDiff != 0)
+                return absDiff;
             // Present day
             if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
                 if (p.getEnd().compareTo(schedNow) < 0) {

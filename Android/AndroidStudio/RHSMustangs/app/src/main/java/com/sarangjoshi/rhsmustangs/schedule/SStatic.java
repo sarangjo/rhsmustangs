@@ -156,4 +156,8 @@ public class SStatic {
         relative.add(Calendar.DAY_OF_MONTH, day - today.get(Calendar.DAY_OF_WEEK));
         return relative;
     }
+
+    public static int getAbsDifference(Calendar first, Calendar second) {
+        return getAbsDay(first) - getAbsDay(second);
+    }
 }
