@@ -42,7 +42,7 @@ public class SSchedule {
         setToday(today);
 
         // First, update the week to reflect the current day.
-        updateWeek(today);
+        refreshWeek(today);
     }
 
     /**
@@ -50,6 +50,18 @@ public class SSchedule {
      */
     public SDay getToday() {
         return mCurrentWeek.getDay(mToday.get(Calendar.DAY_OF_WEEK));//mToday;
+    }
+
+    /**
+     * Gets the currently selected group number.
+     *
+     * @return
+     */
+    public int getGroupN() {
+        if (getToday().getClass() == SUpdatedDay.class)
+            return ((SUpdatedDay) getToday()).getGroupN();
+        else
+            return mGroupN;
     }
 
     /**
@@ -102,18 +114,6 @@ public class SSchedule {
     }
 
     /**
-     * Gets the currently selected group number.
-     *
-     * @return
-     */
-    public int getGroupN() {
-        if (getToday().getClass() == SUpdatedDay.class)
-            return ((SUpdatedDay) getToday()).getGroupN();
-        else
-            return mGroupN;
-    }
-
-    /**
      * @return
      */
     public String getTodayAsString() {
@@ -156,18 +156,7 @@ public class SSchedule {
             weekChanged |= !SStatic.sameWeek(oldToday, mToday);
 
         // If week changed, change the damn week
-        if (weekChanged) updateWeek(mToday);
-    }
-
-    /**
-     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
-     * updates.
-     */
-    private void updateWeek(Calendar today) {
-        // TODO: make more efficient by not changing week appropriately
-        // Based on today, establish MONDAY
-        mCurrentWeek = SWeek.getDefaultWeek();
-        mCurrentWeek.update(today, mUpdatedDays);
+        if (weekChanged) refreshWeek(mToday);
     }
 
     /**
@@ -177,10 +166,24 @@ public class SSchedule {
      */
     public void shiftTodayBy(int n) {
         // Shift the actual date
-        mToday.add(Calendar.DAY_OF_MONTH, n);
+        Calendar newToday = new GregorianCalendar(mToday.get(Calendar.YEAR),
+                mToday.get(Calendar.MONTH), mToday.get(Calendar.DAY_OF_MONTH));
+        newToday.add(Calendar.DAY_OF_MONTH, n);
+        mToday = newToday;
 
         if (updateDay(n >= 0))
-            updateWeek(mToday);
+            refreshWeek(mToday);
+    }
+
+    /**
+     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
+     * updates.
+     */
+    private void refreshWeek(Calendar today) {
+        // TODO: make more efficient by not changing week appropriately
+        // Based on today, establish MONDAY
+        mCurrentWeek = SWeek.getDefaultWeek();
+        mCurrentWeek.update(today, mUpdatedDays);
     }
 
     /**
@@ -225,7 +228,7 @@ public class SSchedule {
         addUpdatedDay(SUpdatedDay.test2());
         addUpdatedDay(SUpdatedDay.test3());
 
-        updateWeek(mToday);
+        refreshWeek(mToday);
 
         finishedListener.updateCompleted();
 
