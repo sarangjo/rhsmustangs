@@ -160,3 +160,6 @@ $RECYCLE.BIN/
 /android/Demos
 /android/legacy
 /android/Screenshots
+.*
+!/.gitignore
+Android/AndroidStudio/RHSMustangs/.idea/

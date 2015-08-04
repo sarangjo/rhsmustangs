@@ -77,8 +77,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         Date parseDate = obj.getDate(DATE_KEY);
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
-        Calendar date = new GregorianCalendar(parseDate.getYear(), parseDate.getMonth(),
-                parseDate.getDay());
+        Calendar date = SStatic.dateToCalendar(parseDate);
         String[] groupNames = new String[parseGroupNames.length() + 1];
         try {
             for (int i = 0; i < parseGroupNames.length(); i++) {

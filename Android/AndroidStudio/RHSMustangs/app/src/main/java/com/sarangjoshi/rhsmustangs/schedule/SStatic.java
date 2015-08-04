@@ -13,6 +13,7 @@ import com.sarangjoshi.rhsmustangs.content.*;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
@@ -163,6 +164,7 @@ public class SStatic {
 
     /**
      * Checks whether the given {@link Calendar}s are in the same week.
+     *
      * @param first
      * @param second
      * @return
@@ -170,5 +172,13 @@ public class SStatic {
     public static boolean sameWeek(Calendar first, Calendar second) {
         // TODO: fix
         return first.get(Calendar.WEEK_OF_YEAR) == second.get(Calendar.WEEK_OF_YEAR);
+    }
+
+    /**
+     * Converts a Date object to a Calendar object.
+     */
+    public static Calendar dateToCalendar(Date date) {
+        return new GregorianCalendar(1900 + date.getYear(), date.getMonth(),
+                date.getDate());
     }
 }

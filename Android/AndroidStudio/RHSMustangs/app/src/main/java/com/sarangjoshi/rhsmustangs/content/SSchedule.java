@@ -3,6 +3,7 @@ package com.sarangjoshi.rhsmustangs.content;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.sarangjoshi.rhsmustangs.schedule.SStatic;
 
@@ -23,8 +24,9 @@ public class SSchedule {
     private Calendar mToday;
     private int mGroupN;
 
-    private List<SUpdatedDay> mUpdatedDays;
-    private UpdateFinishedListener finishedListener;
+    private SNetwork mNetwork;
+    private final List<SUpdatedDay> mUpdatedDays;
+    private UpdateFinishedListener mListener;
 
     /**
      * Constructs a new {@link SSchedule} object.
@@ -34,9 +36,10 @@ public class SSchedule {
      * @param l
      */
     public SSchedule(Calendar today, int groupN, UpdateFinishedListener l) {
+        mNetwork = new SNetwork();
         mGroupN = groupN;
         mUpdatedDays = new LinkedList<>();
-        this.finishedListener = l;
+        this.mListener = l;
 
         // Then, set the current day within that week.
         setToday(today);
@@ -218,32 +221,7 @@ public class SSchedule {
      * Updates the updated days list.
      */
     public void updateUpdatedDays() {
-        mUpdatedDays.clear();
-
-        addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
-                new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
-                new SPeriod("1", 7, 30, 8, 30, 0),
-                new SPeriod("2", 9, 30, 18, 30, 3)));
-        addUpdatedDay(SUpdatedDay.test1());
-        addUpdatedDay(SUpdatedDay.test2());
-        addUpdatedDay(SUpdatedDay.test3());
-
-        refreshWeek(mToday);
-
-        finishedListener.updateCompleted();
-
-        /*
-        ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
-        updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> updatedDays, ParseException e) {
-                if(e == null) {
-                    setUpdatedDaysFromParse(updatedDays);
-                    finishedListener.refreshCompleted();
-                } else {
-                    // TODO: handle
-                }
-            }
-        });*/
+        mNetwork.updateUpdatedDays();
     }
 
     /**
@@ -252,31 +230,27 @@ public class SSchedule {
      * @param day
      */
     private void addUpdatedDay(SUpdatedDay day) {
-        int i;
-        for (i = 0; i < mUpdatedDays.size(); i++) {
-            int d = day.compareTo(mUpdatedDays.get(i));
-            if (d < 0) {
-                break;
-            }
-        }
-        mUpdatedDays.add(i/*(i - 1 < 0) ? 0 : i - 1*/, day);
-    }
-
-    private void setUpdatedDaysFromParse(List<ParseObject> dayObjects) {
-        mUpdatedDays.clear();
-        //for(ParseObject obj : dayObjects) {
-        final ParseObject obj = dayObjects.get(0);
-        ParseRelation<ParseObject> periods = obj.getRelation(SUpdatedDay.PERIODS_KEY);
-        periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> results, ParseException e) {
-                if (e == null) {
-                    mUpdatedDays.add(SUpdatedDay.newFromParse(obj, results));
-                } else {
-                    // TODO: handle
+        synchronized (mUpdatedDays) {
+            int i;
+            for (i = 0; i < mUpdatedDays.size(); i++) {
+                int d = day.compareTo(mUpdatedDays.get(i));
+                if (d < 0) {
+                    break;
                 }
             }
-        });
-        //}
+            mUpdatedDays.add(i/*(i - 1 < 0) ? 0 : i - 1*/, day);
+        }
+    }
+
+    /**
+     * Only finishes executing if the updated days' size matches the actual # of updated days.
+     * @param size
+     */
+    private void finishedAdding(int size) {
+        if(mUpdatedDays.size() == size) {
+            // done adding
+            mListener.updateCompleted();
+        }
     }
 
     /**
@@ -284,5 +258,57 @@ public class SSchedule {
      */
     public interface UpdateFinishedListener {
         void updateCompleted();
+    }
+
+    private class SNetwork {
+
+        private boolean onNetwork = true;
+
+        /**
+         * Updates the updated days.
+         */
+        public void updateUpdatedDays() {
+            mUpdatedDays.clear();
+
+            if (!onNetwork) {
+                addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
+                        new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
+                        new SPeriod("1", 7, 30, 8, 30, 0),
+                        new SPeriod("2", 9, 30, 18, 30, 3)));
+                addUpdatedDay(SUpdatedDay.test1());
+                addUpdatedDay(SUpdatedDay.test2());
+                addUpdatedDay(SUpdatedDay.test3());
+
+                finishedAdding(4);
+            } else {
+                ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
+                updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
+                    public void done(List<ParseObject> updatedDays, ParseException e) {
+                        if (e == null) {
+                            setUpdatedDaysFromParse(updatedDays);
+                        } else {
+                            // TODO: handle
+                        }
+                    }
+                });
+            }
+        }
+
+        private void setUpdatedDaysFromParse(final List<ParseObject> dayObjects) {
+            mUpdatedDays.clear();
+            //for(ParseObject obj : dayObjects) {
+            final ParseObject obj = dayObjects.get(0);
+            ParseRelation<ParseObject> periods = obj.getRelation(SUpdatedDay.PERIODS_KEY);
+            periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
+                public void done(List<ParseObject> results, ParseException e) {
+                    if (e == null) {
+                        addUpdatedDay(SUpdatedDay.newFromParse(obj, results));
+                        finishedAdding(dayObjects.size());
+                    } else {
+                        // TODO: handle
+                    }
+                }
+            });
+        }
     }
 }
