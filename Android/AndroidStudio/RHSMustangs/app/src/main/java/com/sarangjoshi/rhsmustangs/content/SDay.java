@@ -10,7 +10,7 @@ public class SDay {
     private String[] mGroupNames;
 
     private List<SPeriod> mTruncatedPeriods;
-    private int groupN = SPeriod.BASE_GROUPN;
+    private int currentGroupN = SPeriod.BASE_GROUPN;
 
     /**
      * Creates a new {@link SDay} with the given day of the week and given group names.
@@ -52,8 +52,8 @@ public class SDay {
      * @return
      */
     public List<SPeriod> getPeriods(int groupN) {
-        if (groupN != -1 || this.groupN != groupN) {
-            this.groupN = groupN;
+        if (groupN != -1 || this.currentGroupN != groupN) {
+            this.currentGroupN = groupN;
             mTruncatedPeriods = new ArrayList<SPeriod>();
             for (SPeriod p : mPeriods) {
                 if (p.isInGroup(groupN)) mTruncatedPeriods.add(p);
