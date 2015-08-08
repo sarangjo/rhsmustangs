@@ -18,6 +18,11 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     private Calendar mDate;
     private int mGroupN = 1;
 
+    /**
+     *
+     * @param date
+     * @param groupNames do not leave the 0th element empty
+     */
     public SUpdatedDay(Calendar date, String[] groupNames) {
         super(date.get(Calendar.DAY_OF_WEEK), groupNames);
         mDate = date;
@@ -78,7 +83,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
         Calendar date = SStatic.dateToCalendar(parseDate);
-        String[] groupNames = new String[parseGroupNames.length() + 1];
+        String[] groupNames = new String[parseGroupNames.length()];
         try {
             for (int i = 0; i < parseGroupNames.length(); i++) {
                 groupNames[i] = parseGroupNames.getString(i);

@@ -188,7 +188,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-            // do nothing
+            // do nothing!
         }
     }
 
