@@ -143,6 +143,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             // Retrieve data
             String[] spinnerData = mSchedule.getToday().getGroupNames();
 
+            if(spinnerData == null)
+                spinnerData = SDay.NO_GROUPS;
+
             ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_dropdown_default, spinnerData);
             spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             groupSpin.setAdapter(spinAdapter);
@@ -165,7 +168,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
     @Override
     public void updatedDaySelected(int index) {
-        Toast.makeText(getActivity(), "" + index, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(), "" + index, Toast.LENGTH_SHORT).show();
 
         SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
         setToday(day.getDate());

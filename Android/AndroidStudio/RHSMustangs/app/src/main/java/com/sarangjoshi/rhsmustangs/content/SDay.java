@@ -118,7 +118,7 @@ public class SDay {
             case Calendar.TUESDAY:
             case Calendar.THURSDAY:
             case Calendar.FRIDAY:
-                day = new SDay(dayOfWeek, DEFAULT_GROUPS);
+                day = new SDay(dayOfWeek, null);
                 day.addPeriod(new SPeriod("1", 7, 30, 8, 24, 0));
                 day.addPeriod(new SPeriod("2", 8, 30, 9, 24, 0));
                 day.addPeriod(new SPeriod("3", 9, 30, 10, 24, 0));
@@ -145,6 +145,6 @@ public class SDay {
     }
 
     public boolean hasGroups() {
-        return mGroupNames.length > 1;
+        return mGroupNames != null && mGroupNames.length > 1;
     }
 }

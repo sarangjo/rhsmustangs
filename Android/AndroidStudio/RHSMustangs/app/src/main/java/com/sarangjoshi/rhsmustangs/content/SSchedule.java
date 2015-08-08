@@ -248,19 +248,14 @@ public class SSchedule {
     }
 
     /**
-     * Listener for when updates finish.
-     */
-    public interface UpdateFinishedListener {
-        void updateCompleted();
-    }
-
-    /**
      * Updates the updated days list.
      */
     public void updateUpdatedDays() {
         mUpdatedDays.clear();
 
-        if (!true) {
+        boolean network = true;
+
+        if (!network) {
             addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
                     new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
                     new SPeriod("1", 7, 30, 8, 30, 0),
@@ -271,11 +266,6 @@ public class SSchedule {
 
             finishedAdding(4);
         } else {
-            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
-                    new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
-                    new SPeriod("1", 7, 30, 8, 30, 0),
-                    new SPeriod("2", 9, 30, 18, 30, 3)));
-
             ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
             updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
                 public void done(List<ParseObject> updatedDays, ParseException e) {
@@ -290,19 +280,26 @@ public class SSchedule {
     }
 
     private void setUpdatedDaysFromParse(final List<ParseObject> dayObjects, final int localDays) {
-        //for(ParseObject obj : dayObjects) {
-        final ParseObject obj = dayObjects.get(0);
-        ParseRelation<ParseObject> periods = obj.getRelation(SUpdatedDay.PERIODS_KEY);
-        periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> results, ParseException e) {
-                if (e == null) {
-                    addUpdatedDay(SUpdatedDay.newFromParse(obj, results));
-                    finishedAdding(dayObjects.size() + localDays);
-                } else {
-                    // TODO: handle
+        for (final ParseObject obj : dayObjects) {
+            //final ParseObject obj = dayObjects.get(0);
+            ParseRelation<ParseObject> periods = obj.getRelation(SUpdatedDay.PERIODS_KEY);
+            periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
+                public void done(List<ParseObject> results, ParseException e) {
+                    if (e == null) {
+                        addUpdatedDay(SUpdatedDay.newFromParse(obj, results));
+                        finishedAdding(dayObjects.size() + localDays);
+                    } else {
+                        // TODO: handle
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
+    /**
+     * Listener for when updates finish.
+     */
+    public interface UpdateFinishedListener {
+        void updateCompleted();
+    }
 }

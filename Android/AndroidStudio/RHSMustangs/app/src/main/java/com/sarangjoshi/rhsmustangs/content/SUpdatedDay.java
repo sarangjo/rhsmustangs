@@ -19,7 +19,6 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     private int mGroupN = 1;
 
     /**
-     *
      * @param date
      * @param groupNames do not leave the 0th element empty
      */
@@ -83,13 +82,16 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
         Calendar date = SStatic.dateToCalendar(parseDate);
-        String[] groupNames = new String[parseGroupNames.length()];
-        try {
-            for (int i = 0; i < parseGroupNames.length(); i++) {
-                groupNames[i] = parseGroupNames.getString(i);
-            }
-        } catch (JSONException ignored) {
+        String[] groupNames = null;
+        if (parseGroupNames != null && parseGroupNames.length() > 0) {
+            groupNames = new String[parseGroupNames.length()];
+            try {
+                for (int i = 0; i < parseGroupNames.length(); i++) {
+                    groupNames[i] = parseGroupNames.getString(i);
+                }
+            } catch (JSONException ignored) {
 
+            }
         }
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
 
@@ -126,7 +128,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
 
     public static SUpdatedDay test3() {
         return test(new GregorianCalendar(2015, Calendar.JULY, 23),
-                new String[] {"Grp1", "Grp2"},
+                new String[]{"Grp1", "Grp2"},
                 new SPeriod("1", "OMG", 7, 30, 14, 30, 1),
                 new SPeriod("1", "OMG", 14, 30, 20, 30, 2));
     }
