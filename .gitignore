@@ -163,3 +163,4 @@ $RECYCLE.BIN/
 .*
 !/.gitignore
 Android/AndroidStudio/RHSMustangs/.idea/
+Android/AndroidStudio/RHSMustangs/.idea/vcs.xml
