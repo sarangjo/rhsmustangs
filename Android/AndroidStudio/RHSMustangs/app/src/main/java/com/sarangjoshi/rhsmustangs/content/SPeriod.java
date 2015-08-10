@@ -49,7 +49,7 @@ public class SPeriod {
     }
 
     public String getClassName() {
-        if(mClassName.equals(DEFAULT_NAME))
+        if (mClassName.equals(DEFAULT_NAME))
             return getDefaultPeriodName();
 
         return mClassName;
@@ -143,12 +143,12 @@ public class SPeriod {
 
     public static SPeriod newFromParse(ParseObject obj) {
         return new SPeriod(obj.getString(SHORT_KEY),
-            obj.getString(NAME_KEY),
-            obj.getInt(START_HR_KEY),
-            obj.getInt(START_MIN_KEY),
-            obj.getInt(END_HR_KEY),
-            obj.getInt(END_MIN_KEY),
-            obj.getInt(GROUP_KEY));
+                obj.getString(NAME_KEY),
+                obj.getInt(START_HR_KEY),
+                obj.getInt(START_MIN_KEY),
+                obj.getInt(END_HR_KEY),
+                obj.getInt(END_MIN_KEY),
+                obj.getInt(GROUP_KEY));
     }
 
     /**
@@ -156,7 +156,7 @@ public class SPeriod {
      *
      * @author Sarang Joshi
      */
-    public static class STime implements Comparable<STime> {
+    public static class STime {
         public int hour;
         public int minute;
 
@@ -182,9 +182,9 @@ public class SPeriod {
          * @param t the other
          * @return
          */
-        public int compareTo(STime t) {
+        public int compareTo(Calendar t) {
             int totalMinutes = hour * 60 + minute;
-            int otherMinutes = t.hour * 60 + t.minute;
+            int otherMinutes = t.get(Calendar.HOUR_OF_DAY) * 60 + t.get(Calendar.MINUTE);
             return totalMinutes - otherMinutes;
         }
 

@@ -15,8 +15,8 @@ public class SDay {
     /**
      * Creates a new {@link SDay} with the given day of the week and given group names.
      *
-     * @param dayOfWeek
-     * @param groupNames
+     * @param dayOfWeek day of the week
+     * @param groupNames null means there are no group names.
      */
     public SDay(int dayOfWeek, String[] groupNames) {
         this.mDayOfWeek = dayOfWeek;
@@ -30,7 +30,7 @@ public class SDay {
      * @param dayOfWeek
      */
     public SDay(int dayOfWeek) {
-        this(dayOfWeek, NO_GROUPS);
+        this(dayOfWeek, null);
     }
 
     /**
@@ -118,7 +118,7 @@ public class SDay {
             case Calendar.TUESDAY:
             case Calendar.THURSDAY:
             case Calendar.FRIDAY:
-                day = new SDay(dayOfWeek, null);
+                day = new SDay(dayOfWeek, DEFAULT_GROUPS);
                 day.addPeriod(new SPeriod("1", 7, 30, 8, 24, 0));
                 day.addPeriod(new SPeriod("2", 8, 30, 9, 24, 0));
                 day.addPeriod(new SPeriod("3", 9, 30, 10, 24, 0));

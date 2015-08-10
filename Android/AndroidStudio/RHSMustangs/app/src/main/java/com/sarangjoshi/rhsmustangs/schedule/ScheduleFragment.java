@@ -127,12 +127,21 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 mSchedule.updateUpdatedDays();
                 return true;
             case R.id.action_see_updated_days:
-                UpdatedDaysFragment dialog =
-                        new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
-                dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
-                return true;
+                return showUpdatedDays();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Shows the updated days in a dialog
+     *
+     * @return success
+     */
+    private boolean showUpdatedDays() {
+        UpdatedDaysFragment dialog =
+                new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
+        dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
+        return true;
     }
 
     /**
@@ -143,7 +152,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             // Retrieve data
             String[] spinnerData = mSchedule.getToday().getGroupNames();
 
-            if(spinnerData == null)
+            if (spinnerData == null)
                 spinnerData = SDay.NO_GROUPS;
 
             ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_dropdown_default, spinnerData);
@@ -162,8 +171,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     @Override
     public void updateCompleted() {
         dialog.dismiss();
+
         refreshPeriods();
         updateSpinner();
+
+        showUpdatedDays();
     }
 
     @Override
@@ -208,13 +220,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mAdapter.notifyDataSetChanged();
 
         // Update other UI
-        updateTitle();
-    }
-
-    /**
-     * Updates the title of the current schedule.
-     */
-    private void updateTitle() {
         mTitle.setText(mSchedule.getTodayAsString());
         mDayOfWeek.setText(mSchedule.getTodayDayOfWeekAsString());
     }
@@ -282,7 +287,39 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
-            int relTime = getPeriodRelativeTime(p);
+            setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+
+            return rowView;
+        }
+
+        /**
+         * Given the current period, sets the correct colors for the given views.
+         *
+         * @param p
+         * @param views
+         */
+        private void setRelativeColors(SPeriod p, TextView... views) {
+            int relTime = -1;
+
+            Calendar now = new GregorianCalendar();
+
+            int day = mSchedule.getToday().getDayOfWeek();
+
+            int absDiff = SStatic.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
+            if (absDiff != 0)
+                relTime = absDiff;
+                // Present day
+            else if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
+                //if (p.getEnd().compareTo(schedNow) < 0) {
+                //    relTime = -1;
+                //} else
+                if ((p.getStart().compareTo(now) <= 0)
+                        && (p.getEnd().compareTo(now) >= 0)) {
+                    relTime = 0;
+                } else if (p.getStart().compareTo(now) > 0) {
+                    relTime = 1;
+                }
+            }
 
             // Colors stuff based on time
             int color = Color.GRAY; // relTime < 0
@@ -291,41 +328,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             } else if (relTime > 0) {
                 color = Color.BLACK;
             }
-            setTextColor(color, periodNumView, classNameView, startTimeView, endTimeView);
 
-            return rowView;
+            setTextColor(color, views);
         }
 
         public void updateData() {
             super.clear();
             super.addAll(mSchedule.getTodayPeriods());
-        }
-
-        // TODO: Clean this the hell up
-
-        /**
-         * Given the time and current time, gets the relative time style.
-         *
-         * @param p the chosen period
-         */
-        private int getPeriodRelativeTime(SPeriod p) {
-            SPeriod.STime schedNow = new SPeriod.STime(new GregorianCalendar());
-            int day = mSchedule.getToday().getDayOfWeek();
-            int absDiff = SStatic.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
-            if (absDiff != 0)
-                return absDiff;
-            // Present day
-            if (day != Calendar.SATURDAY && day != Calendar.SUNDAY) {
-                if (p.getEnd().compareTo(schedNow) < 0) {
-                    return -1;
-                } else if ((p.getStart().compareTo(schedNow) >= 0)
-                        && (p.getEnd().compareTo(schedNow) <= 0)) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            }
-            return -1;
         }
     }
 }

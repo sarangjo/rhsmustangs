@@ -220,7 +220,7 @@ public class SSchedule {
      *
      * @param day
      */
-    private void addUpdatedDay(SUpdatedDay day) {
+    public void addUpdatedDay(SUpdatedDay day) {
         synchronized (mUpdatedDays) {
             int i;
             for (i = 0; i < mUpdatedDays.size(); i++) {
@@ -262,8 +262,10 @@ public class SSchedule {
                     new SPeriod("2", 9, 30, 18, 30, 3)));
             addUpdatedDay(SUpdatedDay.test1());
             addUpdatedDay(SUpdatedDay.test2());
-            addUpdatedDay(SUpdatedDay.test3());
+            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 11),
+                    null, new SPeriod("1", 0, 30, 23, 59, 0)));
 
+            // Make sure this is how many days there are in the test run
             finishedAdding(4);
         } else {
             ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
