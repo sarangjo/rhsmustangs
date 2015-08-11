@@ -22,14 +22,13 @@ import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
 
 /**
- * Created by Sarang on 4/8/2015.
+ * @author Sarang
  */
 public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
         UpdatedDaysFragment.UpdatedDaySelectedListener {
@@ -305,7 +304,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
             int day = mSchedule.getToday().getDayOfWeek();
 
-            int absDiff = SStatic.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
+            int absDiff = SHelper.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
             if (absDiff != 0)
                 relTime = absDiff;
                 // Present day

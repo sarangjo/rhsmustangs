@@ -1,7 +1,6 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.*;
@@ -9,6 +8,7 @@ import android.widget.*;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class UpdatedDaysFragment extends DialogFragment {
                     false);
             content = (TextView) rowView.findViewById(android.R.id.text1);
 
-            content.setText(SStatic.getDisplayString(super.getItem(pos).getDate()));
+            content.setText(SHelper.getDisplayString(super.getItem(pos).getDate()));
 
             return rowView;
         }

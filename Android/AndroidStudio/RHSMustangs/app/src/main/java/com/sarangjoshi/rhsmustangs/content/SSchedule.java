@@ -5,7 +5,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
-import com.sarangjoshi.rhsmustangs.schedule.SStatic;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -120,14 +120,14 @@ public class SSchedule {
     public String getTodayAsString() {
         // TODO: fix
         /*Calendar now = new GregorianCalendar();
-        int diff = SStatic.getAbsDay(now) - SStatic.getAbsDay(mToday); //now.compareTo(mToday);
+        int diff = SHelper.getAbsDay(now) - SHelper.getAbsDay(mToday); //now.compareTo(mToday);
         if (diff == 0)
             return "Today";
         else if (diff == -1)
             return "Tomorrow";
         else if (diff == 1)
             return "Yesterday";*/
-        return SStatic.getDisplayString(mToday);
+        return SHelper.getDisplayString(mToday);
     }
 
     /**
@@ -154,7 +154,7 @@ public class SSchedule {
 
         // Check to see if the week has been completely changed
         if (oldToday != null)
-            weekChanged |= !SStatic.sameWeek(oldToday, mToday);
+            weekChanged |= !SHelper.sameWeek(oldToday, mToday);
 
         // If week changed, change the damn week
         if (weekChanged) refreshWeek(mToday);

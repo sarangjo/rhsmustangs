@@ -63,6 +63,10 @@ public class SPeriod {
         return mEndTime;
     }
 
+    public int getGroupN() {
+        return mGroupN;
+    }
+
     public enum PeriodStyle {
         HOMEROOM, LUNCH, CLASS, OTHER
     }

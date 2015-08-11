@@ -1,4 +1,4 @@
-package com.sarangjoshi.rhsmustangs.schedule;
+package com.sarangjoshi.rhsmustangs.helper;
 
 /**
  * Created by Sarang on 4/8/2015.
@@ -11,25 +11,20 @@ import android.text.format.Time;
 
 import com.sarangjoshi.rhsmustangs.content.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-public class SStatic {
+public class SHelper {
+    private static final String NO_GROUPS = "[]";
     public static int RFC2445_DATE_LENGTH = 15;
 
-    public static String lunch_short = "LN";
-    public static String hr_short = "HR";
     public static String COLOR_UPDATE = "#006600";
     public static String COLOR_HOLIDAY = "#D4AF37";// "#FFD700";
-
-    public static String[] months = {"January", "February", "March", "April",
-            "May", "June", "July", "August", "September", "October",
-            "November", "December"};
-    public static String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday",
-            "Thursday", "Friday", "Saturday"};
 
     public static String DEFAULT_OVERRIDE_NAME = "-";
 
@@ -145,11 +140,16 @@ public class SStatic {
      * @return
      */
     public static String getDisplayString(Calendar date) {
-        String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
+        SimpleDateFormat format = new SimpleDateFormat("MMMM dd, yyyy");
+        format.setTimeZone(date.getTimeZone());
+        return format.format(date.getTime());
+
+        /*String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
         str += " " + date.get(Calendar.DAY_OF_MONTH);
         str += ", " + date.get(Calendar.YEAR);
 
         return str;
+   */
     }
 
     public static Calendar getRelativeDay(Calendar today, int day) {
@@ -178,7 +178,61 @@ public class SStatic {
      * Converts a Date object to a Calendar object.
      */
     public static Calendar dateToCalendar(Date date) {
-        return new GregorianCalendar(1900 + date.getYear(), date.getMonth(),
-                date.getDate());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    public static String dateToString(Calendar date) {
+        DATE_FORMAT.setTimeZone(date.getTimeZone());
+        return DATE_FORMAT.format(date.getTime());
+    }
+
+    /**
+     * @param string
+     * @return null if incorrectly formatted string
+     */
+    public static Calendar stringToCalendar(String string) {
+        try {
+            return dateToCalendar(DATE_FORMAT.parse(string));
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Each group name surrounded by quotes, separated by commas, no spaces in between groups.
+     *
+     * @return
+     */
+    public static String groupsToString(String[] groupNames) {
+        if (groupNames == null || groupNames.length == 0) {
+            return NO_GROUPS;
+        }
+        String s = "[\"" + groupNames[0] + "\"";
+        for (int i = 1; i < groupNames.length; i++) {
+            s += ",\"" + groupNames[i] + "\"";
+        }
+        return s + "]";
+    }
+
+    /**
+     *
+     * @param groupsString not null
+     * @return null if there are no groups
+     */
+    public static String[] stringToGroups(String groupsString) {
+        if (groupsString.equals(NO_GROUPS)) {
+            return null;
+        }
+        String[] groups = groupsString.split("\",\"");
+        // Cut leading [" and trailing "]
+        groups[0] = groups[0].substring(2);
+        String end = groups[groups.length - 1];
+        groups[groups.length - 1] = end.substring(0, end.length() - 2);
+
+        return groups;
     }
 }

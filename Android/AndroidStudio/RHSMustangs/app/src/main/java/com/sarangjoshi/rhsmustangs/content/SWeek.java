@@ -1,6 +1,6 @@
 package com.sarangjoshi.rhsmustangs.content;
 
-import com.sarangjoshi.rhsmustangs.schedule.SStatic;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,8 +62,8 @@ public class SWeek {
      * @param updatedDays the list of updated days to filter and add into the current week as needed
      */
     public void update(Calendar today, List<SUpdatedDay> updatedDays) {
-        Calendar monday = SStatic.getRelativeDay(today, Calendar.MONDAY);
-        Calendar friday = SStatic.getRelativeDay(today, Calendar.FRIDAY);
+        Calendar monday = SHelper.getRelativeDay(today, Calendar.MONDAY);
+        Calendar friday = SHelper.getRelativeDay(today, Calendar.FRIDAY);
         for (SUpdatedDay day : updatedDays) {
             if (day.compareTo(monday) >= 0 && day.compareTo(friday) <= 0) {
                 setDay(day.getDayOfWeek(), day);
