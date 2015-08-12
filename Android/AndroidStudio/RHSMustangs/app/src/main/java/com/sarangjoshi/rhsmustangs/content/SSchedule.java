@@ -308,10 +308,9 @@ public class SSchedule {
      */
     public void saveUpdatedDays() {
         if (!mUpdatedDays.isEmpty()) {
-            // For now, just save the first
-            SUpdatedDay day = mUpdatedDays.get(0);
-
-            mDatabase.saveUpdatedDay(day);
+            for(SUpdatedDay day : mUpdatedDays) {
+                mDatabase.saveUpdatedDay(day);
+            }
             mDatabase.close();
         }
     }
@@ -319,7 +318,7 @@ public class SSchedule {
     /**
      * @return success
      */
-    public boolean clearData() {
+    public boolean clearDatabase() {
         mDatabase.deleteAll();
         mDatabase.init();
         return true;

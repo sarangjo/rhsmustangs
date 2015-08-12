@@ -3,6 +3,7 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -42,10 +43,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
     private ListView mPeriodsList;
     private TextView mTitle, mDayOfWeek;
-    private ImageButton mPrevDay, mNextDay;
+    private ImageButton mNextDay;
     private Spinner groupSpin;
 
     private ProgressDialog dialog;
+
+    private LoadAsyncTask mLoadTask;
+    private SaveAsyncTask mSaveTask;
 
     /**
      * Default empty constructor.
@@ -67,6 +71,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         mSchedule = new SSchedule(new GregorianCalendar(), 1, this, getActivity());
         mDatabase = new ScheduleDbHelper(getActivity());
+
+        mLoadTask = new LoadAsyncTask(getActivity());
+        mSaveTask = new SaveAsyncTask(getActivity());
     }
 
     @Override
@@ -78,7 +85,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mPeriodsList = (ListView) v.findViewById(R.id.periodsListView);
         mTitle = (TextView) v.findViewById(R.id.title);
         mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
-        mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
+        ImageButton mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
         mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
 
         // UI dynamic setup
@@ -98,6 +105,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         // And finally actually show data
         refreshPeriods();
         updateSpinner();
+
+        // Load updated days
+        mLoadTask.execute();
 
         return v;
     }
@@ -121,23 +131,10 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
             case R.id.action_save_updated_days:
-                return saveUpdatedDays();
-            case R.id.action_clear_data:
-                return clearData();
-            case R.id.action_load_data:
-                return loadData();
+                mSaveTask.execute();
+                return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private boolean loadData() {
-        mSchedule.loadDataFromDatabase();
-        return true;
-    }
-
-    private boolean clearData() {
-        mSchedule.clearData();
-        return true;
     }
 
     /**
@@ -149,22 +146,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         dialog = ProgressDialog.show(getActivity(), "",
                 "Checking for updates...");
 
+        // Clears database
+        mSchedule.clearDatabase();
         mSchedule.updateUpdatedDays();
-        return true;
-    }
-
-    /**
-     * Saves updated days.
-     *
-     * @return success
-     */
-    private boolean saveUpdatedDays() {
-        dialog = ProgressDialog.show(getActivity(), "",
-                "Saving data...");
-        // TODO: move this off the main thread
-        mSchedule.saveUpdatedDays();
-
-        dialog.dismiss();
         return true;
     }
 
@@ -372,5 +356,56 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             super.clear();
             super.addAll(mSchedule.getTodayPeriods());
         }
+    }
+
+    /**
+     * params progress result
+     */
+    private class LoadAsyncTask extends AsyncTask<Void, Void, Void> {
+        private Context mCtx;
+        private ProgressDialog pd;
+
+        public LoadAsyncTask(Context ctx) {
+            mCtx = ctx;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            pd = ProgressDialog.show(mCtx, "",
+                    "Loading...");
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            mSchedule.loadDataFromDatabase();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            pd.dismiss();
+        }
+    }
+
+    private class SaveAsyncTask extends AsyncTask<Void, Void, Void> {
+        private Context mCtx;
+        private ProgressDialog pd;
+
+        public SaveAsyncTask(Context ctx) { mCtx = ctx; }
+
+        @Override
+        protected void onPreExecute() {
+            pd = ProgressDialog.show(mCtx, "",
+                    "Saving to database...");
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            mSchedule.saveUpdatedDays();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) { pd.dismiss(); }
     }
 }
