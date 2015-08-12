@@ -51,8 +51,7 @@ public class SPeriod {
     public String getClassName() {
         if (mClassName.equals(DEFAULT_NAME))
             return getDefaultPeriodName();
-
-        return mClassName;
+        return getRawClassName();
     }
 
     public STime getStart() {
@@ -65,6 +64,10 @@ public class SPeriod {
 
     public int getGroupN() {
         return mGroupN;
+    }
+
+    public String getRawClassName() {
+        return mClassName;
     }
 
     public enum PeriodStyle {
@@ -104,8 +107,14 @@ public class SPeriod {
             return PeriodStyle.LUNCH;
         else if (mPeriodShort.equals("HR"))
             return PeriodStyle.HOMEROOM;
-        else
-            return PeriodStyle.CLASS;
+        else {
+            try {
+                Integer.parseInt(mPeriodShort);
+                return PeriodStyle.CLASS;
+            } catch (Exception e) {
+                return PeriodStyle.OTHER;
+            }
+        }
     }
 
     /**
@@ -116,7 +125,7 @@ public class SPeriod {
     public String getDefaultPeriodName() {
         switch (getPeriodStyle()) {
             case CLASS:
-                return "Period " + mPeriodShort;
+                return "Period " + Integer.parseInt(mPeriodShort);
             case HOMEROOM:
                 return "Homeroom";
             case LUNCH:
@@ -217,7 +226,10 @@ public class SPeriod {
         }
     }
 
+    // TODO: include this in creation of periods
     public static String[] RESTRICTED_SHORTS = new String[]{"HR", "LN", "LA", "LB"};
+
+    // Parse keys
     public static String SHORT_KEY = "short";
     public static String NAME_KEY = "name";
     public static String GROUP_KEY = "groupN";

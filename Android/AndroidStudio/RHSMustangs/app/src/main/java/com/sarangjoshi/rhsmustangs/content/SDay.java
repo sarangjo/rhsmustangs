@@ -42,6 +42,7 @@ public class SDay {
      * @param period {@link SPeriod} to be added
      */
     public void addPeriod(SPeriod period) {
+        // TODO: sort
         mPeriods.add(period);
     }
 
@@ -103,8 +104,6 @@ public class SDay {
         return mGroupNames;
     }
 
-    // TODO: fix
-
     public static final String[] DEFAULT_GROUPS = new String[]{"Lunch A", "Lunch B"};
     public static final String[] NO_GROUPS = new String[]{"No groups"};
 
@@ -153,5 +152,14 @@ public class SDay {
 
     public List<SPeriod> getAllPeriods() {
         return mPeriods;
+    }
+
+    /**
+     * Adds all the given periods.
+     *
+     * @param periods list of {@link SPeriod}s to be added
+     */
+    public void addPeriods(List<SPeriod> periods) {
+        for(SPeriod p : periods) { addPeriod(p); }
     }
 }

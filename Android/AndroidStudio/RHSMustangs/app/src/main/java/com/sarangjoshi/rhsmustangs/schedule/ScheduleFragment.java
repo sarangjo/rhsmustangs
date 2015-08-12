@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
+import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -35,6 +36,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
 
     private SSchedule mSchedule;
+    private ScheduleDbHelper mDatabase;
 
     private ScheduleAdapter mAdapter;
 
@@ -63,7 +65,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(new GregorianCalendar(), 1, this);
+        mSchedule = new SSchedule(new GregorianCalendar(), 1, this, getActivity());
+        mDatabase = new ScheduleDbHelper(getActivity());
     }
 
     @Override
@@ -102,7 +105,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.schedule_menu, menu);
+        inflater.inflate(R.menu.schedule, menu);
 
         MenuItem item = menu.findItem(R.id.group_spinner);
         groupSpin = (Spinner) MenuItemCompat.getActionView(item);
@@ -110,25 +113,59 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         updateSpinner();
     }
 
-    /**
-     * Whether the selection is handled.
-     *
-     * @param item
-     * @return
-     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                dialog = ProgressDialog.show(getActivity(), "",
-                        "Checking for updates...");
-
-                mSchedule.updateUpdatedDays();
-                return true;
+                return refreshUpdatedDays();
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
+            case R.id.action_save_updated_days:
+                return saveUpdatedDays();
+            case R.id.action_clear_data:
+                return clearData();
+            case R.id.action_load_data:
+                return loadData();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean loadData() {
+        mSchedule.loadDataFromDatabase();
+        return true;
+    }
+
+    private boolean clearData() {
+        mSchedule.clearData();
+        return true;
+    }
+
+    /**
+     * Refreshes updated days.
+     *
+     * @return success
+     */
+    private boolean refreshUpdatedDays() {
+        dialog = ProgressDialog.show(getActivity(), "",
+                "Checking for updates...");
+
+        mSchedule.updateUpdatedDays();
+        return true;
+    }
+
+    /**
+     * Saves updated days.
+     *
+     * @return success
+     */
+    private boolean saveUpdatedDays() {
+        dialog = ProgressDialog.show(getActivity(), "",
+                "Saving data...");
+        // TODO: move this off the main thread
+        mSchedule.saveUpdatedDays();
+
+        dialog.dismiss();
+        return true;
     }
 
     /**

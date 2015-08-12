@@ -28,6 +28,15 @@ public class UpdatedDaysFragment extends DialogFragment {
 
         ListView updatedDaysView = (ListView) v.findViewById(R.id.updated_days_list);
 
+        if(mUpdatedDays.isEmpty()) {
+            TextView noDaysView = (TextView) v.findViewById(R.id.no_updated_days);
+
+            noDaysView.setVisibility(View.VISIBLE);
+            updatedDaysView.setVisibility(View.GONE);
+
+            return v;
+        }
+
         updatedDaysView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

@@ -1,11 +1,14 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import android.content.Context;
+
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
+import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -25,6 +28,7 @@ public class SSchedule {
     private int mGroupN;
 
     private final List<SUpdatedDay> mUpdatedDays;
+    private ScheduleDbHelper mDatabase;
     private UpdateFinishedListener mListener;
 
     /**
@@ -34,10 +38,11 @@ public class SSchedule {
      * @param groupN
      * @param l
      */
-    public SSchedule(Calendar today, int groupN, UpdateFinishedListener l) {
+    public SSchedule(Calendar today, int groupN, UpdateFinishedListener l, Context context) {
         mGroupN = groupN;
         mUpdatedDays = new LinkedList<>();
         this.mListener = l;
+        this.mDatabase = new ScheduleDbHelper(context);
 
         // Then, set the current day within that week.
         setToday(today);
@@ -295,6 +300,37 @@ public class SSchedule {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * Saves updated days.
+     */
+    public void saveUpdatedDays() {
+        if (!mUpdatedDays.isEmpty()) {
+            // For now, just save the first
+            SUpdatedDay day = mUpdatedDays.get(0);
+
+            mDatabase.saveUpdatedDay(day);
+            mDatabase.close();
+        }
+    }
+
+    /**
+     * @return success
+     */
+    public boolean clearData() {
+        mDatabase.deleteAll();
+        mDatabase.init();
+        return true;
+
+    }
+
+    public void loadDataFromDatabase() {
+        // Gets rid of previously loaded days #rekt
+        mUpdatedDays.clear();
+        for (SUpdatedDay day : mDatabase.getUpdatedDays()) {
+            addUpdatedDay(day);
         }
     }
 
