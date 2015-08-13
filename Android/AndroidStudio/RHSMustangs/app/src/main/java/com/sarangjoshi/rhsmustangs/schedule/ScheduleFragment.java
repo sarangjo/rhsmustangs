@@ -195,6 +195,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         refreshPeriods();
         updateSpinner();
 
+        // Automatically saves downloaded updated days
+        mSaveTask.execute();
         showUpdatedDays();
     }
 
