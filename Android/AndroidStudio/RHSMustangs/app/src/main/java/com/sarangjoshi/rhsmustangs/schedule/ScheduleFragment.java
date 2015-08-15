@@ -37,7 +37,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
 
     private SSchedule mSchedule;
-    private ScheduleDbHelper mDatabase;
 
     private ScheduleAdapter mAdapter;
 
@@ -47,9 +46,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     private Spinner groupSpin;
 
     private ProgressDialog dialog;
-
-    private LoadAsyncTask mLoadTask;
-    private SaveAsyncTask mSaveTask;
 
     /**
      * Default empty constructor.
@@ -70,10 +66,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         setHasOptionsMenu(true);
 
         mSchedule = new SSchedule(new GregorianCalendar(), 1, this, getActivity());
-        mDatabase = new ScheduleDbHelper(getActivity());
 
-        mLoadTask = new LoadAsyncTask(getActivity());
-        mSaveTask = new SaveAsyncTask(getActivity());
     }
 
     @Override
@@ -107,7 +100,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         updateSpinner();
 
         // Load updated days
-        mLoadTask.execute();
+        new LoadAsyncTask(getActivity()).execute();
 
         return v;
     }
@@ -131,7 +124,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
             case R.id.action_save_updated_days:
-                mSaveTask.execute();
+                new SaveAsyncTask(getActivity()).execute();
+                return true;
+            case R.id.action_clear_updated_days:
+                mSchedule.clearDatabase();
+                return true;
+            case R.id.action_load_data:
+                new LoadAsyncTask(getActivity()).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -196,7 +195,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         updateSpinner();
 
         // Automatically saves downloaded updated days
-        mSaveTask.execute();
+        new SaveAsyncTask(getActivity()).execute();
         showUpdatedDays();
     }
 

@@ -128,7 +128,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
                 new SPeriod("01", 7, 30, 8, 24, 0));
     }
 
-    public static SUpdatedDay test3() {
+    public static SUpdatedDay testPeriodSorting() {
         return test(new GregorianCalendar(2015, Calendar.JULY, 23),
                 new String[]{"Grp1", "Grp2"},
                 new SPeriod("01", "OMG", 7, 30, 14, 30, 1),

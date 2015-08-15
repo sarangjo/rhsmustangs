@@ -18,7 +18,9 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by Sarang on 8/12/2015.
+ * Handles the database data saving of updated days.
+ *
+ * @author Sarang Joshi
  */
 public class ScheduleDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "Schedule.db";

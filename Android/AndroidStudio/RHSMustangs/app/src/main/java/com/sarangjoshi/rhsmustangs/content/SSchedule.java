@@ -258,20 +258,19 @@ public class SSchedule {
     public void updateUpdatedDays() {
         mUpdatedDays.clear();
 
-        boolean network = true;
+        boolean network = false;
 
         if (!network) {
             addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
                     new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
-                    new SPeriod("1", 7, 30, 8, 30, 0),
-                    new SPeriod("2", 9, 30, 18, 30, 3)));
-            addUpdatedDay(SUpdatedDay.test1());
-            addUpdatedDay(SUpdatedDay.test2());
+                    new SPeriod("02", 9, 30, 18, 30, 3),
+                    new SPeriod("01", 7, 30, 8, 30, 0)));
+            addUpdatedDay(SUpdatedDay.testPeriodSorting());
             addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 11),
-                    null, new SPeriod("1", 0, 30, 23, 59, 0)));
+                    null, new SPeriod("01", 0, 30, 23, 59, 0)));
 
             // Make sure this is how many days there are in the test run
-            finishedAdding(4);
+            finishedAdding(3);
         } else {
             ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
             updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
@@ -325,6 +324,9 @@ public class SSchedule {
 
     }
 
+    /**
+     * Loads updated days from the database.
+     */
     public void loadDataFromDatabase() {
         // Gets rid of previously loaded days #rekt
         mUpdatedDays.clear();

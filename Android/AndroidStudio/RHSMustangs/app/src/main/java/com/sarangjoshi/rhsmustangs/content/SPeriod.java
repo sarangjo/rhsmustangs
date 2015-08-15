@@ -1,14 +1,17 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import android.support.annotation.NonNull;
+
 import com.parse.ParseObject;
 
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 
 /**
  * Created by Sarang on 4/6/2015.
  */
-public class SPeriod {
+public class SPeriod implements Comparable<SPeriod> {
     private static final String DEFAULT_NAME = "-";
 
     private String mPeriodShort;
@@ -44,8 +47,13 @@ public class SPeriod {
         this(periodShort, DEFAULT_NAME, sh, sm, eh, em, gn);
     }
 
+    /**
+     * Guaranteed to be 2 characters long
+     *
+     * @return
+     */
     public String getShort() {
-        return mPeriodShort;
+        return (mPeriodShort.length() < 2) ? " " + mPeriodShort : mPeriodShort.substring(0, 2);
     }
 
     public String getClassName() {
@@ -68,6 +76,14 @@ public class SPeriod {
 
     public String getRawClassName() {
         return mClassName;
+    }
+
+    @Override
+    public int compareTo(SPeriod other) {
+        int startD = mStartTime.compareTo(other.mStartTime);
+        if(startD == 0)
+            return mEndTime.compareTo(other.mEndTime);
+        return startD;
     }
 
     public enum PeriodStyle {
@@ -169,7 +185,7 @@ public class SPeriod {
      *
      * @author Sarang Joshi
      */
-    public static class STime {
+    public static class STime implements Comparable<STime> {
         public int hour;
         public int minute;
 
@@ -183,10 +199,6 @@ public class SPeriod {
                 minute = nM % 60;
             } else
                 minute = nM;
-        }
-
-        public STime(Calendar time) {
-            this(time.get(GregorianCalendar.HOUR_OF_DAY), time.get(GregorianCalendar.MINUTE));
         }
 
         /**
@@ -223,6 +235,13 @@ public class SPeriod {
             m += (minute < 10) ? ("0" + minute) : minute;
 
             return h + ":" + m + ((!is24hr) ? amPm : "");
+        }
+
+        public int compareTo(STime other) {
+            if (this.hour == other.hour) {
+                return this.minute - other.minute;
+            }
+            return this.hour - other.hour;
         }
     }
 

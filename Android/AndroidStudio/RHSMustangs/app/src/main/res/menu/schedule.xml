@@ -24,4 +24,14 @@
         android:title="@string/action_save_updated_days"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_clear_updated_days"
+        android:title="@string/action_clear_updated_days"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_load_data"
+        android:title="@string/action_load_data"
+        app:showAsAction="never" />
+
 </menu>
