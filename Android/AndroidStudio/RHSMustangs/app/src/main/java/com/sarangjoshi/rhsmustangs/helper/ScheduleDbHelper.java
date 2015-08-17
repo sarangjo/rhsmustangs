@@ -66,6 +66,19 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         db.execSQL(DROP + PeriodEntry.TABLE_NAME);
     }
 
+    public int saveGroup(SUpdatedDay day) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_N, day.getGroupN());
+
+        // Selecting the row
+        String selection = UpdatedDayEntry.COLUMN_NAME_DATE + " = ?";
+        String[] args = { SHelper.dateToString(day.getDate()) };
+
+        return db.update(UpdatedDayEntry.TABLE_NAME, values, selection, args);
+    }
+
     /**
      * Saves the given updated day, as well as its periods.
      *
@@ -83,6 +96,13 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return uday_id;
     }
 
+    /**
+     * Creates a Period entry to the database.
+     *
+     * @param p
+     * @param uday_id
+     * @return
+     */
     public long createPeriod(SPeriod p, long uday_id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -112,6 +132,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(UpdatedDayEntry.COLUMN_NAME_DATE, SHelper.dateToString(day.getDate()));
         values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_NAMES, SHelper.groupsToString(day.getGroupNames()));
+        values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_N, day.getGroupN());
 
         return db.insert(UpdatedDayEntry.TABLE_NAME, null, values);
     }
@@ -144,7 +165,16 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
                 SUpdatedDay day = new SUpdatedDay(date, names);
 
+                int groupN;
+                try {
+                    groupN = c.getInt(c.getColumnIndex(UpdatedDayEntry.COLUMN_NAME_GROUP_N));
+                } catch (IllegalStateException e) {
+                    groupN = 0;
+                }
+
+                day.setGroupN(groupN);
                 day.addPeriods(getPeriods(id));
+
                 days.add(day);
             } while (c.moveToNext());
         }
@@ -190,11 +220,13 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         //public static final String COLUMN_NAME_PARSE_ID = "parseid";
         public static final String COLUMN_NAME_DATE = "date";
         public static final String COLUMN_NAME_GROUP_NAMES = "groups";
+        public static final String COLUMN_NAME_GROUP_N = "group_n";
 
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
                 + _ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_NAME_DATE + " DATETIME,"
-                + COLUMN_NAME_GROUP_NAMES + " TEXT"
+                + COLUMN_NAME_GROUP_NAMES + " TEXT,"
+                + COLUMN_NAME_GROUP_N + " INTEGER"
                 + ")";
     }
 

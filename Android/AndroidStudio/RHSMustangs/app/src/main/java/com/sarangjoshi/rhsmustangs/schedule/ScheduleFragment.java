@@ -24,7 +24,6 @@ import android.widget.Toast;
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
-import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -65,7 +64,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(new GregorianCalendar(), 1, this, getActivity());
+        mSchedule = new SSchedule(new GregorianCalendar(), this, getActivity());
     }
 
     @Override
@@ -95,11 +94,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mDayOfWeek.setOnClickListener(tcl);
 
         // And finally actually show data
-        refreshPeriods();
-        updateSpinner();
+        //refreshPeriods();
+        //updateSpinner();
 
         // Load updated days
-        new LoadAsyncTask(getActivity()).execute();
+        new LoadUpdatedDaysAsyncTask(getActivity()).execute();
 
         return v;
     }
@@ -123,13 +122,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
             case R.id.action_save_updated_days:
-                new SaveAsyncTask(getActivity()).execute();
+                new SaveUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
             case R.id.action_clear_updated_days:
                 mSchedule.clearDatabase();
                 return true;
             case R.id.action_load_data:
-                new LoadAsyncTask(getActivity()).execute();
+                new LoadUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -144,8 +143,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         dialog = ProgressDialog.show(getActivity(), "",
                 "Checking for updates...");
 
-        // Clears database
-        mSchedule.clearDatabase();
         mSchedule.updateUpdatedDays();
         return true;
     }
@@ -173,7 +170,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             if (spinnerData == null)
                 spinnerData = SDay.NO_GROUPS;
 
-            ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_dropdown_default, spinnerData);
+            ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_dropdown_item, spinnerData);
             spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             groupSpin.setAdapter(spinAdapter);
 
@@ -182,7 +180,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             if (mSchedule.getToday().hasGroups())
                 groupSpin.setSelection(mSchedule.getGroupN() - 1);
             else
-                groupSpin.setSelection(0);
+                groupSpin.setSelection(SSchedule.DEFAULT_GROUP_N - 1);
         }
     }
 
@@ -197,7 +195,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         updateSpinner();
 
         // Automatically saves downloaded updated days
-        new SaveAsyncTask(getActivity()).execute();
+        new SaveUpdatedDaysAsyncTask(getActivity()).execute();
         showUpdatedDays();
     }
 
@@ -211,6 +209,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
     /**
      * Sets the current day to the given Calendar date.
+     *
      * @param today
      */
     private void setToday(Calendar today) {
@@ -223,7 +222,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             if (mSchedule.setGroupN(position + 1)) {
-                Toast.makeText(getActivity(), "" + (position + 1), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity(), "" + (position + 1), Toast.LENGTH_SHORT).show();
+                mSchedule.saveGroupN();
                 refreshPeriods();
             }
         }
@@ -364,11 +364,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
-    private class LoadAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class LoadUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {
         private Context mCtx;
         private ProgressDialog pd;
 
-        public LoadAsyncTask(Context ctx) {
+        public LoadUpdatedDaysAsyncTask(Context ctx) {
             mCtx = ctx;
         }
 
@@ -382,6 +382,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         protected Void doInBackground(Void... params) {
             mSchedule.loadDataFromDatabase();
             mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
+
+            refreshPeriods();
+            updateSpinner();
             return null;
         }
 
@@ -391,11 +394,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
-    private class SaveAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class SaveUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {
         private Context mCtx;
         private ProgressDialog pd;
 
-        public SaveAsyncTask(Context ctx) { mCtx = ctx; }
+        public SaveUpdatedDaysAsyncTask(Context ctx) {
+            mCtx = ctx;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -405,11 +410,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         protected Void doInBackground(Void... params) {
+            // Clears database before saving
+            mSchedule.clearDatabase();
             mSchedule.saveUpdatedDays();
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) { pd.dismiss(); }
+        protected void onPostExecute(Void result) {
+            pd.dismiss();
+        }
     }
 }

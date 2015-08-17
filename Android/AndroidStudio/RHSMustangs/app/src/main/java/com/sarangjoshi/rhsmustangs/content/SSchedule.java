@@ -1,12 +1,14 @@
 package com.sarangjoshi.rhsmustangs.content;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
+import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
@@ -21,11 +23,16 @@ import java.util.List;
  * @author Sarang
  */
 public class SSchedule {
+    public static final String GROUP_N_KEY = "group_n";
+    public static final int DEFAULT_GROUP_N = 1;
+
     // TODO: Decide whether a list of weeks is needed
     //private List<SWeek> mLoadedWeeks;
     private SWeek mCurrentWeek;
     private Calendar mToday;
     private int mGroupN;
+
+    private SharedPreferences mSchedulePref;
 
     private final List<SUpdatedDay> mUpdatedDays;
     private ScheduleDbHelper mDatabase;
@@ -34,18 +41,31 @@ public class SSchedule {
     /**
      * Constructs a new {@link SSchedule} object.
      *
-     * @param today
-     * @param groupN
-     * @param l
      */
-    public SSchedule(Calendar today, int groupN, UpdateFinishedListener l, Context context) {
-        mGroupN = groupN;
-        mUpdatedDays = new LinkedList<>();
+    public SSchedule(Calendar today, UpdateFinishedListener l, Context context) {
+        this.mUpdatedDays = new LinkedList<>();
         this.mListener = l;
         this.mDatabase = new ScheduleDbHelper(context);
+        this.mSchedulePref = context.getSharedPreferences(
+                context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
 
+        // Sets the date
         setToday(today);
         refreshWeek(today);
+
+        // Loads the group number
+        loadGroupN();
+    }
+
+    /**
+     * Loads the groups from the saved preferences.
+     */
+    private void loadGroupN() {
+        int groupN = mSchedulePref.getInt(GROUP_N_KEY, -1);
+        if (groupN == -1)
+            mGroupN = DEFAULT_GROUP_N;
+        else
+            mGroupN = groupN;
     }
 
     /**
@@ -87,6 +107,21 @@ public class SSchedule {
             }
         }
         return false;
+    }
+
+    /**
+     * Saves the current group number.
+     *
+     * @return success
+     */
+    public boolean saveGroupN() {
+        if (getToday().getClass() == SUpdatedDay.class) {
+            return 1 == mDatabase.saveGroup((SUpdatedDay) getToday());
+        } else {
+            return mSchedulePref.edit()
+                    .putInt(GROUP_N_KEY, mGroupN)
+                    .commit();
+        }
     }
 
     /**
@@ -246,7 +281,7 @@ public class SSchedule {
     public void updateUpdatedDays() {
         mUpdatedDays.clear();
 
-        boolean network = false;
+        boolean network = true;
 
         if (!network) {
             addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
@@ -277,7 +312,7 @@ public class SSchedule {
      * Once the updated days have been downloaded, saves them.
      *
      * @param dayObjects saved ParseObjects
-     * @param localDays the number of locally saved days
+     * @param localDays  the number of locally saved days
      */
     private void setUpdatedDaysFromParse(final List<ParseObject> dayObjects, final int localDays) {
         for (final ParseObject obj : dayObjects) {
@@ -301,7 +336,7 @@ public class SSchedule {
      */
     public void saveUpdatedDays() {
         if (!mUpdatedDays.isEmpty()) {
-            for(SUpdatedDay day : mUpdatedDays) {
+            for (SUpdatedDay day : mUpdatedDays) {
                 mDatabase.saveUpdatedDay(day);
             }
             mDatabase.close();
