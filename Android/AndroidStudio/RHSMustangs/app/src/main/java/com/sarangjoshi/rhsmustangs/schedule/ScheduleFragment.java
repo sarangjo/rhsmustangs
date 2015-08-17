@@ -66,7 +66,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         setHasOptionsMenu(true);
 
         mSchedule = new SSchedule(new GregorianCalendar(), 1, this, getActivity());
-
     }
 
     @Override
@@ -187,6 +186,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
+    /**
+     * This is run when the update is completed.
+     */
     @Override
     public void updateCompleted() {
         dialog.dismiss();
@@ -207,6 +209,10 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         setToday(day.getDate());
     }
 
+    /**
+     * Sets the current day to the given Calendar date.
+     * @param today
+     */
     private void setToday(Calendar today) {
         mSchedule.setToday(today);
         refreshPeriods();
@@ -235,14 +241,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         // Updates adapter to reflect changes
         if (mAdapter == null)
             mAdapter = new ScheduleAdapter(getActivity());
-
         mAdapter.updateData();
         mPeriodsList.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
 
         // Update other UI
         mTitle.setText(mSchedule.getTodayAsString());
-        mDayOfWeek.setText(mSchedule.getTodayDayOfWeekAsString());
+        mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
     }
 
     private class DayChangeClickListener implements View.OnClickListener {
@@ -359,9 +364,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
-    /**
-     * params progress result
-     */
     private class LoadAsyncTask extends AsyncTask<Void, Void, Void> {
         private Context mCtx;
         private ProgressDialog pd;
@@ -379,6 +381,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         @Override
         protected Void doInBackground(Void... params) {
             mSchedule.loadDataFromDatabase();
+            mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
             return null;
         }
 

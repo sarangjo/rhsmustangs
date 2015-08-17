@@ -44,10 +44,7 @@ public class SSchedule {
         this.mListener = l;
         this.mDatabase = new ScheduleDbHelper(context);
 
-        // Then, set the current day within that week.
         setToday(today);
-
-        // First, update the week to reflect the current day.
         refreshWeek(today);
     }
 
@@ -136,15 +133,6 @@ public class SSchedule {
     }
 
     /**
-     * Gets a String representation of today's day of the week.
-     *
-     * @return String representation of today's day of the week
-     */
-    public String getTodayDayOfWeekAsString() {
-        return getToday().getDayOfWeekAsString();
-    }
-
-    /**
      * Sets today for the given day.
      *
      * @param today
@@ -185,7 +173,7 @@ public class SSchedule {
      * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
      * updates.
      */
-    private void refreshWeek(Calendar today) {
+    public void refreshWeek(Calendar today) {
         // TODO: make more efficient by not changing week appropriately
         // Based on today, establish MONDAY
         mCurrentWeek = SWeek.getDefaultWeek();
@@ -266,7 +254,7 @@ public class SSchedule {
                     new SPeriod("02", 9, 30, 18, 30, 3),
                     new SPeriod("01", 7, 30, 8, 30, 0)));
             addUpdatedDay(SUpdatedDay.testPeriodSorting());
-            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 11),
+            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 18),
                     null, new SPeriod("01", 0, 30, 23, 59, 0)));
 
             // Make sure this is how many days there are in the test run
@@ -285,6 +273,12 @@ public class SSchedule {
         }
     }
 
+    /**
+     * Once the updated days have been downloaded, saves them.
+     *
+     * @param dayObjects saved ParseObjects
+     * @param localDays the number of locally saved days
+     */
     private void setUpdatedDaysFromParse(final List<ParseObject> dayObjects, final int localDays) {
         for (final ParseObject obj : dayObjects) {
             //final ParseObject obj = dayObjects.get(0);
