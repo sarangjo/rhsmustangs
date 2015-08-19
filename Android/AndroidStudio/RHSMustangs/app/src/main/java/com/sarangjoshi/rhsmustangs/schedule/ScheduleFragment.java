@@ -59,6 +59,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return new ScheduleFragment();
     }
 
+    // FRAGMENT OVERRIDES
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,29 +136,17 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Refreshes updated days.
-     *
-     * @return success
-     */
-    private boolean refreshUpdatedDays() {
-        dialog = ProgressDialog.show(getActivity(), "",
-                "Checking for updates...");
-
-        mSchedule.updateUpdatedDays();
-        return true;
-    }
+    // PERIODS
 
     /**
-     * Shows the updated days in a dialog
+     * Sets the current day to the given Calendar date.
      *
-     * @return success
+     * @param today
      */
-    private boolean showUpdatedDays() {
-        UpdatedDaysFragment dialog =
-                new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
-        dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
-        return true;
+    private void setToday(Calendar today) {
+        mSchedule.setToday(today);
+        refreshPeriods();
+        updateSpinner();
     }
 
     /**
@@ -182,40 +172,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             else
                 groupSpin.setSelection(SSchedule.DEFAULT_GROUP_N - 1);
         }
-    }
-
-    /**
-     * This is run when the update is completed.
-     */
-    @Override
-    public void updateCompleted() {
-        dialog.dismiss();
-
-        refreshPeriods();
-        updateSpinner();
-
-        // Automatically saves downloaded updated days
-        new SaveUpdatedDaysAsyncTask(getActivity()).execute();
-        showUpdatedDays();
-    }
-
-    @Override
-    public void updatedDaySelected(int index) {
-        //Toast.makeText(getActivity(), "" + index, Toast.LENGTH_SHORT).show();
-
-        SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
-        setToday(day.getDate());
-    }
-
-    /**
-     * Sets the current day to the given Calendar date.
-     *
-     * @param today
-     */
-    private void setToday(Calendar today) {
-        mSchedule.setToday(today);
-        refreshPeriods();
-        updateSpinner();
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -261,6 +217,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             updateSpinner();
         }
     }
+
+    // VIEWS
 
     /**
      * Sets the text color of the given views.
@@ -362,6 +320,56 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             super.clear();
             super.addAll(mSchedule.getTodayPeriods());
         }
+    }
+
+    // UPDATED DAYS
+
+    /**
+     * Refreshes updated days.
+     *
+     * @return success
+     */
+    private boolean refreshUpdatedDays() {
+        dialog = ProgressDialog.show(getActivity(), "",
+                "Checking for updates...");
+
+        mSchedule.updateUpdatedDays();
+        return true;
+    }
+
+    /**
+     * Shows the updated days in a dialog
+     *
+     * @return success
+     */
+    private boolean showUpdatedDays() {
+        UpdatedDaysFragment dialog =
+                new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
+        dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
+        return true;
+    }
+
+    /**
+     * This is run when the update is completed.
+     */
+    @Override
+    public void updateCompleted() {
+        dialog.dismiss();
+
+        refreshPeriods();
+        updateSpinner();
+
+        // Automatically saves downloaded updated days
+        new SaveUpdatedDaysAsyncTask(getActivity()).execute();
+        showUpdatedDays();
+    }
+
+    @Override
+    public void updatedDaySelected(int index) {
+        //Toast.makeText(getActivity(), "" + index, Toast.LENGTH_SHORT).show();
+
+        SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
+        setToday(day.getDate());
     }
 
     private class LoadUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {

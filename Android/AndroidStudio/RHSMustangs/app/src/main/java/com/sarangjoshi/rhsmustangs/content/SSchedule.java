@@ -27,7 +27,6 @@ public class SSchedule {
     public static final int DEFAULT_GROUP_N = 1;
 
     // TODO: Decide whether a list of weeks is needed
-    //private List<SWeek> mLoadedWeeks;
     private SWeek mCurrentWeek;
     private Calendar mToday;
     private int mGroupN;
@@ -57,16 +56,7 @@ public class SSchedule {
         loadGroupN();
     }
 
-    /**
-     * Loads the groups from the saved preferences.
-     */
-    private void loadGroupN() {
-        int groupN = mSchedulePref.getInt(GROUP_N_KEY, -1);
-        if (groupN == -1)
-            mGroupN = DEFAULT_GROUP_N;
-        else
-            mGroupN = groupN;
-    }
+    // GETTERS
 
     /**
      * Gets the current day.
@@ -85,43 +75,6 @@ public class SSchedule {
             return ((SUpdatedDay) getToday()).getGroupN();
         else
             return mGroupN;
-    }
-
-    /**
-     * Sets the current group number.
-     *
-     * @param groupN the group number
-     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
-     *                                  day
-     * @returns whether the group number was actually updated
-     */
-    public boolean setGroupN(int groupN) {
-        if (getToday().hasGroups()) {
-            if (groupN == SPeriod.BASE_GROUPN)
-                throw new IllegalArgumentException();
-            if (getToday().getClass() == SUpdatedDay.class) {
-                return ((SUpdatedDay) getToday()).setGroupN(groupN);
-            } else if (this.mGroupN != groupN) {
-                this.mGroupN = groupN;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Saves the current group number.
-     *
-     * @return success
-     */
-    public boolean saveGroupN() {
-        if (getToday().getClass() == SUpdatedDay.class) {
-            return 1 == mDatabase.saveGroup((SUpdatedDay) getToday());
-        } else {
-            return mSchedulePref.edit()
-                    .putInt(GROUP_N_KEY, mGroupN)
-                    .commit();
-        }
     }
 
     /**
@@ -167,6 +120,30 @@ public class SSchedule {
         return SHelper.getDisplayString(mToday);
     }
 
+    // SETTERS
+
+    /**
+     * Sets the current group number.
+     *
+     * @param groupN the group number
+     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
+     *                                  day
+     * @returns whether the group number was actually updated
+     */
+    public boolean setGroupN(int groupN) {
+        if (getToday().hasGroups()) {
+            if (groupN == SPeriod.BASE_GROUPN)
+                throw new IllegalArgumentException();
+            if (getToday().getClass() == SUpdatedDay.class) {
+                return ((SUpdatedDay) getToday()).setGroupN(groupN);
+            } else if (this.mGroupN != groupN) {
+                this.mGroupN = groupN;
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Sets today for the given day.
      *
@@ -205,17 +182,6 @@ public class SSchedule {
     }
 
     /**
-     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
-     * updates.
-     */
-    public void refreshWeek(Calendar today) {
-        // TODO: make more efficient by not changing week appropriately
-        // Based on today, establish MONDAY
-        mCurrentWeek = SWeek.getDefaultWeek();
-        mCurrentWeek.update(today, mUpdatedDays);
-    }
-
-    /**
      * ALWAYS call this when mToday is changed.
      *
      * @param isForward which direction the day was changed
@@ -244,6 +210,19 @@ public class SSchedule {
     }
 
     /**
+     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
+     * updates.
+     */
+    public void refreshWeek(Calendar today) {
+        // TODO: make more efficient by not changing week appropriately
+        // Based on today, establish MONDAY
+        mCurrentWeek = SWeek.getDefaultWeek();
+        mCurrentWeek.update(today, mUpdatedDays);
+    }
+
+    // UPDATED DAYS
+
+    /**
      * Adds a new {@link SUpdatedDay} in a sorted location.
      *
      * @param day
@@ -258,20 +237,6 @@ public class SSchedule {
                 }
             }
             mUpdatedDays.add(i/*(i - 1 < 0) ? 0 : i - 1*/, day);
-        }
-    }
-
-    /**
-     * Only finishes executing if the updated days' size matches the actual # of updated days.
-     *
-     * @param size
-     */
-    private void finishedAdding(int size) {
-        if (mUpdatedDays.size() == size) {
-            // done adding
-            refreshWeek(mToday);
-
-            mListener.updateCompleted();
         }
     }
 
@@ -332,6 +297,29 @@ public class SSchedule {
     }
 
     /**
+     * Only finishes executing if the updated days' size matches the actual # of updated days.
+     *
+     * @param size
+     */
+    private void finishedAdding(int size) {
+        if (mUpdatedDays.size() == size) {
+            // done adding
+            refreshWeek(mToday);
+
+            mListener.updateCompleted();
+        }
+    }
+
+    /**
+     * Listener for when updates finish.
+     */
+    public interface UpdateFinishedListener {
+        void updateCompleted();
+    }
+
+    // DATABASE
+
+    /**
      * Saves updated days.
      */
     public void saveUpdatedDays() {
@@ -365,9 +353,28 @@ public class SSchedule {
     }
 
     /**
-     * Listener for when updates finish.
+     * Loads the groups from the saved preferences.
      */
-    public interface UpdateFinishedListener {
-        void updateCompleted();
+    private void loadGroupN() {
+        int groupN = mSchedulePref.getInt(GROUP_N_KEY, -1);
+        if (groupN == -1)
+            mGroupN = DEFAULT_GROUP_N;
+        else
+            mGroupN = groupN;
+    }
+
+    /**
+     * Saves the current group number.
+     *
+     * @return success
+     */
+    public boolean saveGroupN() {
+        if (getToday().getClass() == SUpdatedDay.class) {
+            return 1 == mDatabase.updateGroup((SUpdatedDay) getToday());
+        } else {
+            return mSchedulePref.edit()
+                    .putInt(GROUP_N_KEY, mGroupN)
+                    .commit();
+        }
     }
 }
