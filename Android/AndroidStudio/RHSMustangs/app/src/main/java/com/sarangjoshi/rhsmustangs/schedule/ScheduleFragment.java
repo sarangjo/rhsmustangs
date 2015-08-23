@@ -3,6 +3,7 @@ package com.sarangjoshi.rhsmustangs.schedule;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -123,7 +124,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return refreshUpdatedDays();
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
-            case R.id.action_save_updated_days:
+            /*case R.id.action_save_updated_days:
                 new SaveUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
             case R.id.action_clear_updated_days:
@@ -131,7 +132,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return true;
             case R.id.action_load_data:
                 new LoadUpdatedDaysAsyncTask(getActivity()).execute();
-                return true;
+                return true;*/
         }
         return super.onOptionsItemSelected(item);
     }
@@ -204,6 +205,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         // Update other UI
         mTitle.setText(mSchedule.getTodayAsString());
         mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
+
+        // Makes the title green and bold
+        if (mSchedule.getToday().getClass() == SUpdatedDay.class) {
+            setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+            mTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        } else {
+            setTextColor(Color.BLACK, mTitle, mDayOfWeek);
+            mTitle.setTypeface(Typeface.DEFAULT);
+        }
     }
 
     private class DayChangeClickListener implements View.OnClickListener {
