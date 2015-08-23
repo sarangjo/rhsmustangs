@@ -1,12 +1,14 @@
 package com.sarangjoshi.rhsmustangs.content;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
+import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
@@ -21,11 +23,15 @@ import java.util.List;
  * @author Sarang
  */
 public class SSchedule {
+    public static final String GROUP_N_KEY = "group_n";
+    public static final int DEFAULT_GROUP_N = 1;
+
     // TODO: Decide whether a list of weeks is needed
-    //private List<SWeek> mLoadedWeeks;
     private SWeek mCurrentWeek;
     private Calendar mToday;
     private int mGroupN;
+
+    private SharedPreferences mSchedulePref;
 
     private final List<SUpdatedDay> mUpdatedDays;
     private ScheduleDbHelper mDatabase;
@@ -34,22 +40,23 @@ public class SSchedule {
     /**
      * Constructs a new {@link SSchedule} object.
      *
-     * @param today
-     * @param groupN
-     * @param l
      */
-    public SSchedule(Calendar today, int groupN, UpdateFinishedListener l, Context context) {
-        mGroupN = groupN;
-        mUpdatedDays = new LinkedList<>();
+    public SSchedule(Calendar today, UpdateFinishedListener l, Context context) {
+        this.mUpdatedDays = new LinkedList<>();
         this.mListener = l;
         this.mDatabase = new ScheduleDbHelper(context);
+        this.mSchedulePref = context.getSharedPreferences(
+                context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
 
-        // Then, set the current day within that week.
+        // Sets the date
         setToday(today);
-
-        // First, update the week to reflect the current day.
         refreshWeek(today);
+
+        // Loads the group number
+        loadGroupN();
     }
+
+    // GETTERS
 
     /**
      * Gets the current day.
@@ -68,28 +75,6 @@ public class SSchedule {
             return ((SUpdatedDay) getToday()).getGroupN();
         else
             return mGroupN;
-    }
-
-    /**
-     * Sets the current group number.
-     *
-     * @param groupN the group number
-     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
-     *                                  day
-     * @returns whether the group number was actually updated
-     */
-    public boolean setGroupN(int groupN) {
-        if (getToday().hasGroups()) {
-            if (groupN == SPeriod.BASE_GROUPN)
-                throw new IllegalArgumentException();
-            if (getToday().getClass() == SUpdatedDay.class) {
-                return ((SUpdatedDay) getToday()).setGroupN(groupN);
-            } else if (this.mGroupN != groupN) {
-                this.mGroupN = groupN;
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -135,13 +120,28 @@ public class SSchedule {
         return SHelper.getDisplayString(mToday);
     }
 
+    // SETTERS
+
     /**
-     * Gets a String representation of today's day of the week.
+     * Sets the current group number.
      *
-     * @return String representation of today's day of the week
+     * @param groupN the group number
+     * @throws IllegalArgumentException if the group number is 0 and there are groups in the current
+     *                                  day
+     * @returns whether the group number was actually updated
      */
-    public String getTodayDayOfWeekAsString() {
-        return getToday().getDayOfWeekAsString();
+    public boolean setGroupN(int groupN) {
+        if (getToday().hasGroups()) {
+            if (groupN == SPeriod.BASE_GROUPN)
+                throw new IllegalArgumentException();
+            if (getToday().getClass() == SUpdatedDay.class) {
+                return ((SUpdatedDay) getToday()).setGroupN(groupN);
+            } else if (this.mGroupN != groupN) {
+                this.mGroupN = groupN;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -182,18 +182,7 @@ public class SSchedule {
     }
 
     /**
-     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
-     * updates.
-     */
-    private void refreshWeek(Calendar today) {
-        // TODO: make more efficient by not changing week appropriately
-        // Based on today, establish MONDAY
-        mCurrentWeek = SWeek.getDefaultWeek();
-        mCurrentWeek.update(today, mUpdatedDays);
-    }
-
-    /**
-     * ALWAYS call this when mToday is changed.
+     * Updates the day based on whether it is a weekend.
      *
      * @param isForward which direction the day was changed
      * @return if the week was changed
@@ -221,6 +210,19 @@ public class SSchedule {
     }
 
     /**
+     * Goes through MONDAY to FRIDAY and sets up the current week, overriding days that have
+     * updates.
+     */
+    public void refreshWeek(Calendar today) {
+        // TODO: make more efficient by not changing week appropriately
+        // Based on today, establish MONDAY
+        mCurrentWeek = SWeek.getDefaultWeek();
+        mCurrentWeek.update(today, mUpdatedDays);
+    }
+
+    // UPDATED DAYS
+
+    /**
      * Adds a new {@link SUpdatedDay} in a sorted location.
      *
      * @param day
@@ -239,20 +241,6 @@ public class SSchedule {
     }
 
     /**
-     * Only finishes executing if the updated days' size matches the actual # of updated days.
-     *
-     * @param size
-     */
-    private void finishedAdding(int size) {
-        if (mUpdatedDays.size() == size) {
-            // done adding
-            refreshWeek(mToday);
-
-            mListener.updateCompleted();
-        }
-    }
-
-    /**
      * Updates the updated days list.
      */
     public void updateUpdatedDays() {
@@ -263,15 +251,14 @@ public class SSchedule {
         if (!network) {
             addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 5),
                     new String[]{"Seniors", "Juniors", "Other Lowly Beings"},
-                    new SPeriod("1", 7, 30, 8, 30, 0),
-                    new SPeriod("2", 9, 30, 18, 30, 3)));
-            addUpdatedDay(SUpdatedDay.test1());
-            addUpdatedDay(SUpdatedDay.test2());
-            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 11),
-                    null, new SPeriod("1", 0, 30, 23, 59, 0)));
+                    new SPeriod("02", 9, 30, 18, 30, 3),
+                    new SPeriod("01", 7, 30, 8, 30, 0)));
+            addUpdatedDay(SUpdatedDay.testPeriodSorting());
+            addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.AUGUST, 18),
+                    null, new SPeriod("01", 0, 30, 23, 59, 0)));
 
             // Make sure this is how many days there are in the test run
-            finishedAdding(4);
+            finishedAdding(3);
         } else {
             ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
             updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
@@ -286,6 +273,12 @@ public class SSchedule {
         }
     }
 
+    /**
+     * Once the updated days have been downloaded, saves them.
+     *
+     * @param dayObjects saved ParseObjects
+     * @param localDays  the number of locally saved days
+     */
     private void setUpdatedDaysFromParse(final List<ParseObject> dayObjects, final int localDays) {
         for (final ParseObject obj : dayObjects) {
             //final ParseObject obj = dayObjects.get(0);
@@ -304,11 +297,34 @@ public class SSchedule {
     }
 
     /**
+     * Only finishes executing if the updated days' size matches the actual # of updated days.
+     *
+     * @param size
+     */
+    private void finishedAdding(int size) {
+        if (mUpdatedDays.size() == size) {
+            // done adding
+            refreshWeek(mToday);
+
+            mListener.updateCompleted();
+        }
+    }
+
+    /**
+     * Listener for when updates finish.
+     */
+    public interface UpdateFinishedListener {
+        void updateCompleted();
+    }
+
+    // DATABASE
+
+    /**
      * Saves updated days.
      */
     public void saveUpdatedDays() {
         if (!mUpdatedDays.isEmpty()) {
-            for(SUpdatedDay day : mUpdatedDays) {
+            for (SUpdatedDay day : mUpdatedDays) {
                 mDatabase.saveUpdatedDay(day);
             }
             mDatabase.close();
@@ -325,6 +341,9 @@ public class SSchedule {
 
     }
 
+    /**
+     * Loads updated days from the database.
+     */
     public void loadDataFromDatabase() {
         // Gets rid of previously loaded days #rekt
         mUpdatedDays.clear();
@@ -334,9 +353,28 @@ public class SSchedule {
     }
 
     /**
-     * Listener for when updates finish.
+     * Loads the groups from the saved preferences.
      */
-    public interface UpdateFinishedListener {
-        void updateCompleted();
+    private void loadGroupN() {
+        int groupN = mSchedulePref.getInt(GROUP_N_KEY, -1);
+        if (groupN == -1)
+            mGroupN = DEFAULT_GROUP_N;
+        else
+            mGroupN = groupN;
+    }
+
+    /**
+     * Saves the current group number.
+     *
+     * @return success
+     */
+    public boolean saveGroupN() {
+        if (getToday().getClass() == SUpdatedDay.class) {
+            return 1 == mDatabase.updateGroup((SUpdatedDay) getToday());
+        } else {
+            return mSchedulePref.edit()
+                    .putInt(GROUP_N_KEY, mGroupN)
+                    .commit();
+        }
     }
 }

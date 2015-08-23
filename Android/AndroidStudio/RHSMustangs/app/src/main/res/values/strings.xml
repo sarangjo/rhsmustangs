@@ -19,5 +19,7 @@
 
     <string name="group_prompt">Group</string>
     <string name="no_updated_days">No updated days.</string>
+    <string name="action_clear_updated_days">Clear Updated Days</string>
 
+    <string name="schedule_preference_file">com.sarangjoshi.rhsmustangs.SCHEDULE_PREFERENCE_FILE</string>
 </resources>

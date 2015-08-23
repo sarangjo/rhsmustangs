@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class SDay {
-    protected List<SPeriod> mPeriods;
+    protected final List<SPeriod> mPeriods;
     private int mDayOfWeek;
     private String[] mGroupNames;
 
@@ -18,7 +18,7 @@ public class SDay {
     /**
      * Creates a new {@link SDay} with the given day of the week and given group names.
      *
-     * @param dayOfWeek day of the week
+     * @param dayOfWeek  day of the week
      * @param groupNames null means there are no group names.
      */
     public SDay(int dayOfWeek, String[] groupNames) {
@@ -43,7 +43,17 @@ public class SDay {
      */
     public void addPeriod(SPeriod period) {
         // TODO: sort
-        mPeriods.add(period);
+        synchronized (mPeriods) {
+            int i;
+            for (i = 0; i < mPeriods.size(); i++) {
+                int d = period.compareTo(mPeriods.get(i));
+                if (d < 0) {
+                    break;
+                }
+            }
+            mPeriods.add(i, period);
+            //mPeriods.add(period);
+        }
     }
 
     ///// GETTERS /////
@@ -160,6 +170,8 @@ public class SDay {
      * @param periods list of {@link SPeriod}s to be added
      */
     public void addPeriods(List<SPeriod> periods) {
-        for(SPeriod p : periods) { addPeriod(p); }
+        for (SPeriod p : periods) {
+            addPeriod(p);
+        }
     }
 }

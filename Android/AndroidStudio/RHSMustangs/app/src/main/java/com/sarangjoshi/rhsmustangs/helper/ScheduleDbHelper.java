@@ -18,7 +18,9 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by Sarang on 8/12/2015.
+ * Handles the database data saving of updated days.
+ *
+ * @author Sarang Joshi
  */
 public class ScheduleDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "Schedule.db";
@@ -46,10 +48,18 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Initializes the database.
+     */
     public void init() {
         init(this.getWritableDatabase());
     }
 
+    /**
+     * Initializes the database
+     * 
+     * @param db
+     */
     public void init(SQLiteDatabase db) {
         db.execSQL(UpdatedDayEntry.CREATE_TABLE);
         db.execSQL(PeriodEntry.CREATE_TABLE);
@@ -62,6 +72,25 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
     public void deleteAll(SQLiteDatabase db) {
         db.execSQL(DROP + UpdatedDayEntry.TABLE_NAME);
         db.execSQL(DROP + PeriodEntry.TABLE_NAME);
+    }
+
+    /**
+     * Updates the group number of the given updated day
+     * @param day
+     * @return how many rows were updated
+     */
+    public int updateGroup(SUpdatedDay day) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_N, day.getGroupN());
+
+        // Selecting the row
+        String selection = UpdatedDayEntry.COLUMN_NAME_DATE + " = ?";
+        String[] args = {SHelper.dateToString(day.getDate())};
+
+        // Updates
+        return db.update(UpdatedDayEntry.TABLE_NAME, values, selection, args);
     }
 
     /**
@@ -81,18 +110,45 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return uday_id;
     }
 
+    /**
+     * Updates the database with the given SUpdatedDay. If it already exists, updates. If not,
+     * creates a new row in the database.
+     */
+    private long updateUpdatedDay(SUpdatedDay day) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + UpdatedDayEntry.TABLE_NAME + " d WHERE d." +
+                UpdatedDayEntry.COLUMN_NAME_DATE + " = " + SHelper.dateToString(day.getDate());
+
+        Log.i(LOG_ID, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (!c.moveToFirst()) {
+            // day doesn't exist
+            return createUpdatedDay(day);
+        } else {
+            // day exists
+            ContentValues values = UpdatedDayEntry.updatedDayToContentValues(day);
+            return db.update(UpdatedDayEntry.TABLE_NAME,
+                    values,
+                    UpdatedDayEntry.COLUMN_NAME_DATE + " LIKE ?",
+                    new String[]{SHelper.dateToString(day.getDate())}
+            );
+        }
+    }
+
+    /**
+     * Creates a Period entry to the database.
+     *
+     * @param p
+     * @param uday_id
+     * @return
+     */
     public long createPeriod(SPeriod p, long uday_id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(PeriodEntry.COLUMN_NAME_SHORT, p.getShort().substring(0, 2));
-        values.put(PeriodEntry.COLUMN_NAME_NAME, p.getRawClassName());
-        values.put(PeriodEntry.COLUMN_NAME_GROUP_N, p.getGroupN());
-        values.put(PeriodEntry.COLUMN_NAME_START_HR, p.getStart().hour);
-        values.put(PeriodEntry.COLUMN_NAME_START_MIN, p.getStart().minute);
-        values.put(PeriodEntry.COLUMN_NAME_END_HR, p.getEnd().hour);
-        values.put(PeriodEntry.COLUMN_NAME_END_MIN, p.getEnd().minute);
-
+        // Generate values from period
+        ContentValues values = PeriodEntry.periodToContentValues(p);
         values.put(PeriodEntry.COLUMN_NAME_UPDATED_DAY_ID, uday_id);
 
         return db.insert(PeriodEntry.TABLE_NAME, null, values);
@@ -107,9 +163,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
     private long createUpdatedDay(SUpdatedDay day) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(UpdatedDayEntry.COLUMN_NAME_DATE, SHelper.dateToString(day.getDate()));
-        values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_NAMES, SHelper.groupsToString(day.getGroupNames()));
+        ContentValues values = UpdatedDayEntry.updatedDayToContentValues(day);//new ContentValues();
 
         return db.insert(UpdatedDayEntry.TABLE_NAME, null, values);
     }
@@ -142,7 +196,16 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
                 SUpdatedDay day = new SUpdatedDay(date, names);
 
+                int groupN;
+                try {
+                    groupN = c.getInt(c.getColumnIndex(UpdatedDayEntry.COLUMN_NAME_GROUP_N));
+                } catch (IllegalStateException e) {
+                    groupN = 0;
+                }
+
+                day.setGroupN(groupN);
                 day.addPeriods(getPeriods(id));
+
                 days.add(day);
             } while (c.moveToNext());
         }
@@ -188,12 +251,24 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         //public static final String COLUMN_NAME_PARSE_ID = "parseid";
         public static final String COLUMN_NAME_DATE = "date";
         public static final String COLUMN_NAME_GROUP_NAMES = "groups";
+        public static final String COLUMN_NAME_GROUP_N = "group_n";
 
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
                 + _ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_NAME_DATE + " DATETIME,"
-                + COLUMN_NAME_GROUP_NAMES + " TEXT"
+                + COLUMN_NAME_GROUP_NAMES + " TEXT,"
+                + COLUMN_NAME_GROUP_N + " INTEGER"
                 + ")";
+
+        public static ContentValues updatedDayToContentValues(SUpdatedDay day) {
+            ContentValues values = new ContentValues();
+
+            values.put(UpdatedDayEntry.COLUMN_NAME_DATE, SHelper.dateToString(day.getDate()));
+            values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_NAMES, SHelper.groupsToString(day.getGroupNames()));
+            values.put(UpdatedDayEntry.COLUMN_NAME_GROUP_N, day.getGroupN());
+
+            return values;
+        }
     }
 
     public static abstract class PeriodEntry implements BaseColumns {
@@ -219,5 +294,19 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_NAME_END_MIN + " INTEGER,"
                 + COLUMN_NAME_UPDATED_DAY_ID + " INTEGER"
                 + ")";
+
+        public static ContentValues periodToContentValues(SPeriod p) {
+            ContentValues values = new ContentValues();
+
+            values.put(PeriodEntry.COLUMN_NAME_SHORT, p.getShort().substring(0, 2));
+            values.put(PeriodEntry.COLUMN_NAME_NAME, p.getRawClassName());
+            values.put(PeriodEntry.COLUMN_NAME_GROUP_N, p.getGroupN());
+            values.put(PeriodEntry.COLUMN_NAME_START_HR, p.getStart().hour);
+            values.put(PeriodEntry.COLUMN_NAME_START_MIN, p.getStart().minute);
+            values.put(PeriodEntry.COLUMN_NAME_END_HR, p.getEnd().hour);
+            values.put(PeriodEntry.COLUMN_NAME_END_MIN, p.getEnd().minute);
+
+            return values;
+        }
     }
 }

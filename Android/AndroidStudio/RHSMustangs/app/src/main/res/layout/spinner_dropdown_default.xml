@@ -8,6 +8,5 @@
     android:paddingRight="12dp"
     android:paddingTop="6dp"
     android:paddingBottom="6dp"
-    android:textColor="#FFFFFF"
     android:singleLine="true"
     android:ellipsize="marquee" />
