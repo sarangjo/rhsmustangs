@@ -21,6 +21,7 @@ import java.util.Locale;
 
 public class SHelper {
     private static final String NO_GROUPS = "[]";
+    private static final int END_OF_DAY = 16;
     public static int RFC2445_DATE_LENGTH = 15;
 
     public static String COLOR_UPDATE = "#006600";
@@ -234,5 +235,19 @@ public class SHelper {
         groups[groups.length - 1] = end.substring(0, end.length() - 2);
 
         return groups;
+    }
+
+    /**
+     * Gets the actual today Calendar
+     * @return
+     */
+    public static Calendar getActualToday() {
+        // DEBUG: Fix to actual
+        Calendar cal = new GregorianCalendar();
+        //new GregorianCalendar(2015, Calendar.AUGUST, 28, 18, 0, 0);
+        if(cal.get(Calendar.HOUR_OF_DAY) > END_OF_DAY) {
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return cal;
     }
 }

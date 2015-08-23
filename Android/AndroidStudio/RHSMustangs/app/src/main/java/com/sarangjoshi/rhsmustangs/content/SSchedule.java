@@ -182,7 +182,7 @@ public class SSchedule {
     }
 
     /**
-     * ALWAYS call this when mToday is changed.
+     * Updates the day based on whether it is a weekend.
      *
      * @param isForward which direction the day was changed
      * @return if the week was changed

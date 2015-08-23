@@ -66,7 +66,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(new GregorianCalendar(), this, getActivity());
+        mSchedule = new SSchedule(SHelper.getActualToday(), this, getActivity());
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         View.OnClickListener tcl = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setToday(new GregorianCalendar());
+                setToday(SHelper.getActualToday());
             }
         };
         mTitle.setOnClickListener(tcl);
