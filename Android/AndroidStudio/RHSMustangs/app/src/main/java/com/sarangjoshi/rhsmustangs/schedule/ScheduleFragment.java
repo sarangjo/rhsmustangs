@@ -401,14 +401,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             mSchedule.loadDataFromDatabase();
             mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
 
-            refreshPeriods();
-            updateSpinner();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
             pd.dismiss();
+
+            refreshPeriods();
+            updateSpinner();
         }
     }
 
