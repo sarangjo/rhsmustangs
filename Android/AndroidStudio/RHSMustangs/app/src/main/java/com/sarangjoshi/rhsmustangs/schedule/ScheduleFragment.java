@@ -33,8 +33,9 @@ import java.util.GregorianCalendar;
  * @author Sarang
  */
 public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
-        UpdatedDaysFragment.UpdatedDaySelectedListener {
+        UpdatedDaysFragment.UpdatedDaySelectedListener, HolidaysFragment.HolidaySelectedListener {
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
+    private static final String HOLIDAYS_TAG = "HolidaysFragment";
 
     private SSchedule mSchedule;
 
@@ -124,6 +125,11 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return refreshUpdatedDays();
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
+            case R.id.action_refresh_holidays:
+                return refreshHolidays();
+            case R.id.action_see_holidays:
+                return showHolidays();
+
             /*case R.id.action_save_updated_days:
                 new SaveUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
@@ -135,6 +141,12 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return true;*/
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean refreshHolidays() {
+        mSchedule.updateHolidays();
+
+        return true;
     }
 
     // PERIODS
@@ -175,6 +187,12 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
+    @Override
+    public void holidaySelected(int index) {
+        SHoliday day = mSchedule.getHolidays().get(index);
+        setToday(day.getStart());
+    }
+
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -203,12 +221,19 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mAdapter.notifyDataSetChanged();
 
         // Update other UI
+        updateUI();
+    }
+
+    private void updateUI() {
         mTitle.setText(mSchedule.getTodayAsString());
         mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
 
-        // Makes the title green and bold
+        // Makes the title green/yellow and bold
         if (mSchedule.getToday().getClass() == SUpdatedDay.class) {
             setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+            mTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        } else if (mSchedule.getHoliday() != null) {
+            setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
             setTextColor(Color.BLACK, mTitle, mDayOfWeek);
@@ -274,14 +299,18 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             // Setting view data
             SPeriod p = getItem(pos);
 
-            periodNumView.setText(new String(p.getShort()));
+            periodNumView.setText(p.getShort());
             classNameView.setText(p.getClassName());
 
             boolean is24hr = false; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
-            setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+            if(mSchedule.getHoliday() != null) {
+                setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+            } else {
+                setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+            }
 
             return rowView;
         }
@@ -356,6 +385,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         UpdatedDaysFragment dialog =
                 new UpdatedDaysFragment(mSchedule.getUpdatedDays(), this);
         dialog.show(getFragmentManager(), UPDATED_DAYS_TAG);
+        return true;
+    }
+
+    // HOLIDAYS
+
+    private boolean showHolidays() {
+        HolidaysFragment dialog =
+                new HolidaysFragment(mSchedule.getHolidays(), this);
+        dialog.show(getFragmentManager(), HOLIDAYS_TAG);
         return true;
     }
 

@@ -56,6 +56,14 @@ public class SDay {
         }
     }
 
+    public int getDayOfWeek() {
+        return mDayOfWeek;
+    }
+
+    public void setDayOfWeek(int dayOfWeek) {
+        this.mDayOfWeek = dayOfWeek;
+    }
+
     ///// GETTERS /////
 
     /**
@@ -74,10 +82,6 @@ public class SDay {
             }
         }
         return mTruncatedPeriods;
-    }
-
-    public int getDayOfWeek() {
-        return mDayOfWeek;
     }
 
     /**
@@ -116,6 +120,25 @@ public class SDay {
 
     public static final String[] DEFAULT_GROUPS = new String[]{"Lunch A", "Lunch B"};
     public static final String[] NO_GROUPS = new String[]{"No groups"};
+
+    public boolean hasGroups() {
+        return mGroupNames != null && mGroupNames.length > 1;
+    }
+
+    public List<SPeriod> getAllPeriods() {
+        return mPeriods;
+    }
+
+    /**
+     * Adds all the given periods.
+     *
+     * @param periods list of {@link SPeriod}s to be added
+     */
+    public void addPeriods(List<SPeriod> periods) {
+        for (SPeriod p : periods) {
+            addPeriod(p);
+        }
+    }
 
     /**
      * Gets a default day, based on the day of the week.
@@ -156,22 +179,18 @@ public class SDay {
         return day;
     }
 
-    public boolean hasGroups() {
-        return mGroupNames != null && mGroupNames.length > 1;
-    }
-
-    public List<SPeriod> getAllPeriods() {
-        return mPeriods;
-    }
-
     /**
-     * Adds all the given periods.
+     * Gets a day for holiday.
      *
-     * @param periods list of {@link SPeriod}s to be added
+     * @param dayOfWeek
+     * @param name
+     * @return
      */
-    public void addPeriods(List<SPeriod> periods) {
-        for (SPeriod p : periods) {
-            addPeriod(p);
-        }
+    public static SDay getHoliday(int dayOfWeek, String name) {
+        SDay day = new SDay(dayOfWeek, NO_GROUPS);
+
+        day.addPeriod(SPeriod.getHoliday(name));
+
+        return day;
     }
 }

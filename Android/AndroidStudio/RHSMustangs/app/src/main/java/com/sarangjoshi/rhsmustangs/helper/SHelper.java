@@ -144,13 +144,12 @@ public class SHelper {
         SimpleDateFormat format = new SimpleDateFormat("MMMM dd, yyyy");
         format.setTimeZone(date.getTimeZone());
         return format.format(date.getTime());
+    }
 
-        /*String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
-        str += " " + date.get(Calendar.DAY_OF_MONTH);
-        str += ", " + date.get(Calendar.YEAR);
-
-        return str;
-   */
+    public static String getShortString(Calendar date) {
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
+        format.setTimeZone(date.getTimeZone());
+        return format.format(date.getTime());
     }
 
     public static Calendar getRelativeDay(Calendar today, int day) {

@@ -37,12 +37,16 @@ public class SSchedule {
     private ScheduleDbHelper mDatabase;
     private UpdateFinishedListener mListener;
 
+    private List<SHoliday> mHolidays;
+
     /**
      * Constructs a new {@link SSchedule} object.
      *
      */
     public SSchedule(Calendar today, UpdateFinishedListener l, Context context) {
         this.mUpdatedDays = new LinkedList<>();
+        this.mHolidays = new LinkedList<>();
+
         this.mListener = l;
         this.mDatabase = new ScheduleDbHelper(context);
         this.mSchedulePref = context.getSharedPreferences(
@@ -62,7 +66,27 @@ public class SSchedule {
      * Gets the current day.
      */
     public SDay getToday() {
+        SHoliday holiday = getHoliday();
+        if(holiday != null) {
+            // TODO: ???
+            return holiday.getDay(mToday.get(Calendar.DAY_OF_WEEK));
+        }
         return mCurrentWeek.getDay(mToday.get(Calendar.DAY_OF_WEEK));//mToday;
+    }
+
+    /**
+     * Gets the holiday.
+     *
+     * @return null if the given day isn't in a getHoliday
+     */
+    public SHoliday getHoliday() {
+        Calendar day = getTodayAsCalendar();
+        for(SHoliday holiday : mHolidays) {
+            if(holiday.contains(day)) {
+                return holiday;
+            }
+        }
+        return null;
     }
 
     /**
@@ -311,10 +335,40 @@ public class SSchedule {
     }
 
     /**
+     * Gets a list of holidays.
+     *
+     * @return a list
+     */
+    public List<SHoliday> getHolidays() {
+        return mHolidays;
+    }
+
+    /**
      * Listener for when updates finish.
      */
     public interface UpdateFinishedListener {
         void updateCompleted();
+    }
+
+    // HOLIDAYS
+
+    /**
+     * TODO: sort
+     */
+    public void addHoliday(SHoliday day) {
+        synchronized (mHolidays) {
+            mHolidays.add(day);
+        }
+    }
+
+    /**
+     * Updates the holidays.
+     */
+    public void updateHolidays() {
+        mHolidays.clear();
+
+        addHoliday(new SHoliday("Summer", new GregorianCalendar(2015, Calendar.AUGUST, 26),
+                new GregorianCalendar(2015, Calendar.AUGUST, 31)));
     }
 
     // DATABASE
