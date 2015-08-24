@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
@@ -222,13 +221,13 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         // Makes the title green/yellow and bold
         if (mSchedule.getToday().getClass() == SUpdatedDay.class) {
-            setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+            SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else if (mSchedule.getHoliday() != null) {
-            setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
+            SHelper.setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
-            setTextColor(Color.BLACK, mTitle, mDayOfWeek);
+            SHelper.setTextColor(Color.BLACK, mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT);
         }
     }
@@ -246,17 +245,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     }
 
     // VIEWS
-
-    /**
-     * Sets the text color of the given views.
-     *
-     * @param c the color
-     */
-    private void setTextColor(int c, TextView... views) {
-        for (TextView v : views) {
-            v.setTextColor(c);
-        }
-    }
 
     /**
      * Private class to adapt a list of periods.
@@ -299,7 +287,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
             if(mSchedule.getHoliday() != null) {
-                setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+                SHelper.setTextColor(getResources().getColor(R.color.gold),
+                        periodNumView, classNameView, startTimeView, endTimeView);
             } else {
                 setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
             }
@@ -344,7 +333,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 color = Color.BLACK;
             }
 
-            setTextColor(color, views);
+            SHelper.setTextColor(color, views);
         }
 
         public void updateData() {
@@ -461,7 +450,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         protected Void doInBackground(Void... params) {
             // Clears database before saving
             mSchedule.clearDatabase();
-            mSchedule.saveUpdatedDays();
+            mSchedule.saveUpdates();
             return null;
         }
 

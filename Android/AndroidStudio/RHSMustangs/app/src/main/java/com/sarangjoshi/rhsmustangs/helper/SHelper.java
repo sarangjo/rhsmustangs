@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.format.Time;
+import android.widget.TextView;
 
 import com.sarangjoshi.rhsmustangs.content.*;
 
@@ -234,6 +235,17 @@ public class SHelper {
         groups[groups.length - 1] = end.substring(0, end.length() - 2);
 
         return groups;
+    }
+
+    /**
+     * Sets the text color of the given views.
+     *
+     * @param c the color
+     */
+    public static void setTextColor(int c, TextView... views) {
+        for (TextView v : views) {
+            v.setTextColor(c);
+        }
     }
 
     /**

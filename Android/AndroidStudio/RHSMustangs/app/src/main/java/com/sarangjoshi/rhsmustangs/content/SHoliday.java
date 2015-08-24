@@ -62,4 +62,8 @@ public class SHoliday {
 
         return new SHoliday(name, start, end);
     }
+
+    public String getName() {
+        return mName;
+    }
 }

@@ -380,12 +380,19 @@ public class SSchedule {
     /**
      * Saves updated days.
      */
-    public void saveUpdatedDays() {
+    public void saveUpdates() {
         if (!mUpdatedDays.isEmpty()) {
             for (SUpdatedDay day : mUpdatedDays) {
                 mDatabase.saveUpdatedDay(day);
             }
-            mDatabase.close();
+
+            //mDatabase.close();
+        }
+
+        if (!mHolidays.isEmpty()) {
+            for (SHoliday day : mHolidays) {
+                mDatabase.createHoliday(day);
+            }
         }
     }
 
@@ -407,6 +414,11 @@ public class SSchedule {
         mUpdatedDays.clear();
         for (SUpdatedDay day : mDatabase.getUpdatedDays()) {
             addUpdatedDay(day);
+        }
+
+        mHolidays.clear();
+        for (SHoliday day : mDatabase.getHolidays()) {
+            addHoliday(day);
         }
     }
 

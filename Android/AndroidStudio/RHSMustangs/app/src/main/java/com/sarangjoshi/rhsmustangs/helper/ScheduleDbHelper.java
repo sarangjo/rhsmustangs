@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import com.sarangjoshi.rhsmustangs.content.SHoliday;
 import com.sarangjoshi.rhsmustangs.content.SPeriod;
 import com.sarangjoshi.rhsmustangs.content.SUpdatedDay;
 
@@ -63,6 +64,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
     public void init(SQLiteDatabase db) {
         db.execSQL(UpdatedDayEntry.CREATE_TABLE);
         db.execSQL(PeriodEntry.CREATE_TABLE);
+        db.execSQL(HolidayEntry.CREATE_TABLE);
     }
 
     public void deleteAll() {
@@ -72,7 +74,10 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
     public void deleteAll(SQLiteDatabase db) {
         db.execSQL(DROP + UpdatedDayEntry.TABLE_NAME);
         db.execSQL(DROP + PeriodEntry.TABLE_NAME);
+        db.execSQL(DROP + HolidayEntry.TABLE_NAME);
     }
+
+    // GROUPS
 
     /**
      * Updates the group number of the given updated day
@@ -93,6 +98,8 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return db.update(UpdatedDayEntry.TABLE_NAME, values, selection, args);
     }
 
+    // UPDATED DAYS
+
     /**
      * Saves the given updated day, as well as its periods.
      *
@@ -108,33 +115,6 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         }
 
         return uday_id;
-    }
-
-    /**
-     * Updates the database with the given SUpdatedDay. If it already exists, updates. If not,
-     * creates a new row in the database.
-     */
-    private long updateUpdatedDay(SUpdatedDay day) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String selectQuery = "SELECT * FROM " + UpdatedDayEntry.TABLE_NAME + " d WHERE d." +
-                UpdatedDayEntry.COLUMN_NAME_DATE + " = " + SHelper.dateToString(day.getDate());
-
-        Log.i(LOG_ID, selectQuery);
-
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        if (!c.moveToFirst()) {
-            // day doesn't exist
-            return createUpdatedDay(day);
-        } else {
-            // day exists
-            ContentValues values = UpdatedDayEntry.updatedDayToContentValues(day);
-            return db.update(UpdatedDayEntry.TABLE_NAME,
-                    values,
-                    UpdatedDayEntry.COLUMN_NAME_DATE + " LIKE ?",
-                    new String[]{SHelper.dateToString(day.getDate())}
-            );
-        }
     }
 
     /**
@@ -162,9 +142,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      */
     private long createUpdatedDay(SUpdatedDay day) {
         SQLiteDatabase db = this.getWritableDatabase();
-
         ContentValues values = UpdatedDayEntry.updatedDayToContentValues(day);//new ContentValues();
-
         return db.insert(UpdatedDayEntry.TABLE_NAME, null, values);
     }
 
@@ -179,7 +157,12 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
         Log.i(LOG_ID, selectQuery);
 
-        Cursor c = db.rawQuery(selectQuery, null);
+        Cursor c;
+        try {
+            c = db.rawQuery(selectQuery, null);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
 
         List<SUpdatedDay> days = new ArrayList<>();
 
@@ -209,7 +192,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 days.add(day);
             } while (c.moveToNext());
         }
-
+        c.close();
         return days;
     }
 
@@ -226,7 +209,12 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
         Log.i(LOG_ID, selectQuery);
 
-        Cursor c = db.rawQuery(selectQuery, null);
+        Cursor c;
+        try {
+            c = db.rawQuery(selectQuery, null);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
 
         List<SPeriod> periods = new ArrayList<>();
         if (c.moveToFirst()) {
@@ -243,7 +231,68 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 periods.add(p);
             } while (c.moveToNext());
         }
+        c.close();
         return periods;
+    }
+
+    // HOLIDAYS
+
+    public long createHoliday(SHoliday holiday) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = HolidayEntry.holidayToContentValues(holiday);
+        return db.insert(HolidayEntry.TABLE_NAME, null, values);
+    }
+
+    public List<SHoliday> getHolidays() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + HolidayEntry.TABLE_NAME;
+
+        Log.i(LOG_ID, selectQuery);
+
+        Cursor c;
+        try {
+            c = db.rawQuery(selectQuery, null);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+
+        List<SHoliday> holidays = new ArrayList<>();
+        if (c.moveToFirst()) {
+            do {
+                String name = c.getString(c.getColumnIndex(HolidayEntry.COLUMN_NAME_NAME));
+                Calendar start = SHelper.stringToCalendar(c.getString(c.getColumnIndex(HolidayEntry.COLUMN_START_NAME)));
+                Calendar end = SHelper.stringToCalendar(c.getString(c.getColumnIndex(HolidayEntry.COLUMN_END_NAME)));
+                SHoliday h = new SHoliday(name, start, end);
+
+                holidays.add(h);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return holidays;
+    }
+
+    public static abstract class HolidayEntry implements BaseColumns {
+        public static final String TABLE_NAME = "holiday";
+        public static final String COLUMN_NAME_NAME = "name";
+        public static final String COLUMN_START_NAME = "start";
+        public static final String COLUMN_END_NAME = "end";
+
+        public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
+                + _ID + " INTEGER PRIMARY KEY,"
+                + COLUMN_NAME_NAME + " STRING,"
+                + COLUMN_START_NAME + " DATETIME,"
+                + COLUMN_END_NAME + " DATETIME"
+                + ")";
+
+        public static ContentValues holidayToContentValues(SHoliday holiday) {
+            ContentValues values = new ContentValues();
+
+            values.put(COLUMN_NAME_NAME, holiday.getName());
+            values.put(COLUMN_START_NAME, SHelper.dateToString(holiday.getStart()));
+            values.put(COLUMN_END_NAME, SHelper.dateToString(holiday.getEnd()));
+
+            return values;
+        }
     }
 
     public static abstract class UpdatedDayEntry implements BaseColumns {
