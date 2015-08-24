@@ -1,5 +1,6 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import com.parse.ParseObject;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.Calendar;
@@ -13,6 +14,11 @@ import java.util.Calendar;
  * @author Sarang Joshi
  */
 public class SHoliday {
+    public static final String HOLIDAY_CLASS = "Holiday";
+    private static final String HOLIDAY_NAME_KEY = "name";
+    private static final String HOLIDAY_START_KEY = "start";
+    private static final String HOLIDAY_END_KEY = "end";
+
     public String mName;
     private SDay mDay;
     private Calendar mStart, mEnd;
@@ -47,5 +53,13 @@ public class SHoliday {
 
     public Calendar getEnd() {
         return mEnd;
+    }
+
+    public static SHoliday newFromParse(ParseObject parseObject) {
+        String name = parseObject.getString(HOLIDAY_NAME_KEY);
+        Calendar start = SHelper.dateToCalendar(parseObject.getDate(HOLIDAY_START_KEY));
+        Calendar end = SHelper.dateToCalendar(parseObject.getDate(HOLIDAY_END_KEY));
+
+        return new SHoliday(name, start, end);
     }
 }

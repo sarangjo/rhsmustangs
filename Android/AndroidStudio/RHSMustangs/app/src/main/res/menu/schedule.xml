@@ -20,16 +20,17 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_see_holidays"
+        android:title="@string/action_holidays"
+        app:showAsAction="never" />
+
+    <!--
+    <item
         android:id="@+id/action_refresh_holidays"
         android:title="@string/action_refresh_holidays"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_see_holidays"
-        android:title="@string/action_holidays"
-        app:showAsAction="never" />
-
-    <!--<item
         android:id="@+id/action_save_updated_days"
         android:title="@string/action_save_updated_days"
         app:showAsAction="never" />

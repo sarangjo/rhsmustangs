@@ -125,8 +125,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return refreshUpdatedDays();
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
-            case R.id.action_refresh_holidays:
-                return refreshHolidays();
             case R.id.action_see_holidays:
                 return showHolidays();
 
@@ -141,12 +139,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return true;*/
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private boolean refreshHolidays() {
-        mSchedule.updateHolidays();
-
-        return true;
     }
 
     // PERIODS

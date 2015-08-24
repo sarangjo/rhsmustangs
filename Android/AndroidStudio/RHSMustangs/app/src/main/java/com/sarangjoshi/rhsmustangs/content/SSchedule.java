@@ -327,10 +327,8 @@ public class SSchedule {
      */
     private void finishedAdding(int size) {
         if (mUpdatedDays.size() == size) {
-            // done adding
-            refreshWeek(mToday);
-
-            mListener.updateCompleted();
+            // done adding -- move on to holidays
+            updateHolidays();
         }
     }
 
@@ -341,13 +339,6 @@ public class SSchedule {
      */
     public List<SHoliday> getHolidays() {
         return mHolidays;
-    }
-
-    /**
-     * Listener for when updates finish.
-     */
-    public interface UpdateFinishedListener {
-        void updateCompleted();
     }
 
     // HOLIDAYS
@@ -367,8 +358,21 @@ public class SSchedule {
     public void updateHolidays() {
         mHolidays.clear();
 
-        addHoliday(new SHoliday("Summer", new GregorianCalendar(2015, Calendar.AUGUST, 26),
-                new GregorianCalendar(2015, Calendar.AUGUST, 31)));
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>(SHoliday.HOLIDAY_CLASS);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> holidays, ParseException e) {
+                if(e == null) {
+                    for(ParseObject holiday : holidays) {
+                        addHoliday(SHoliday.newFromParse(holiday));
+                    }
+                    refreshWeek(mToday);
+                    mListener.updateCompleted();
+                } else {
+                    // TODO: handle
+                }
+            }
+        });
     }
 
     // DATABASE
@@ -431,4 +435,14 @@ public class SSchedule {
                     .commit();
         }
     }
+
+    // MISC
+
+    /**
+     * Listener for when updates finish.
+     */
+    public interface UpdateFinishedListener {
+        void updateCompleted();
+    }
+
 }
