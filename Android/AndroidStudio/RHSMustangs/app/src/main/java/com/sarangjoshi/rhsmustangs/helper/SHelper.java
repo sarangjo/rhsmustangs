@@ -12,6 +12,9 @@ import android.widget.TextView;
 
 import com.sarangjoshi.rhsmustangs.content.*;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -260,5 +263,19 @@ public class SHelper {
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
         return cal;
+    }
+
+    public static String[] jsonArrayToStringArray(JSONArray array) {
+        String[] a = null;
+        if (array != null && array.length() > 0) {
+            a = new String[array.length()];
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    a[i] = array.getString(i);
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return a;
     }
 }

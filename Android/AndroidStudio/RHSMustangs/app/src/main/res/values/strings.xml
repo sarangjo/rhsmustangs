@@ -25,4 +25,6 @@
     <string name="action_refresh_holidays">Refresh holidays</string>
     <string name="action_holidays">Holidays</string>
     <string name="no_holidays">No Holidays.</string>
+    <string name="action_save_base_days">Save Base Days</string>
+    <string name="action_refresh_base_days">Refresh Base Days</string>
 </resources>

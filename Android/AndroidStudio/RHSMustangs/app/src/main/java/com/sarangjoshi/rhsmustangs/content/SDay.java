@@ -1,10 +1,20 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import com.parse.ParseObject;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
+
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class SDay {
+    public static final String BASE_DAY_CLASS = "BaseDay";
+    public static final String PERIODS_KEY = "periods";
+    private static final String GROUPS_KEY = "groupNames";
+    private static final String DAY_OF_WEEK_KEY = "dayOfWeek";
+
     protected final List<SPeriod> mPeriods;
     private int mDayOfWeek;
     private String[] mGroupNames;
@@ -145,8 +155,9 @@ public class SDay {
      *
      * @return the loaded SDay object. null if the given day of week is invalid
      */
-    public static SDay getDefaultDay(int dayOfWeek) {
-        SDay day = null;
+    public static SDay getBaseDay(int dayOfWeek) {
+        SDay day = baseDays[dayOfWeek - Calendar.MONDAY];
+        if (day != null) return day;
 
         switch (dayOfWeek) {
             case Calendar.MONDAY:
@@ -192,5 +203,34 @@ public class SDay {
         day.addPeriod(SPeriod.getHoliday(name));
 
         return day;
+    }
+
+    public static SDay newFromParse(ParseObject obj, List<ParseObject> periods) {
+        int dayOfWeek = obj.getInt(SDay.DAY_OF_WEEK_KEY);
+        JSONArray parseGroups = obj.getJSONArray(SDay.GROUPS_KEY);
+
+        SDay day = new SDay(dayOfWeek, SHelper.jsonArrayToStringArray(parseGroups));
+
+        for (ParseObject p : periods) {
+            day.addPeriod(SPeriod.newFromParse(p));
+        }
+
+        return day;
+    }
+
+    public static final SDay[] baseDays = new SDay[Calendar.FRIDAY - Calendar.MONDAY + 1];
+
+    public static void addBaseDay(SDay day) {
+        synchronized (baseDays) {
+            baseDays[day.getDayOfWeek() - Calendar.MONDAY] = day;
+        }
+    }
+
+    public static int nOfBaseDays() {
+        int len = 0;
+        for (SDay day : baseDays) {
+            if (day != null) len++;
+        }
+        return len;
     }
 }

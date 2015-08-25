@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,7 +33,7 @@ import java.util.GregorianCalendar;
  * @author Sarang
  */
 public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
-        UpdatedDaysFragment.UpdatedDaySelectedListener, HolidaysFragment.HolidaySelectedListener {
+        UpdatedDaysFragment.UpdatedDaySelectedListener, HolidaysFragment.HolidaySelectedListener, SSchedule.BaseDayUpdateFinishedListener {
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
     private static final String HOLIDAYS_TAG = "HolidaysFragment";
 
@@ -67,7 +68,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(SHelper.getActualToday(), this, getActivity());
+        mSchedule = new SSchedule(SHelper.getActualToday(), this, this, getActivity());
     }
 
     @Override
@@ -106,6 +107,12 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return v;
     }
 
+    public void onStart() {
+        super.onStart();
+
+        refreshPeriods();
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -126,6 +133,10 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return showUpdatedDays();
             case R.id.action_see_holidays:
                 return showHolidays();
+            case R.id.action_refresh_base_days:
+                return refreshBaseDays();
+            case R.id.action_save_base_days:
+                return true;
 
             /*case R.id.action_save_updated_days:
                 new SaveUpdatedDaysAsyncTask(getActivity()).execute();
@@ -138,6 +149,14 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return true;*/
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean refreshBaseDays() {
+        dialog = ProgressDialog.show(getActivity(), "", "Checking for base day updates...");
+
+        mSchedule.updateBaseDays();
+
+        return true;
     }
 
     // PERIODS
@@ -182,6 +201,17 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     public void holidaySelected(int index) {
         SHoliday day = mSchedule.getHolidays().get(index);
         setToday(day.getStart());
+    }
+
+    @Override
+    public void baseDayUpdateCompleted() {
+        dialog.dismiss();
+
+        refreshPeriods();
+        updateSpinner();
+        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
+
+        // TODO: save base days
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -286,7 +316,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
-            if(mSchedule.getHoliday() != null) {
+            if (mSchedule.getHoliday() != null) {
                 SHelper.setTextColor(getResources().getColor(R.color.gold),
                         periodNumView, classNameView, startTimeView, endTimeView);
             } else {

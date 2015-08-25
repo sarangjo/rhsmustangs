@@ -36,18 +36,19 @@ public class SSchedule {
     private final List<SUpdatedDay> mUpdatedDays;
     private ScheduleDbHelper mDatabase;
     private UpdateFinishedListener mListener;
+    private BaseDayUpdateFinishedListener mBListener;
 
     private List<SHoliday> mHolidays;
 
     /**
      * Constructs a new {@link SSchedule} object.
-     *
      */
-    public SSchedule(Calendar today, UpdateFinishedListener l, Context context) {
+    public SSchedule(Calendar today, UpdateFinishedListener l, BaseDayUpdateFinishedListener bl, Context context) {
         this.mUpdatedDays = new LinkedList<>();
         this.mHolidays = new LinkedList<>();
 
         this.mListener = l;
+        this.mBListener = bl;
         this.mDatabase = new ScheduleDbHelper(context);
         this.mSchedulePref = context.getSharedPreferences(
                 context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
@@ -67,7 +68,7 @@ public class SSchedule {
      */
     public SDay getToday() {
         SHoliday holiday = getHoliday();
-        if(holiday != null) {
+        if (holiday != null) {
             // TODO: ???
             return holiday.getDay(mToday.get(Calendar.DAY_OF_WEEK));
         }
@@ -81,8 +82,8 @@ public class SSchedule {
      */
     public SHoliday getHoliday() {
         Calendar day = getTodayAsCalendar();
-        for(SHoliday holiday : mHolidays) {
-            if(holiday.contains(day)) {
+        for (SHoliday holiday : mHolidays) {
+            if (holiday.contains(day)) {
                 return holiday;
             }
         }
@@ -362,8 +363,8 @@ public class SSchedule {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> holidays, ParseException e) {
-                if(e == null) {
-                    for(ParseObject holiday : holidays) {
+                if (e == null) {
+                    for (ParseObject holiday : holidays) {
                         addHoliday(SHoliday.newFromParse(holiday));
                     }
                     refreshWeek(mToday);
@@ -373,6 +374,44 @@ public class SSchedule {
                 }
             }
         });
+    }
+
+    // BASE DAYS
+
+    public void updateBaseDays() {
+        ParseQuery<ParseObject> baseDaysQuery = ParseQuery.getQuery(SDay.BASE_DAY_CLASS);
+        baseDaysQuery.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> baseDays, ParseException e) {
+                if (e == null) {
+                    saveBaseDaysFromParse(baseDays);
+                } else {
+                    // TODO: handle
+                }
+            }
+        });
+    }
+
+    private void saveBaseDaysFromParse(final List<ParseObject> baseDays) {
+        for (final ParseObject obj : baseDays) {
+            //final ParseObject obj = dayObjects.get(0);
+            ParseRelation<ParseObject> periods = obj.getRelation(SDay.PERIODS_KEY);
+            periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
+                public void done(List<ParseObject> periods, ParseException e) {
+                    if (e == null) {
+                        SDay.addBaseDay(SDay.newFromParse(obj, periods));
+                        finishedAddingBaseDays(baseDays.size());
+                    } else {
+                        // TODO: handle
+                    }
+                }
+            });
+        }
+    }
+
+    private void finishedAddingBaseDays(int size) {
+        if(size == SDay.nOfBaseDays())
+            mBListener.baseDayUpdateCompleted();
     }
 
     // DATABASE
@@ -456,5 +495,10 @@ public class SSchedule {
     public interface UpdateFinishedListener {
         void updateCompleted();
     }
-
+    /**
+     * Listener for when base day updates finish.
+     */
+    public interface BaseDayUpdateFinishedListener {
+        void baseDayUpdateCompleted();
+    }
 }

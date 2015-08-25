@@ -84,17 +84,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
         Calendar date = SHelper.dateToCalendar(parseDate);
-        String[] groupNames = null;
-        if (parseGroupNames != null && parseGroupNames.length() > 0) {
-            groupNames = new String[parseGroupNames.length()];
-            try {
-                for (int i = 0; i < parseGroupNames.length(); i++) {
-                    groupNames[i] = parseGroupNames.getString(i);
-                }
-            } catch (JSONException ignored) {
-
-            }
-        }
+        String[] groupNames = SHelper.jsonArrayToStringArray(parseGroupNames);
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
 
         for (ParseObject p : periods) {

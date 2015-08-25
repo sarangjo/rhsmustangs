@@ -78,7 +78,7 @@ public class SWeek {
     public static SWeek getDefaultWeek() {
         SWeek week = new SWeek();
         for (int i = Calendar.MONDAY; i <= Calendar.FRIDAY; i++) {
-            week.addDay(SDay.getDefaultDay(i));
+            week.addDay(SDay.getBaseDay(i));
         }
         return week;
     }
