@@ -49,7 +49,10 @@ public class SSchedule {
 
         this.mListener = l;
         this.mBListener = bl;
+
         this.mDatabase = new ScheduleDbHelper(context);
+        //this.mDatabase.init();
+
         this.mSchedulePref = context.getSharedPreferences(
                 context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
 
@@ -393,6 +396,8 @@ public class SSchedule {
     }
 
     private void saveBaseDaysFromParse(final List<ParseObject> baseDays) {
+        SDay.clearBaseDays();
+
         for (final ParseObject obj : baseDays) {
             //final ParseObject obj = dayObjects.get(0);
             ParseRelation<ParseObject> periods = obj.getRelation(SDay.PERIODS_KEY);
@@ -410,7 +415,7 @@ public class SSchedule {
     }
 
     private void finishedAddingBaseDays(int size) {
-        if(size == SDay.nOfBaseDays())
+        if (size == SDay.nOfBaseDays())
             mBListener.baseDayUpdateCompleted();
     }
 
@@ -420,26 +425,20 @@ public class SSchedule {
      * Saves updated days.
      */
     public void saveUpdates() {
-        if (!mUpdatedDays.isEmpty()) {
-            for (SUpdatedDay day : mUpdatedDays) {
+        if (!mUpdatedDays.isEmpty())
+            for (SUpdatedDay day : mUpdatedDays)
                 mDatabase.saveUpdatedDay(day);
-            }
 
-            //mDatabase.close();
-        }
-
-        if (!mHolidays.isEmpty()) {
-            for (SHoliday day : mHolidays) {
+        if (!mHolidays.isEmpty())
+            for (SHoliday day : mHolidays)
                 mDatabase.createHoliday(day);
-            }
-        }
     }
 
     /**
      * @return success
      */
-    public boolean clearDatabase() {
-        mDatabase.deleteAll();
+    public boolean clearUpdates() {
+        mDatabase.deleteUpdates();
         mDatabase.init();
         return true;
 
@@ -448,7 +447,7 @@ public class SSchedule {
     /**
      * Loads updated days from the database.
      */
-    public void loadDataFromDatabase() {
+    public void loadUpdates() {
         // Gets rid of previously loaded days #rekt
         mUpdatedDays.clear();
         for (SUpdatedDay day : mDatabase.getUpdatedDays()) {
@@ -487,6 +486,29 @@ public class SSchedule {
         }
     }
 
+    /**
+     * Clears the base days database.
+     */
+    public void clearBaseDays() {
+        mDatabase.deleteBaseDays();
+        mDatabase.initBaseDays();
+    }
+
+    /**
+     * Saves the base days.
+     */
+    public void saveBaseDays() {
+        if (SDay.nOfBaseDays() == Calendar.FRIDAY - Calendar.MONDAY + 1)
+            for (SDay day : SDay.baseDays)
+                mDatabase.saveBaseDay(day);
+    }
+
+    public void loadBaseDays() {
+        for(SDay day : mDatabase.getBaseDays()) {
+            SDay.addBaseDay(day);
+        }
+    }
+
     // MISC
 
     /**
@@ -495,6 +517,7 @@ public class SSchedule {
     public interface UpdateFinishedListener {
         void updateCompleted();
     }
+
     /**
      * Listener for when base day updates finish.
      */

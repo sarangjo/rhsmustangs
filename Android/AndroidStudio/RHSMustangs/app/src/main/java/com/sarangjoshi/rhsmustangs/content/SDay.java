@@ -233,4 +233,8 @@ public class SDay {
         }
         return len;
     }
+
+    public static void clearBaseDays() {
+        for (int i = 0; i < baseDays.length; i++) baseDays[i] = null;
+    }
 }

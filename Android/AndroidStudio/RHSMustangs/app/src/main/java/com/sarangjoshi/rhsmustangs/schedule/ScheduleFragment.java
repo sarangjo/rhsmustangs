@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -102,7 +101,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         //updateSpinner();
 
         // Load updated days
-        new LoadUpdatedDaysAsyncTask(getActivity()).execute();
+        new LoadDataAsyncTask(getActivity()).execute();
 
         return v;
     }
@@ -135,21 +134,20 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return showHolidays();
             case R.id.action_refresh_base_days:
                 return refreshBaseDays();
-            case R.id.action_save_base_days:
-                return true;
 
             /*case R.id.action_save_updated_days:
                 new SaveUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
             case R.id.action_clear_updated_days:
-                mSchedule.clearDatabase();
+                mSchedule.clearUpdates();
                 return true;
             case R.id.action_load_data:
-                new LoadUpdatedDaysAsyncTask(getActivity()).execute();
+                new LoadDataAsyncTask(getActivity()).execute();
                 return true;*/
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     private boolean refreshBaseDays() {
         dialog = ProgressDialog.show(getActivity(), "", "Checking for base day updates...");
@@ -205,13 +203,16 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
     @Override
     public void baseDayUpdateCompleted() {
-        dialog.dismiss();
+        // TODO: save base days
+        mSchedule.clearBaseDays();
+        mSchedule.saveBaseDays();
+
+        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
 
         refreshPeriods();
         updateSpinner();
-        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
 
-        // TODO: save base days
+        dialog.dismiss();
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -413,10 +414,10 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      */
     @Override
     public void updateCompleted() {
-        dialog.dismiss();
-
         refreshPeriods();
         updateSpinner();
+
+        dialog.dismiss();
 
         // Automatically saves downloaded updated days
         new SaveUpdatedDaysAsyncTask(getActivity()).execute();
@@ -431,23 +432,23 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         setToday(day.getDate());
     }
 
-    private class LoadUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class LoadDataAsyncTask extends AsyncTask<Void, Void, Void> {
         private Context mCtx;
         private ProgressDialog pd;
 
-        public LoadUpdatedDaysAsyncTask(Context ctx) {
+        public LoadDataAsyncTask(Context ctx) {
             mCtx = ctx;
         }
 
         @Override
         protected void onPreExecute() {
-            pd = ProgressDialog.show(mCtx, "",
-                    "Loading...");
+            //pd = ProgressDialog.show(mCtx, "", "Loading...");
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            mSchedule.loadDataFromDatabase();
+            mSchedule.loadUpdates();
+            mSchedule.loadBaseDays();
             mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
 
             return null;
@@ -455,7 +456,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         protected void onPostExecute(Void result) {
-            pd.dismiss();
+            //pd.dismiss();
 
             refreshPeriods();
             updateSpinner();
@@ -472,21 +473,20 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         protected void onPreExecute() {
-            pd = ProgressDialog.show(mCtx, "",
-                    "Saving to database...");
+            //pd = ProgressDialog.show(mCtx, "", "Saving to database...");
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             // Clears database before saving
-            mSchedule.clearDatabase();
+            mSchedule.clearUpdates();
             mSchedule.saveUpdates();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            pd.dismiss();
+            //pd.dismiss();
         }
     }
 }
