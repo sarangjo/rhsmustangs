@@ -22,4 +22,9 @@
     <string name="action_clear_updated_days">Clear Updated Days</string>
 
     <string name="schedule_preference_file">com.sarangjoshi.rhsmustangs.SCHEDULE_PREFERENCE_FILE</string>
+    <string name="action_refresh_holidays">Refresh holidays</string>
+    <string name="action_holidays">Holidays</string>
+    <string name="no_holidays">No Holidays.</string>
+    <string name="action_save_base_days">Save Base Days</string>
+    <string name="action_refresh_base_days">Refresh Base Days</string>
 </resources>

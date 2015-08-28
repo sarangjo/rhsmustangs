@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
@@ -33,8 +32,9 @@ import java.util.GregorianCalendar;
  * @author Sarang
  */
 public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
-        UpdatedDaysFragment.UpdatedDaySelectedListener {
+        UpdatedDaysFragment.UpdatedDaySelectedListener, HolidaysFragment.HolidaySelectedListener, SSchedule.BaseDayUpdateFinishedListener {
     private static final String UPDATED_DAYS_TAG = "UpdatedDaysFragment";
+    private static final String HOLIDAYS_TAG = "HolidaysFragment";
 
     private SSchedule mSchedule;
 
@@ -67,7 +67,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(SHelper.getActualToday(), this, getActivity());
+        mSchedule = new SSchedule(SHelper.getActualToday(), this, this, getActivity());
     }
 
     @Override
@@ -101,9 +101,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         //updateSpinner();
 
         // Load updated days
-        new LoadUpdatedDaysAsyncTask(getActivity()).execute();
+        new LoadDataAsyncTask(getActivity()).execute();
 
         return v;
+    }
+
+    public void onStart() {
+        super.onStart();
+
+        refreshPeriods();
     }
 
     @Override
@@ -124,17 +130,31 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 return refreshUpdatedDays();
             case R.id.action_see_updated_days:
                 return showUpdatedDays();
+            case R.id.action_see_holidays:
+                return showHolidays();
+            case R.id.action_refresh_base_days:
+                return refreshBaseDays();
+
             /*case R.id.action_save_updated_days:
                 new SaveUpdatedDaysAsyncTask(getActivity()).execute();
                 return true;
             case R.id.action_clear_updated_days:
-                mSchedule.clearDatabase();
+                mSchedule.clearUpdates();
                 return true;
             case R.id.action_load_data:
-                new LoadUpdatedDaysAsyncTask(getActivity()).execute();
+                new LoadDataAsyncTask(getActivity()).execute();
                 return true;*/
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private boolean refreshBaseDays() {
+        dialog = ProgressDialog.show(getActivity(), "", "Checking for base day updates...");
+
+        mSchedule.updateBaseDays();
+
+        return true;
     }
 
     // PERIODS
@@ -175,6 +195,26 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         }
     }
 
+    @Override
+    public void holidaySelected(int index) {
+        SHoliday day = mSchedule.getHolidays().get(index);
+        setToday(day.getStart());
+    }
+
+    @Override
+    public void baseDayUpdateCompleted() {
+        // TODO: save base days
+        mSchedule.clearBaseDays();
+        mSchedule.saveBaseDays();
+
+        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
+
+        refreshPeriods();
+        updateSpinner();
+
+        dialog.dismiss();
+    }
+
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -203,15 +243,22 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mAdapter.notifyDataSetChanged();
 
         // Update other UI
+        updateUI();
+    }
+
+    private void updateUI() {
         mTitle.setText(mSchedule.getTodayAsString());
         mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
 
-        // Makes the title green and bold
+        // Makes the title green/yellow and bold
         if (mSchedule.getToday().getClass() == SUpdatedDay.class) {
-            setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+            SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+            mTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        } else if (mSchedule.getHoliday() != null) {
+            SHelper.setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
-            setTextColor(Color.BLACK, mTitle, mDayOfWeek);
+            SHelper.setTextColor(Color.BLACK, mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT);
         }
     }
@@ -229,17 +276,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     }
 
     // VIEWS
-
-    /**
-     * Sets the text color of the given views.
-     *
-     * @param c the color
-     */
-    private void setTextColor(int c, TextView... views) {
-        for (TextView v : views) {
-            v.setTextColor(c);
-        }
-    }
 
     /**
      * Private class to adapt a list of periods.
@@ -274,14 +310,19 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             // Setting view data
             SPeriod p = getItem(pos);
 
-            periodNumView.setText(new String(p.getShort()));
+            periodNumView.setText(p.getShort());
             classNameView.setText(p.getClassName());
 
             boolean is24hr = false; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
-            setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+            if (mSchedule.getHoliday() != null) {
+                SHelper.setTextColor(getResources().getColor(R.color.gold),
+                        periodNumView, classNameView, startTimeView, endTimeView);
+            } else {
+                setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+            }
 
             return rowView;
         }
@@ -323,7 +364,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                 color = Color.BLACK;
             }
 
-            setTextColor(color, views);
+            SHelper.setTextColor(color, views);
         }
 
         public void updateData() {
@@ -359,15 +400,24 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return true;
     }
 
+    // HOLIDAYS
+
+    private boolean showHolidays() {
+        HolidaysFragment dialog =
+                new HolidaysFragment(mSchedule.getHolidays(), this);
+        dialog.show(getFragmentManager(), HOLIDAYS_TAG);
+        return true;
+    }
+
     /**
      * This is run when the update is completed.
      */
     @Override
     public void updateCompleted() {
-        dialog.dismiss();
-
         refreshPeriods();
         updateSpinner();
+
+        dialog.dismiss();
 
         // Automatically saves downloaded updated days
         new SaveUpdatedDaysAsyncTask(getActivity()).execute();
@@ -382,23 +432,23 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         setToday(day.getDate());
     }
 
-    private class LoadUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class LoadDataAsyncTask extends AsyncTask<Void, Void, Void> {
         private Context mCtx;
         private ProgressDialog pd;
 
-        public LoadUpdatedDaysAsyncTask(Context ctx) {
+        public LoadDataAsyncTask(Context ctx) {
             mCtx = ctx;
         }
 
         @Override
         protected void onPreExecute() {
-            pd = ProgressDialog.show(mCtx, "",
-                    "Loading...");
+            //pd = ProgressDialog.show(mCtx, "", "Loading...");
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            mSchedule.loadDataFromDatabase();
+            mSchedule.loadUpdates();
+            mSchedule.loadBaseDays();
             mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
 
             return null;
@@ -406,7 +456,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         protected void onPostExecute(Void result) {
-            pd.dismiss();
+            //pd.dismiss();
 
             refreshPeriods();
             updateSpinner();
@@ -423,21 +473,20 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         @Override
         protected void onPreExecute() {
-            pd = ProgressDialog.show(mCtx, "",
-                    "Saving to database...");
+            //pd = ProgressDialog.show(mCtx, "", "Saving to database...");
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             // Clears database before saving
-            mSchedule.clearDatabase();
-            mSchedule.saveUpdatedDays();
+            mSchedule.clearUpdates();
+            mSchedule.saveUpdates();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            pd.dismiss();
+            //pd.dismiss();
         }
     }
 }

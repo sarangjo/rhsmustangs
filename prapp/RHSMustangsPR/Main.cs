@@ -20,8 +20,49 @@ namespace RHSMustangsPR
             ParseClient.Initialize("VTncYgZyAW6wV67VNiXAIAYzotG4EZaz0kfzPCbt", "MlsKCUqqoD7K0imrzz7vFydnuxBAJGGigdZYzDEp");
 
             //addDay();
-            addPeriods();
+            //addPeriods();
             //setup();
+        }
+
+        private async void baseSetup()
+        {
+            ParseQuery<ParseObject> q = new ParseQuery<ParseObject>("BaseDay");
+            ParseObject mon = await q.GetAsync("PLdsIl6HqY");
+            ParseObject tues = await q.GetAsync("0sGWu5Ndbz");
+            ParseObject thur = await q.GetAsync("ltsjoJFM6s");
+            ParseObject fri = await q.GetAsync("LAeVb1EQpN");
+
+            
+            IList<ParseObject> norm = new List<ParseObject>();
+            norm.Add(mon);
+            norm.Add(tues);
+            norm.Add(thur);
+            norm.Add(fri);
+
+            // mon,tue,thur,fri
+            ParseQuery<ParseObject> periodQ = new ParseQuery<ParseObject>("Period");
+            IList<ParseObject> periods = new List<ParseObject>();
+            periods.Add(await periodQ.GetAsync("iK9iwAfmzZ"));
+            periods.Add(await periodQ.GetAsync("OEnAB6m7Zd"));
+            periods.Add(await periodQ.GetAsync("at7yUbIGpp"));
+            periods.Add(await periodQ.GetAsync("4HUwVLFLRH"));
+            periods.Add(await periodQ.GetAsync("Y4LgUANB4d"));
+            periods.Add(await periodQ.GetAsync("hq0KiURZ4I"));
+            periods.Add(await periodQ.GetAsync("bw3cdD7fU2"));
+            periods.Add(await periodQ.GetAsync("qCtfQQcuBg"));
+            periods.Add(await periodQ.GetAsync("1pV4CVdQuD"));
+
+            foreach (ParseObject day in norm)
+            {
+                foreach (ParseObject per in periods)
+                {
+                    day.GetRelation<ParseObject>("periods").Add(per);
+                }
+                await day.SaveAsync();
+            }
+
+            // wed
+
         }
 
         private async void addDay()
@@ -86,6 +127,35 @@ namespace RHSMustangsPR
         {
             AddSchedule s = new AddSchedule();
             s.Show();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            wedSetup();
+        }
+
+        private async void wedSetup()
+        {
+            ParseQuery<ParseObject> q = new ParseQuery<ParseObject>("BaseDay");
+            ParseObject wed = await q.GetAsync("RXNWtJlBr8");
+
+            ParseQuery<ParseObject> periodQ = new ParseQuery<ParseObject>("Period");
+            IList<ParseObject> periods = new List<ParseObject>();
+            periods.Add(await periodQ.GetAsync("fyB5TjBd0g"));
+            periods.Add(await periodQ.GetAsync("ZEOA4FVbq8"));
+            periods.Add(await periodQ.GetAsync("tMTZ8OnTVs"));
+            periods.Add(await periodQ.GetAsync("e7hJvB0LtL"));
+            periods.Add(await periodQ.GetAsync("KqWrXpnRYA"));
+            periods.Add(await periodQ.GetAsync("1FcRexSFdL"));
+            periods.Add(await periodQ.GetAsync("F6xlAur10X"));
+            periods.Add(await periodQ.GetAsync("j4CdacCATQ"));
+
+            foreach (ParseObject per in periods)
+            {
+                wed.GetRelation<ParseObject>("periods").Add(per);
+            }
+            await wed.SaveAsync();
+
         }
     }
 }

@@ -1,10 +1,20 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import com.parse.ParseObject;
+import com.sarangjoshi.rhsmustangs.helper.SHelper;
+
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class SDay {
+    public static final String BASE_DAY_CLASS = "BaseDay";
+    public static final String PERIODS_KEY = "periods";
+    private static final String GROUPS_KEY = "groupNames";
+    private static final String DAY_OF_WEEK_KEY = "dayOfWeek";
+
     protected final List<SPeriod> mPeriods;
     private int mDayOfWeek;
     private String[] mGroupNames;
@@ -56,6 +66,14 @@ public class SDay {
         }
     }
 
+    public int getDayOfWeek() {
+        return mDayOfWeek;
+    }
+
+    public void setDayOfWeek(int dayOfWeek) {
+        this.mDayOfWeek = dayOfWeek;
+    }
+
     ///// GETTERS /////
 
     /**
@@ -74,10 +92,6 @@ public class SDay {
             }
         }
         return mTruncatedPeriods;
-    }
-
-    public int getDayOfWeek() {
-        return mDayOfWeek;
     }
 
     /**
@@ -117,13 +131,33 @@ public class SDay {
     public static final String[] DEFAULT_GROUPS = new String[]{"Lunch A", "Lunch B"};
     public static final String[] NO_GROUPS = new String[]{"No groups"};
 
+    public boolean hasGroups() {
+        return mGroupNames != null && mGroupNames.length > 1;
+    }
+
+    public List<SPeriod> getAllPeriods() {
+        return mPeriods;
+    }
+
+    /**
+     * Adds all the given periods.
+     *
+     * @param periods list of {@link SPeriod}s to be added
+     */
+    public void addPeriods(List<SPeriod> periods) {
+        for (SPeriod p : periods) {
+            addPeriod(p);
+        }
+    }
+
     /**
      * Gets a default day, based on the day of the week.
      *
      * @return the loaded SDay object. null if the given day of week is invalid
      */
-    public static SDay getDefaultDay(int dayOfWeek) {
-        SDay day = null;
+    public static SDay getBaseDay(int dayOfWeek) {
+        SDay day = baseDays[dayOfWeek - Calendar.MONDAY];
+        if (day != null) return day;
 
         switch (dayOfWeek) {
             case Calendar.MONDAY:
@@ -156,22 +190,51 @@ public class SDay {
         return day;
     }
 
-    public boolean hasGroups() {
-        return mGroupNames != null && mGroupNames.length > 1;
-    }
-
-    public List<SPeriod> getAllPeriods() {
-        return mPeriods;
-    }
-
     /**
-     * Adds all the given periods.
+     * Gets a day for holiday.
      *
-     * @param periods list of {@link SPeriod}s to be added
+     * @param dayOfWeek
+     * @param name
+     * @return
      */
-    public void addPeriods(List<SPeriod> periods) {
-        for (SPeriod p : periods) {
-            addPeriod(p);
+    public static SDay getHoliday(int dayOfWeek, String name) {
+        SDay day = new SDay(dayOfWeek, NO_GROUPS);
+
+        day.addPeriod(SPeriod.getHoliday(name));
+
+        return day;
+    }
+
+    public static SDay newFromParse(ParseObject obj, List<ParseObject> periods) {
+        int dayOfWeek = obj.getInt(SDay.DAY_OF_WEEK_KEY);
+        JSONArray parseGroups = obj.getJSONArray(SDay.GROUPS_KEY);
+
+        SDay day = new SDay(dayOfWeek, SHelper.jsonArrayToStringArray(parseGroups));
+
+        for (ParseObject p : periods) {
+            day.addPeriod(SPeriod.newFromParse(p));
         }
+
+        return day;
+    }
+
+    public static final SDay[] baseDays = new SDay[Calendar.FRIDAY - Calendar.MONDAY + 1];
+
+    public static void addBaseDay(SDay day) {
+        synchronized (baseDays) {
+            baseDays[day.getDayOfWeek() - Calendar.MONDAY] = day;
+        }
+    }
+
+    public static int nOfBaseDays() {
+        int len = 0;
+        for (SDay day : baseDays) {
+            if (day != null) len++;
+        }
+        return len;
+    }
+
+    public static void clearBaseDays() {
+        for (int i = 0; i < baseDays.length; i++) baseDays[i] = null;
     }
 }

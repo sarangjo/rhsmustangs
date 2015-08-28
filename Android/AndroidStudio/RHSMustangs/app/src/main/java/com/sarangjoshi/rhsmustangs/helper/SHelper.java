@@ -8,8 +8,12 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.format.Time;
+import android.widget.TextView;
 
 import com.sarangjoshi.rhsmustangs.content.*;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -144,13 +148,12 @@ public class SHelper {
         SimpleDateFormat format = new SimpleDateFormat("MMMM dd, yyyy");
         format.setTimeZone(date.getTimeZone());
         return format.format(date.getTime());
+    }
 
-        /*String str = date.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
-        str += " " + date.get(Calendar.DAY_OF_MONTH);
-        str += ", " + date.get(Calendar.YEAR);
-
-        return str;
-   */
+    public static String getShortString(Calendar date) {
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
+        format.setTimeZone(date.getTimeZone());
+        return format.format(date.getTime());
     }
 
     public static Calendar getRelativeDay(Calendar today, int day) {
@@ -238,6 +241,17 @@ public class SHelper {
     }
 
     /**
+     * Sets the text color of the given views.
+     *
+     * @param c the color
+     */
+    public static void setTextColor(int c, TextView... views) {
+        for (TextView v : views) {
+            v.setTextColor(c);
+        }
+    }
+
+    /**
      * Gets the actual today Calendar
      * @return
      */
@@ -249,5 +263,19 @@ public class SHelper {
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
         return cal;
+    }
+
+    public static String[] jsonArrayToStringArray(JSONArray array) {
+        String[] a = null;
+        if (array != null && array.length() > 0) {
+            a = new String[array.length()];
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    a[i] = array.getString(i);
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return a;
     }
 }

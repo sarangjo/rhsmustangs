@@ -162,11 +162,11 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     /**
-     * Gets a holiday SPeriod.
+     * Gets a getHoliday SPeriod.
      *
-     * @param holName the name of the holiday
+     * @param holName the name of the getHoliday
      */
-    public static SPeriod holiday(String holName) {
+    public static SPeriod getHoliday(String holName) {
         return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
     }
 
