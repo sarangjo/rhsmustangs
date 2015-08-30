@@ -5,11 +5,11 @@ import android.support.annotation.NonNull;
 import com.parse.ParseObject;
 
 import java.util.Calendar;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
 
 /**
- * Created by Sarang on 4/6/2015.
+ * Represents a period in a schedule.
+ *
+ * @author Sarang
  */
 public class SPeriod implements Comparable<SPeriod> {
     private static final String DEFAULT_NAME = "-";
@@ -48,9 +48,7 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     /**
-     * Guaranteed to be 2 characters long
-     *
-     * @return
+     * Guaranteed to be 2 characters long.
      */
     public String getShort() {
         return (mPeriodShort.length() < 2) ? " " + mPeriodShort : mPeriodShort.substring(0, 2);
@@ -79,7 +77,7 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     @Override
-    public int compareTo(SPeriod other) {
+    public int compareTo(@NonNull SPeriod other) {
         int startD = mStartTime.compareTo(other.mStartTime);
         if(startD == 0)
             return mEndTime.compareTo(other.mEndTime);
@@ -115,8 +113,6 @@ public class SPeriod implements Comparable<SPeriod> {
 
     /**
      * Gets this period's period style.
-     *
-     * @return
      */
     public PeriodStyle getPeriodStyle() {
         if (mPeriodShort.charAt(0) == 'L')
@@ -153,9 +149,6 @@ public class SPeriod implements Comparable<SPeriod> {
 
     /**
      * Checks to see if the period is in the given group number.
-     *
-     * @param groupN
-     * @return
      */
     public boolean isInGroup(int groupN) {
         return this.mGroupN == BASE_GROUPN || this.mGroupN == groupN;
@@ -205,7 +198,6 @@ public class SPeriod implements Comparable<SPeriod> {
          * -1 if this is less than other
          *
          * @param t the other
-         * @return
          */
         public int compareTo(Calendar t) {
             int totalMinutes = hour * 60 + minute;
@@ -215,9 +207,6 @@ public class SPeriod implements Comparable<SPeriod> {
 
         /**
          * Given whether this time is 24 hour or not, returns a String representation.
-         *
-         * @param is24hr
-         * @return
          */
         public String toString(boolean is24hr) {
             String h = "", amPm = (hour >= 12) ? "pm" : "am";
@@ -237,7 +226,7 @@ public class SPeriod implements Comparable<SPeriod> {
             return h + ":" + m + ((!is24hr) ? amPm : "");
         }
 
-        public int compareTo(STime other) {
+        public int compareTo(@NonNull STime other) {
             if (this.hour == other.hour) {
                 return this.minute - other.minute;
             }
@@ -246,7 +235,7 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     // TODO: include this in creation of periods
-    public static String[] RESTRICTED_SHORTS = new String[]{"HR", "LN", "LA", "LB"};
+    //public static String[] RESTRICTED_SHORTS = new String[]{"HR", "LN", "LA", "LB"};
 
     // Parse keys
     public static String SHORT_KEY = "short";

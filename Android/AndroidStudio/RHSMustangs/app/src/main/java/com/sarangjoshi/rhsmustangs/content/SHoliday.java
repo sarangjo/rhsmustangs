@@ -1,5 +1,7 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import android.support.annotation.NonNull;
+
 import com.parse.ParseObject;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
@@ -13,7 +15,7 @@ import java.util.Calendar;
  *
  * @author Sarang Joshi
  */
-public class SHoliday {
+public class SHoliday implements Comparable<SHoliday> {
     public static final String HOLIDAY_CLASS = "Holiday";
     private static final String HOLIDAY_NAME_KEY = "name";
     private static final String HOLIDAY_START_KEY = "start";
@@ -36,8 +38,14 @@ public class SHoliday {
         return mDay;
     }
 
+    /**
+     * Checks if the given day is contained in the holiday.
+     */
     public boolean contains(Calendar day) {
-        return mStart.compareTo(day) <= 0 && mEnd.compareTo(day) >= 0;
+        return (SHelper.getAbsDay(mStart) - SHelper.getAbsDay(day)) <= 0
+                && (SHelper.getAbsDay(mEnd) - SHelper.getAbsDay(day)) >= 0;
+
+        //return mStart.compareTo(day) <= 0 && mEnd.compareTo(day) >= 0;
     }
 
     public String toString() {
@@ -55,15 +63,23 @@ public class SHoliday {
         return mEnd;
     }
 
-    public static SHoliday newFromParse(ParseObject parseObject) {
-        String name = parseObject.getString(HOLIDAY_NAME_KEY);
-        Calendar start = SHelper.dateToCalendar(parseObject.getDate(HOLIDAY_START_KEY));
-        Calendar end = SHelper.dateToCalendar(parseObject.getDate(HOLIDAY_END_KEY));
-
-        return new SHoliday(name, start, end);
-    }
-
     public String getName() {
         return mName;
+    }
+
+    @Override
+    public int compareTo(@NonNull SHoliday other) {
+        int startD = mStart.compareTo(other.mStart);
+        if(startD == 0)
+            return mEnd.compareTo(other.mEnd);
+        return startD;
+    }
+
+    public static SHoliday newFromParse(ParseObject parseObject) {
+        String name = parseObject.getString(HOLIDAY_NAME_KEY);
+        Calendar start = SHelper.stringToCalendar(parseObject.getString(HOLIDAY_START_KEY));
+        Calendar end = SHelper.stringToCalendar(parseObject.getString(HOLIDAY_END_KEY));
+
+        return new SHoliday(name, start, end);
     }
 }

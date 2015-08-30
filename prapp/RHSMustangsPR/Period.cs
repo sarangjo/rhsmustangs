@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Parse;
 
 namespace RHSMustangsPR
 {
@@ -11,7 +12,7 @@ namespace RHSMustangsPR
         public static String OVERRIDE_DEFAULT = "-";
 
         public string periodShort;
-        public string overrideName;
+        public string periodName;
         public int startH, startM, endH, endM;
         public int groupN;
 
@@ -20,7 +21,26 @@ namespace RHSMustangsPR
         /// </summary>
         public override String ToString()
         {
-            return periodShort + " " + ((overrideName == null) ? OVERRIDE_DEFAULT : overrideName) + " " + startH + " " + startM + " " + endH + " " + endM + " " + groupN;
+            return periodShort + " " + ((periodName == null) ? OVERRIDE_DEFAULT : periodName) + " " + startH + " " + startM + " " + endH + " " + endM + " " + groupN;
+        }
+
+        /// <summary>
+        /// Converts the C# object to Parse.
+        /// </summary>
+        /// <returns></returns>
+        public ParseObject toParseObject()
+        {
+            ParseObject obj = new ParseObject("Period");
+
+            obj["short"] = periodShort;
+            obj["name"] = periodName;
+            obj["startHr"] = startH;
+            obj["startMin"] = startM;
+            obj["endHr"] = endH;
+            obj["endMin"] = endM;
+            obj["groupN"] = groupN;
+
+            return obj;
         }
     }
 }

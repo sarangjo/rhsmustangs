@@ -33,9 +33,6 @@ public class SWeek {
 
     /**
      * Sets the day for a given day of the week.
-     *
-     * @param dayOfWeek
-     * @param day
      */
     public void setDay(int dayOfWeek, SDay day) {
         mDays.set(getIndex(dayOfWeek), day);
@@ -46,7 +43,6 @@ public class SWeek {
      * rounds up for SATURDAY and SUNDAY.
      *
      * @param dayOfWeek the day of the week, according to {@link Calendar}.
-     * @return
      */
     private int getIndex(int dayOfWeek) {
         if (dayOfWeek < Calendar.MONDAY || dayOfWeek > Calendar.FRIDAY) {

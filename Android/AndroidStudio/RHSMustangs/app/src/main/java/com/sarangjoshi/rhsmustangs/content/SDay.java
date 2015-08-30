@@ -7,6 +7,7 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class SDay {
@@ -39,8 +40,6 @@ public class SDay {
 
     /**
      * Creates a new {@link SDay} with the given day of the week and no groups.
-     *
-     * @param dayOfWeek
      */
     public SDay(int dayOfWeek) {
         this(dayOfWeek, null);
@@ -52,17 +51,9 @@ public class SDay {
      * @param period {@link SPeriod} to be added
      */
     public void addPeriod(SPeriod period) {
-        // TODO: sort
         synchronized (mPeriods) {
-            int i;
-            for (i = 0; i < mPeriods.size(); i++) {
-                int d = period.compareTo(mPeriods.get(i));
-                if (d < 0) {
-                    break;
-                }
-            }
-            mPeriods.add(i, period);
-            //mPeriods.add(period);
+            mPeriods.add(period);
+            Collections.sort(mPeriods);
         }
     }
 
@@ -81,12 +72,11 @@ public class SDay {
      * Calendar the method is called.
      *
      * @param groupN the current group number
-     * @return
      */
     public List<SPeriod> getPeriods(int groupN) {
         if (groupN != -1 || this.currentGroupN != groupN) {
             this.currentGroupN = groupN;
-            mTruncatedPeriods = new ArrayList<SPeriod>();
+            mTruncatedPeriods = new ArrayList<>();
             for (SPeriod p : mPeriods) {
                 if (p.isInGroup(groupN)) mTruncatedPeriods.add(p);
             }
@@ -191,11 +181,9 @@ public class SDay {
     }
 
     /**
-     * Gets a day for holiday.
+     * Gets a day for a holiday.
      *
-     * @param dayOfWeek
-     * @param name
-     * @return
+     * @param name the name of the holiday
      */
     public static SDay getHoliday(int dayOfWeek, String name) {
         SDay day = new SDay(dayOfWeek, NO_GROUPS);

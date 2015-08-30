@@ -37,7 +37,7 @@
             android:layout_centerHorizontal="true" />
 
         <ImageButton
-            android:id="@+id/nextHol"
+            android:id="@+id/nextHoliday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"

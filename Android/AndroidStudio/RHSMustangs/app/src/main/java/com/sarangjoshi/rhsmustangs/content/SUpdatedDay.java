@@ -1,39 +1,32 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import android.support.annotation.NonNull;
+
 import com.parse.ParseObject;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.SimpleTimeZone;
 
 /**
- * Created by Sarang on 4/6/2015.
+ * Represents an updated day in the schedule.
+ *
+ * @author Sarang
  */
 public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     private Calendar mDate;
     private int mGroupN = 1;
 
     /**
-     * @param date
+     * Initializes a new updated day.
      * @param groupNames do not leave the 0th element empty
      */
     public SUpdatedDay(Calendar date, String[] groupNames) {
         super(date.get(Calendar.DAY_OF_WEEK), groupNames);
         mDate = date;
-    }
-
-    // TODO: rewrite using SHelper.getAbsDay()
-    public boolean isToday(Calendar today) {
-        return mDate.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-                && mDate.get(Calendar.MONTH) == today.get(Calendar.MONTH)
-                && mDate.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH);
     }
 
     public static final String DATE_KEY = "date";
@@ -56,8 +49,8 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     }
 
     @Override
-    public int compareTo(SUpdatedDay another) {
-        return compareTo(another.getDate());
+    public int compareTo(@NonNull SUpdatedDay other) {
+        return compareTo(other.getDate());
     }
 
     public int getGroupN() {
@@ -77,13 +70,13 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
      *
      * @param obj     a downloaded ParseObject of the class {@link }
      * @param periods downloaded ParseObjects of the class {@link }
-     * @return
      */
     public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
-        Date parseDate = obj.getDate(DATE_KEY);
+        //Date parseDate = obj.getDate(DATE_KEY);
+        String parseDate = obj.getString(DATE_KEY);
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
-        Calendar date = SHelper.dateToCalendar(parseDate);
+        Calendar date = SHelper.stringToCalendar(parseDate);
         String[] groupNames = SHelper.jsonArrayToStringArray(parseGroupNames);
         SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
 
@@ -101,21 +94,6 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
             uDay.addPeriod(p);
         }
         return uDay;
-    }
-
-    public static SUpdatedDay test1() {
-        return test(new GregorianCalendar(2015, Calendar.JULY, 31),
-                new String[]{"Grp1", "Grp2", "Grp3"},
-                new SPeriod("01", 7, 30, 8, 24, 0),
-                new SPeriod("02", 8, 30, 9, 24, 1),
-                new SPeriod("02", 8, 30, 10, 24, 2),
-                new SPeriod("02", 8, 30, 11, 24, 3));
-    }
-
-    public static SUpdatedDay test2() {
-        return test(new GregorianCalendar(2015, Calendar.JULY, 30),
-                new String[]{"Grp1", "Grp2"},
-                new SPeriod("01", 7, 30, 8, 24, 0));
     }
 
     public static SUpdatedDay testPeriodSorting() {

@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.R;
 import com.sarangjoshi.rhsmustangs.content.*;
@@ -81,11 +83,26 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mDayOfWeek = (TextView) v.findViewById(R.id.scheduleDayOfWeek);
         ImageButton mPrevDay = (ImageButton) v.findViewById(R.id.previousDay);
         mNextDay = (ImageButton) v.findViewById(R.id.nextDay);
+        ImageButton mHoliday = (ImageButton) v.findViewById(R.id.nextHoliday);
 
         // UI dynamic setup
         View.OnClickListener dcl = new DayChangeClickListener();
         mPrevDay.setOnClickListener(dcl);
         mNextDay.setOnClickListener(dcl);
+
+        mHoliday.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            if (mSchedule.goToNextHoliday()) {
+                                                refreshPeriods();
+                                                updateSpinner();
+                                            } else {
+                                                Toast.makeText(getActivity(), "No holidays coming up.", Toast.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    }
+
+        );
 
         View.OnClickListener tcl = new View.OnClickListener() {
             @Override
@@ -148,15 +165,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return super.onOptionsItemSelected(item);
     }
 
-
-    private boolean refreshBaseDays() {
-        dialog = ProgressDialog.show(getActivity(), "", "Checking for base day updates...");
-
-        mSchedule.updateBaseDays();
-
-        return true;
-    }
-
     // PERIODS
 
     /**
@@ -193,26 +201,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             else
                 groupSpin.setSelection(SSchedule.DEFAULT_GROUP_N - 1);
         }
-    }
-
-    @Override
-    public void holidaySelected(int index) {
-        SHoliday day = mSchedule.getHolidays().get(index);
-        setToday(day.getStart());
-    }
-
-    @Override
-    public void baseDayUpdateCompleted() {
-        // TODO: save base days
-        mSchedule.clearBaseDays();
-        mSchedule.saveBaseDays();
-
-        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
-
-        refreshPeriods();
-        updateSpinner();
-
-        dialog.dismiss();
     }
 
     private class GroupSpinnerListener implements AdapterView.OnItemSelectedListener {
@@ -359,7 +347,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             // Colors stuff based on time
             int color = Color.GRAY; // relTime < 0
             if (relTime == 0) {
-                color = Color.rgb(255, 215, 0);
+                color = getResources().getColor(R.color.gold);
             } else if (relTime > 0) {
                 color = Color.BLACK;
             }
@@ -400,15 +388,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         return true;
     }
 
-    // HOLIDAYS
-
-    private boolean showHolidays() {
-        HolidaysFragment dialog =
-                new HolidaysFragment(mSchedule.getHolidays(), this);
-        dialog.show(getFragmentManager(), HOLIDAYS_TAG);
-        return true;
-    }
-
     /**
      * This is run when the update is completed.
      */
@@ -430,6 +409,45 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
         setToday(day.getDate());
+    }
+
+    // HOLIDAYS
+
+    private boolean showHolidays() {
+        HolidaysFragment dialog =
+                new HolidaysFragment(mSchedule.getHolidays(), this);
+        dialog.show(getFragmentManager(), HOLIDAYS_TAG);
+        return true;
+    }
+
+    @Override
+    public void holidaySelected(int index) {
+        SHoliday day = mSchedule.getHolidays().get(index);
+        setToday(day.getStart());
+    }
+
+    // BASE DAYS
+
+    private boolean refreshBaseDays() {
+        dialog = ProgressDialog.show(getActivity(), "", "Checking for base day updates...");
+
+        mSchedule.updateBaseDays();
+
+        return true;
+    }
+
+    @Override
+    public void baseDayUpdateCompleted() {
+        // TODO: save base days
+        mSchedule.clearBaseDays();
+        mSchedule.saveBaseDays();
+
+        mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
+
+        refreshPeriods();
+        updateSpinner();
+
+        dialog.dismiss();
     }
 
     private class LoadDataAsyncTask extends AsyncTask<Void, Void, Void> {

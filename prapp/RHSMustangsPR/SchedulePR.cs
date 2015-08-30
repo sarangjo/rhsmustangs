@@ -15,6 +15,18 @@ namespace RHSMustangsPR
         public SchedulePR()
         {
             InitializeComponent();
+
+            Console.WriteLine(Updates.DateToString(new DateTime(2015, 8, 15)));
+        }
+
+        private void baseSchedBtn_Click(object sender, EventArgs e)
+        {
+            new BaseEditor().Show();
+        }
+
+        private void updatedSchedBtn_Click(object sender, EventArgs e)
+        {
+            new UpdatesEditor().Show();
         }
     }
 }
