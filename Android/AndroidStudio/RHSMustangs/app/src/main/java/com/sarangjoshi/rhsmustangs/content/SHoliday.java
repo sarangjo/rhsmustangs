@@ -42,8 +42,10 @@ public class SHoliday implements Comparable<SHoliday> {
      * Checks if the given day is contained in the holiday.
      */
     public boolean contains(Calendar day) {
-        return (SHelper.getAbsDay(mStart) - SHelper.getAbsDay(day)) <= 0
-                && (SHelper.getAbsDay(mEnd) - SHelper.getAbsDay(day)) >= 0;
+        int start = SHelper.compareAbsDays(mStart, day);
+        int end = SHelper.compareAbsDays(mEnd, day);
+
+        return start <= 0 && end >= 0;
 
         //return mStart.compareTo(day) <= 0 && mEnd.compareTo(day) >= 0;
     }

@@ -10,8 +10,6 @@ import android.graphics.BitmapFactory;
 import android.text.format.Time;
 import android.widget.TextView;
 
-import com.sarangjoshi.rhsmustangs.content.*;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -19,11 +17,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
 
 public class SHelper {
     private static final String NO_GROUPS = "[]";
@@ -68,11 +63,17 @@ public class SHelper {
     /**
      * Gets the absolute day.
      *
-     * @param time
-     * @return
      */
-    public static int getAbsDay(Calendar time) {
+    /*public static int getAbsDay(Calendar time) {
         return Time.getJulianDay(time.getTimeInMillis(), time.getTimeZone().getRawOffset() / 1000);
+    }*/
+
+    public static int compareAbsDays(Calendar time1, Calendar time2) {
+        int yearDiff = time1.get(Calendar.YEAR) - time2.get(Calendar.YEAR);
+        if (yearDiff != 0) return yearDiff;
+        int monthDiff = time1.get(Calendar.MONTH) - time2.get(Calendar.MONTH);
+        if (monthDiff != 0) return monthDiff;
+        return time1.get(Calendar.DAY_OF_MONTH) - time2.get(Calendar.DAY_OF_MONTH);
     }
 
     public static ArrayList<String> getArrayListFromArray(String[] s) {
@@ -126,21 +127,6 @@ public class SHelper {
     }
 
     /**
-     * Trims off the end open and close carrots, if any.
-     */
-    public static String trimCarrots(String s) {
-        int iOfOpen = s.indexOf('<');
-        int iOfClose = s.indexOf('>');
-        if (iOfOpen >= 0) {
-            s = s.substring(iOfOpen + 2);
-        }
-        if (iOfClose >= 0) {
-            s = s.substring(0, iOfClose - 2);
-        }
-        return s;
-    }
-
-    /**
      * Gets the display String.
      *
      * @param date
@@ -162,10 +148,6 @@ public class SHelper {
         Calendar relative = (Calendar) today.clone();
         relative.add(Calendar.DAY_OF_MONTH, day - today.get(Calendar.DAY_OF_WEEK));
         return relative;
-    }
-
-    public static int getAbsDifference(Calendar first, Calendar second) {
-        return getAbsDay(first) - getAbsDay(second);
     }
 
     /**
@@ -225,7 +207,6 @@ public class SHelper {
     }
 
     /**
-     *
      * @param groupsString not null
      * @return null if there are no groups
      */
@@ -255,13 +236,14 @@ public class SHelper {
 
     /**
      * Gets the actual today Calendar
+     *
      * @return
      */
     public static Calendar getActualToday() {
         // DEBUG: Fix to actual
         Calendar cal = new GregorianCalendar();
         //new GregorianCalendar(2015, Calendar.AUGUST, 28, 18, 0, 0);
-        if(cal.get(Calendar.HOUR_OF_DAY) > END_OF_DAY) {
+        if (cal.get(Calendar.HOUR_OF_DAY) > END_OF_DAY) {
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
         return cal;

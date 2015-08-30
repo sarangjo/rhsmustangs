@@ -328,7 +328,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
             int day = mSchedule.getToday().getDayOfWeek();
 
-            int absDiff = SHelper.getAbsDifference(mSchedule.getTodayAsCalendar(), new GregorianCalendar());
+            int absDiff = SHelper.compareAbsDays(mSchedule.getTodayAsCalendar(),
+                    SHelper.getActualToday());
             if (absDiff != 0)
                 relTime = absDiff;
                 // Present day

@@ -22,6 +22,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
 
     /**
      * Initializes a new updated day.
+     *
      * @param groupNames do not leave the 0th element empty
      */
     public SUpdatedDay(Calendar date, String[] groupNames) {
@@ -45,7 +46,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     }
 
     public int compareTo(Calendar otherDay) {
-        return SHelper.getAbsDay(this.getDate()) - SHelper.getAbsDay(otherDay);
+        return SHelper.compareAbsDays(this.getDate(), otherDay);
     }
 
     @Override
