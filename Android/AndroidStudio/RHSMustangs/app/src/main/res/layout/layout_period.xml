@@ -5,10 +5,9 @@
     android:padding="5dp" >
 
     <TextView
-        android:id="@+id/periodNum"
+        android:id="@+id/shortName"
         android:layout_width="65sp"
         android:layout_height="match_parent"
-        android:text="P1"
         android:textSize="40sp" />
 
     <TextView
@@ -17,7 +16,6 @@
         android:layout_height="25dip"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:text="Start Time"
         android:textSize="20sp" />
 
     <TextView
@@ -26,23 +24,20 @@
         android:layout_height="25dip"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/startTime"
-        android:text="End Time"
         android:textSize="20sp" />
 
     <TextView
         android:id="@+id/className"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/periodNum"
+        android:layout_alignTop="@+id/shortName"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/startTime"
-        android:layout_toRightOf="@+id/periodNum"
-        android:layout_weight="1"
+        android:layout_toRightOf="@+id/shortName"
         android:ellipsize="none"
         android:maxLines="100"
         android:scrollHorizontally="false"
-        android:text="Class Name"
         android:textSize="22sp" />
 
 </RelativeLayout>

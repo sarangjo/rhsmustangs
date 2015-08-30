@@ -44,6 +44,7 @@
             this.newGroupText = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.removeGrpBtn = new System.Windows.Forms.Button();
+            this.noteText = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // shortName
@@ -126,7 +127,7 @@
             // 
             // savePeriodBtn
             // 
-            this.savePeriodBtn.Location = new System.Drawing.Point(143, 244);
+            this.savePeriodBtn.Location = new System.Drawing.Point(138, 286);
             this.savePeriodBtn.Name = "savePeriodBtn";
             this.savePeriodBtn.Size = new System.Drawing.Size(75, 23);
             this.savePeriodBtn.TabIndex = 15;
@@ -180,11 +181,20 @@
             this.removeGrpBtn.UseVisualStyleBackColor = true;
             this.removeGrpBtn.Click += new System.EventHandler(this.removeGrpBtn_Click);
             // 
+            // noteText
+            // 
+            this.noteText.Location = new System.Drawing.Point(28, 236);
+            this.noteText.Name = "noteText";
+            this.noteText.Size = new System.Drawing.Size(297, 44);
+            this.noteText.TabIndex = 22;
+            this.noteText.Text = "";
+            // 
             // PeriodEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(349, 289);
+            this.ClientSize = new System.Drawing.Size(349, 321);
+            this.Controls.Add(this.noteText);
             this.Controls.Add(this.removeGrpBtn);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.newGroupText);
@@ -226,6 +236,7 @@
         private System.Windows.Forms.TextBox newGroupText;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button removeGrpBtn;
+        private System.Windows.Forms.RichTextBox noteText;
 
     }
 }

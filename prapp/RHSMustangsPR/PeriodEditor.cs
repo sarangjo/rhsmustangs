@@ -20,7 +20,7 @@ namespace RHSMustangsPR
         /// Creates a new Period.
         /// </summary>
         /// <param name="s"></param>
-        public PeriodEditor(AddPeriodListener l, Day s)
+        public PeriodEditor(AddPeriodListener l, Day s, bool updatedDay)
         {
             InitializeComponent();
             this.l = l;
@@ -30,7 +30,8 @@ namespace RHSMustangsPR
 
             setupGroups();
 
-            //initializeGroupBoxes();
+            if (!updatedDay)
+                noteText.Visible = updatedDay;
         }
 
         /// <summary>
@@ -128,6 +129,10 @@ namespace RHSMustangsPR
 
             // Group
             p.groupN = (groupsListBox.SelectedIndex < 0) ? 0 : groupsListBox.SelectedIndex;
+
+            noteText.Text = noteText.Text.Trim();
+            if (noteText.Text.Length != 0)
+                p.note = noteText.Text;
 
             // Finish up
             if (errors > 0)

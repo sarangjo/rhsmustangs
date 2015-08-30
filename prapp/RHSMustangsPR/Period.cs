@@ -16,6 +16,8 @@ namespace RHSMustangsPR
         public int startH, startM, endH, endM;
         public int groupN;
 
+        public String note = null;
+
         /// <summary>
         /// Returns the parsed String to then save to the updates file.
         /// </summary>
@@ -39,6 +41,9 @@ namespace RHSMustangsPR
             obj["endHr"] = endH;
             obj["endMin"] = endM;
             obj["groupN"] = groupN;
+
+            if (note != null)
+                obj["note"] = note;
 
             return obj;
         }

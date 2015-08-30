@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -127,14 +126,14 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         });
 
         // Load updated days
-        new LoadDataAsyncTask(getActivity()).execute();
+        new LoadDataAsyncTask(getActivity(), true).execute();
 
         return v;
     }
 
     private void showPeriodNote(int pos) {
         String note = mSchedule.getToday().getPeriod(pos).getNote();
-        if(note == null || note.isEmpty()) {
+        if (note == null) {
             Toast.makeText(getActivity(), "No note.", Toast.LENGTH_SHORT).show();
         } else {
             ShowNoteFragment dialog = new ShowNoteFragment(note);
@@ -301,35 +300,43 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             View rowView;
-            TextView periodNumView, classNameView, startTimeView, endTimeView;
+            TextView shortNameView, classNameView, startTimeView, endTimeView;
 
             rowView = inflater.inflate(R.layout.layout_period, parent,
                     false);
 
             // Individual views
-            periodNumView = (TextView) rowView.findViewById(R.id.periodNum);
+            shortNameView = (TextView) rowView.findViewById(R.id.shortName);
             classNameView = (TextView) rowView.findViewById(R.id.className);
             startTimeView = (TextView) rowView.findViewById(R.id.startTime);
             endTimeView = (TextView) rowView.findViewById(R.id.endTime);
+
+            TextView[] allTextViews = {shortNameView, classNameView, startTimeView, endTimeView};
 
             //}
 
             // Setting view data
             SPeriod p = getItem(pos);
 
-            periodNumView.setText(p.getShort());
+            shortNameView.setText(p.getShort());
             classNameView.setText(p.getClassName());
 
+            // Times
             boolean is24hr = false; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
             startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
             endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
 
+            // Holiday coloring
             if (mSchedule.getHoliday() != null) {
-                SHelper.setTextColor(getResources().getColor(R.color.gold),
-                        periodNumView, classNameView, startTimeView, endTimeView);
+                SHelper.setTextColor(getResources().getColor(R.color.gold), allTextViews);
             } else {
-                setRelativeColors(p, periodNumView, classNameView, startTimeView, endTimeView);
+                setRelativeColors(p, allTextViews);
             }
+
+            // Note
+            if (p.getNote() != null)
+                SHelper.setTextColor(getResources().getColor(android.R.color.holo_blue_bright),
+                        shortNameView, classNameView);
 
             return rowView;
         }
@@ -419,7 +426,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         dialog.dismiss();
 
         // Automatically saves downloaded updated days
-        new SaveUpdatedDaysAsyncTask(getActivity()).execute();
+        new SaveUpdatedDaysAsyncTask(getActivity(), true).execute();
         showUpdatedDays();
     }
 
@@ -470,17 +477,37 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         dialog.dismiss();
     }
 
-    private class LoadDataAsyncTask extends AsyncTask<Void, Void, Void> {
-        private Context mCtx;
-        private ProgressDialog pd;
+    /**
+     * Personal implementation of Async Task for simple background tasks.
+     *
+     * @author Sarang
+     */
+    private abstract class MyAsyncTask extends AsyncTask<Void, Void, Void> {
+        protected Context mCtx;
+        protected ProgressDialog mPd;
+        protected boolean mShowLoading;
 
-        public LoadDataAsyncTask(Context ctx) {
+        public MyAsyncTask(Context ctx, boolean showLoading) {
             mCtx = ctx;
+            mShowLoading = showLoading;
         }
 
         @Override
         protected void onPreExecute() {
-            //pd = ProgressDialog.show(mCtx, "", "Loading...");
+            mPd = ProgressDialog.show(mCtx, "", "Loading...");
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            if (mShowLoading)
+                mPd.dismiss();
+        }
+    }
+
+    private class LoadDataAsyncTask extends MyAsyncTask {
+
+        public LoadDataAsyncTask(Context ctx, boolean showLoading) {
+            super(ctx, showLoading);
         }
 
         @Override
@@ -488,30 +515,20 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             mSchedule.loadUpdates();
             mSchedule.loadBaseDays();
             mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
-
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            //pd.dismiss();
-
+            super.onPostExecute(result);
             refreshPeriods();
             updateSpinner();
         }
     }
 
-    private class SaveUpdatedDaysAsyncTask extends AsyncTask<Void, Void, Void> {
-        private Context mCtx;
-        private ProgressDialog pd;
-
-        public SaveUpdatedDaysAsyncTask(Context ctx) {
-            mCtx = ctx;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            //pd = ProgressDialog.show(mCtx, "", "Saving to database...");
+    private class SaveUpdatedDaysAsyncTask extends MyAsyncTask {
+        public SaveUpdatedDaysAsyncTask(Context ctx, boolean showLoading) {
+            super(ctx, showLoading);
         }
 
         @Override
@@ -520,11 +537,6 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             mSchedule.clearUpdates();
             mSchedule.saveUpdates();
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            //pd.dismiss();
         }
     }
 }

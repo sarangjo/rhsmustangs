@@ -129,6 +129,9 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
         // Generate values from period
         ContentValues values = PeriodEntry.periodToContentValues(p);
+        if(p.getNote() != null) {
+            values.put(PeriodEntry.COLUMN_NOTE, p.getNote());
+        }
         values.put(PeriodEntry.COLUMN_UPDATED_DAY_ID, uday_id);
 
         return db.insert(PeriodEntry.UDAY_TABLE_NAME, null, values);
@@ -221,7 +224,10 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 int eh = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_END_HR));
                 int em = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_END_MIN));
                 int g = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_GROUP_N));
+                String note = c.getString(c.getColumnIndex(PeriodEntry.COLUMN_NOTE));
+
                 SPeriod p = new SPeriod(periodShort, name, sh, sm, eh, em, g);
+                p.setNote(note);
 
                 periods.add(p);
             } while (c.moveToNext());
@@ -407,7 +413,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         public static final String UDAY_TABLE_NAME = "uday_period";
         public static final String BDAY_TABLE_NAME = "bday_period";
 
-        //public static final String COLUMN_PARSE_ID = "parseid";
+        // TODO: Optimize with SPeriod's Parse constants
         public static final String COLUMN_SHORT = "short";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_GROUP_N = "group_n";
@@ -415,6 +421,8 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         public static final String COLUMN_START_MIN = "start_min";
         public static final String COLUMN_END_HR = "end_hr";
         public static final String COLUMN_END_MIN = "end_min";
+
+        public static final String COLUMN_NOTE = "note";
 
         public static final String COLUMN_UPDATED_DAY_ID = "updated_day_id";
 
@@ -429,6 +437,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_START_MIN + " INTEGER,"
                 + COLUMN_END_HR + " INTEGER,"
                 + COLUMN_END_MIN + " INTEGER,"
+                + COLUMN_NOTE + " MEDIUMTEXT,"
                 + COLUMN_UPDATED_DAY_ID + " INTEGER"
                 + ")";
 

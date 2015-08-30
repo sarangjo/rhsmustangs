@@ -19,7 +19,7 @@ namespace RHSMustangsPR
     {
         public Day schedDay;
         public AddDayListener l;
-
+        
         /// <summary>
         /// Initializes the view.
         /// </summary>
@@ -30,7 +30,7 @@ namespace RHSMustangsPR
             listBox1.Items.Clear();
             
             this.l = l;
-            
+
             if (updatedDay)
             {
                 updatedDayPicker.Visible = true;
@@ -48,7 +48,7 @@ namespace RHSMustangsPR
 
         private void addPeriodBtn_Click(object sender, EventArgs e)
         {
-            new PeriodEditor(this, schedDay).Show();
+            new PeriodEditor(this, schedDay, updatedDayPicker.Visible).Show();
         }
 
         void AddPeriodListener.periodAdded(Period p, List<String> groups)

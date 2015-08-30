@@ -82,17 +82,22 @@ public class SPeriod implements Comparable<SPeriod> {
     @Override
     public int compareTo(@NonNull SPeriod other) {
         int startD = mStartTime.compareTo(other.mStartTime);
-        if(startD == 0)
+        if (startD == 0)
             return mEndTime.compareTo(other.mEndTime);
         return startD;
     }
 
+    /**
+     *
+     * @return null if empty; will never be the empty string
+     */
     public String getNote() {
-        return mNote;
+        if(mNote != null && mNote.isEmpty()) return null; return mNote;
     }
 
     public void setNote(String note) {
-        mNote = note;
+        if(note != null && !note.isEmpty())
+            mNote = note;
     }
 
     public enum PeriodStyle {
@@ -174,14 +179,22 @@ public class SPeriod implements Comparable<SPeriod> {
         return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
     }
 
+    /**
+     * @param obj a fetched ParseObject representing a period
+     */
     public static SPeriod newFromParse(ParseObject obj) {
-        return new SPeriod(obj.getString(SHORT_KEY),
+        SPeriod p = new SPeriod(obj.getString(SHORT_KEY),
                 obj.getString(NAME_KEY),
                 obj.getInt(START_HR_KEY),
                 obj.getInt(START_MIN_KEY),
                 obj.getInt(END_HR_KEY),
                 obj.getInt(END_MIN_KEY),
                 obj.getInt(GROUP_KEY));
+
+        String note = obj.getString(NOTE_KEY);
+        if(note != null && !note.isEmpty())
+            p.setNote(note);
+        return p;
     }
 
     /**
@@ -256,4 +269,5 @@ public class SPeriod implements Comparable<SPeriod> {
     public static String START_MIN_KEY = "startMin";
     public static String END_HR_KEY = "endHr";
     public static String END_MIN_KEY = "endMin";
+    public static String NOTE_KEY = "note";
 }

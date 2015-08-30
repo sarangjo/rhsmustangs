@@ -1,56 +1,53 @@
 package com.sarangjoshi.rhsmustangs.schedule;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.view.*;
-import android.widget.*;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 
-import com.sarangjoshi.rhsmustangs.R;
-import com.sarangjoshi.rhsmustangs.content.*;
-import com.sarangjoshi.rhsmustangs.helper.SHelper;
+import com.sarangjoshi.rhsmustangs.content.SUpdatedDay;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TODO: add class comment
+ *
+ * @author Sarang Joshi
+ */
 public class UpdatedDaysFragment extends DialogFragment {
     private List<SUpdatedDay> mUpdatedDays;
-    private UpdatedDaySelectedListener mListener;
+    private UpdatedDaySelectedListener l;
 
-    public UpdatedDaysFragment(List<SUpdatedDay> updatedDays, UpdatedDaySelectedListener l) {
-        this.mUpdatedDays = updatedDays;
-        this.mListener = l;
+    public UpdatedDaysFragment(List<SUpdatedDay> days, UpdatedDaySelectedListener l) {
+        this.mUpdatedDays = days;
+        this.l = l;
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.action_updated_days);
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        View v = inflater.inflate(R.layout.dialog_updated_days, container);
+        ListAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item,
+                mUpdatedDays);
+        builder.setTitle("Updated Days")
+                .setAdapter(adapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        l.updatedDaySelected(which);
+                    }
+                });
 
-        ListView updatedDaysView = (ListView) v.findViewById(R.id.updated_days_list);
-
-        if(mUpdatedDays.isEmpty()) {
-            TextView noDaysView = (TextView) v.findViewById(R.id.no_updated_days);
-
-            noDaysView.setVisibility(View.VISIBLE);
-            updatedDaysView.setVisibility(View.GONE);
-
-            return v;
-        }
-
-        updatedDaysView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                dismiss();
-                mListener.updatedDaySelected(position);
-            }
-        });
-
-        UpdatedDaysAdapter adapter = new UpdatedDaysAdapter(getActivity(),
-                android.R.layout.simple_list_item_1);
-        adapter.updateData();
-        updatedDaysView.setAdapter(adapter);
-
-        return v;
+        return builder.create();
     }
 
     public interface UpdatedDaySelectedListener {
@@ -60,36 +57,5 @@ public class UpdatedDaysFragment extends DialogFragment {
          * @param index the index of the selected updated day
          */
         void updatedDaySelected(int index);
-    }
-
-    private class UpdatedDaysAdapter extends ArrayAdapter<SUpdatedDay> {
-        private final Context mContext;
-
-        public UpdatedDaysAdapter(Context context, int resource) {
-            super(context, resource);
-
-            mContext = context;
-        }
-
-        public void updateData() {
-            super.clear();
-            super.addAll(mUpdatedDays);
-        }
-
-        public View getView(int pos, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-            View rowView;
-            TextView content;
-
-            rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent,
-                    false);
-            content = (TextView) rowView.findViewById(android.R.id.text1);
-
-            content.setText(SHelper.getDisplayString(super.getItem(pos).getDate()));
-
-            return rowView;
-        }
     }
 }
