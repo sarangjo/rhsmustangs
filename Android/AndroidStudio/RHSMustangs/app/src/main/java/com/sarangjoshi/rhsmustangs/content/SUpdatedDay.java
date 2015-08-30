@@ -8,7 +8,6 @@ import com.sarangjoshi.rhsmustangs.helper.SHelper;
 import org.json.JSONArray;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -95,12 +94,5 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
             uDay.addPeriod(p);
         }
         return uDay;
-    }
-
-    public static SUpdatedDay testPeriodSorting() {
-        return test(new GregorianCalendar(2015, Calendar.JULY, 23),
-                new String[]{"Grp1", "Grp2"},
-                new SPeriod("01", "OMG", 7, 30, 14, 30, 1),
-                new SPeriod("01", "OMG", 14, 30, 20, 30, 2));
     }
 }

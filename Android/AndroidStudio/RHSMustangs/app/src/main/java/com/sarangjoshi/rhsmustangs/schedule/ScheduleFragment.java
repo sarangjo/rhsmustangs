@@ -86,24 +86,28 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         ImageButton mHoliday = (ImageButton) v.findViewById(R.id.nextHoliday);
 
         // UI dynamic setup
+        // Change days
         View.OnClickListener dcl = new DayChangeClickListener();
         mPrevDay.setOnClickListener(dcl);
         mNextDay.setOnClickListener(dcl);
 
-        mHoliday.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            if (mSchedule.goToNextHoliday()) {
-                                                refreshPeriods();
-                                                updateSpinner();
-                                            } else {
-                                                Toast.makeText(getActivity(), "No holidays coming up.", Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    }
+        // Jump to holiday
+        mHoliday.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mSchedule.goToNextHoliday()) {
+                            refreshPeriods();
+                            updateSpinner();
+                        } else {
+                            Toast.makeText(getActivity(), "No holidays coming up.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
 
         );
 
+        // Jump to today
         View.OnClickListener tcl = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,14 +117,29 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mTitle.setOnClickListener(tcl);
         mDayOfWeek.setOnClickListener(tcl);
 
-        // And finally actually show data
-        //refreshPeriods();
-        //updateSpinner();
+        // Notes
+        mPeriodsList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                showPeriodNote(position);
+                return true;
+            }
+        });
 
         // Load updated days
         new LoadDataAsyncTask(getActivity()).execute();
 
         return v;
+    }
+
+    private void showPeriodNote(int pos) {
+        String note = mSchedule.getToday().getPeriod(pos).getNote();
+        if(note == null || note.isEmpty()) {
+            Toast.makeText(getActivity(), "No note.", Toast.LENGTH_SHORT).show();
+        } else {
+            ShowNoteFragment dialog = new ShowNoteFragment(note);
+            dialog.show(getFragmentManager(), "tag");
+        }
     }
 
     public void onStart() {

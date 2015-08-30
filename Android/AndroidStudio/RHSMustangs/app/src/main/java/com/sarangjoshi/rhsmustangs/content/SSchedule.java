@@ -269,6 +269,11 @@ public class SSchedule {
             // Make sure this is how many days there are in the test run
             finishedAdding(3);
         } else {*/
+        SPeriod p = new SPeriod("01", 0, 30, 23, 59, 0);
+        p.setNote("Testing note system.");
+        addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.SEPTEMBER, 18),
+                null, p));
+
         ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
         updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> updatedDays, ParseException e) {

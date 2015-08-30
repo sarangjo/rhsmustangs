@@ -225,4 +225,8 @@ public class SDay {
     public static void clearBaseDays() {
         for (int i = 0; i < baseDays.length; i++) baseDays[i] = null;
     }
+
+    public SPeriod getPeriod(int pos) {
+        return getPeriods(currentGroupN).get(pos);
+    }
 }

@@ -20,6 +20,8 @@ public class SPeriod implements Comparable<SPeriod> {
     private STime mEndTime;
     private int mGroupN;
 
+    private String mNote;
+
     public static final int BASE_GROUPN = 0;
 
     /**
@@ -40,6 +42,7 @@ public class SPeriod implements Comparable<SPeriod> {
         mStartTime = new STime(sh, sm);
         mEndTime = new STime(eh, em);
         mGroupN = gn;
+        mNote = null;
     }
 
     public SPeriod(String periodShort, int sh, int sm,
@@ -82,6 +85,14 @@ public class SPeriod implements Comparable<SPeriod> {
         if(startD == 0)
             return mEndTime.compareTo(other.mEndTime);
         return startD;
+    }
+
+    public String getNote() {
+        return mNote;
+    }
+
+    public void setNote(String note) {
+        mNote = note;
     }
 
     public enum PeriodStyle {
