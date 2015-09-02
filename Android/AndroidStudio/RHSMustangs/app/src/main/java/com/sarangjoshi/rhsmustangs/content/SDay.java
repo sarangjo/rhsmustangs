@@ -143,13 +143,15 @@ public class SDay {
     /**
      * Gets a default day, based on the day of the week.
      *
-     * @return the loaded SDay object. null if the given day of week is invalid
+     * @return the loaded SDay object. null if the base day hasn't been loaded
+     *
      */
     public static SDay getBaseDay(int dayOfWeek) {
         SDay day = baseDays[dayOfWeek - Calendar.MONDAY];
-        if (day != null) return day;
+        if(day == null) day = new SDay(dayOfWeek, NO_GROUPS);
+        return day;
 
-        switch (dayOfWeek) {
+        /*switch (dayOfWeek) {
             case Calendar.MONDAY:
             case Calendar.TUESDAY:
             case Calendar.THURSDAY:
@@ -177,7 +179,7 @@ public class SDay {
                 day.addPeriod(new SPeriod("LN", 12, 10, 12, 30, 0));
                 break;
         }
-        return day;
+        return day;*/
     }
 
     /**

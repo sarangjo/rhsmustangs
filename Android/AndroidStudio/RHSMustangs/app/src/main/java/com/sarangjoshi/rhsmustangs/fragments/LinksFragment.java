@@ -1,4 +1,4 @@
-package com.sarangjoshi.rhsmustangs;
+package com.sarangjoshi.rhsmustangs.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,6 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.sarangjoshi.rhsmustangs.MainActivity;
+import com.sarangjoshi.rhsmustangs.R;
+
 /**
  * A fragment representing a list of Items.
  * <p/>
@@ -24,9 +27,6 @@ import android.widget.TextView;
  * interface.
  */
 public class LinksFragment extends Fragment implements AbsListView.OnItemClickListener {
-
-    private OnFragmentInteractionListener mListener;
-
     private String[] mLinkNames = {"LWSD Page", "Facebook", "Twitter", "Instagram"};
     private String[] mLinks = {"http://www.lwsd.org/school/rhs/Pages/default.aspx",
             "http://www.facebook.com/RedmondHighASB",
@@ -45,26 +45,17 @@ public class LinksFragment extends Fragment implements AbsListView.OnItemClickLi
      */
     private ListAdapter mAdapter;
 
-    /**
-     * Initializes a new instance of LinksFragment.
-     */
-    public static LinksFragment newInstance() {
-        return new LinksFragment();
-    }
-
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public LinksFragment() {
+    public static LinksFragment newInstance(int pos) {
+        LinksFragment fragment = new LinksFragment();
+        Bundle args = new Bundle();
+        args.putInt(MainActivity.ARG_SECTION_NUMBER, pos);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-        }
 
         mAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, mLinkNames);
@@ -88,30 +79,16 @@ public class LinksFragment extends Fragment implements AbsListView.OnItemClickLi
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(MainActivity.ARG_SECTION_NUMBER));
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (mListener != null) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction("");
-        }
         openWebURL(mLinks[position]);
     }
 
+    // TODO: Use this for other listviews
     /**
      * The default content for this Fragment has a TextView that is shown when
      * the list is empty. If you would like to change the text, call this method
@@ -123,20 +100,6 @@ public class LinksFragment extends Fragment implements AbsListView.OnItemClickLi
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);
         }
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(String id);
     }
 
     public void openWebURL(String inURL) {

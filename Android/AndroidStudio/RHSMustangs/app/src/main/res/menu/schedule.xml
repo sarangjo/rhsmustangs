@@ -24,11 +24,6 @@
         android:title="@string/action_holidays"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/action_refresh_base_days"
-        android:title="@string/action_refresh_base_days"
-        app:showAsAction="never" />
-
 <!--    <item
         android:id="@+id/action_save_base_days"
         android:title="@string/action_save_base_days"

@@ -337,7 +337,7 @@ public class SSchedule {
                         addHoliday(SHoliday.newFromParse(holiday));
                     }
                     refreshWeek(mToday);
-                    mListener.updateCompleted();
+                    mListener.updateFetchCompleted();
                 }
                 // TODO: handle
             }
@@ -392,7 +392,7 @@ public class SSchedule {
 
     private void finishedAddingBaseDays(int size) {
         if (size == SDay.nOfBaseDays())
-            mBListener.baseDayUpdateCompleted();
+            mBListener.baseDayFetchCompleted();
     }
 
     // DATABASE
@@ -491,13 +491,13 @@ public class SSchedule {
      * Listener for when updates finish.
      */
     public interface UpdateFinishedListener {
-        void updateCompleted();
+        void updateFetchCompleted();
     }
 
     /**
      * Listener for when base day updates finish.
      */
     public interface BaseDayUpdateFinishedListener {
-        void baseDayUpdateCompleted();
+        void baseDayFetchCompleted();
     }
 }

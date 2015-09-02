@@ -95,5 +95,6 @@
     <orderEntry type="library" exported="" name="Parse-1.9.4" level="project" />
     <orderEntry type="library" exported="" name="bolts-android-1.2.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.2" level="project" />
+    <orderEntry type="module" module-name="android-support-v4-preferencefragment" exported="" />
   </component>
 </module>

@@ -5,7 +5,9 @@ import android.app.Application;
 import com.parse.Parse;
 
 /**
- * Created by Sarang on 7/28/2015.
+ * Takes care of the Parse initialization.
+ *
+ * @author Sarang
  */
 public class MainApplication extends Application {
     public void onCreate() {

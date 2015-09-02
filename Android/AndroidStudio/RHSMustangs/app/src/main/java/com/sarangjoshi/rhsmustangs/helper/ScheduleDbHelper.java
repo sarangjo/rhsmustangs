@@ -224,7 +224,13 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 int eh = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_END_HR));
                 int em = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_END_MIN));
                 int g = c.getInt(c.getColumnIndex(PeriodEntry.COLUMN_GROUP_N));
-                String note = c.getString(c.getColumnIndex(PeriodEntry.COLUMN_NOTE));
+
+                String note;
+                try {
+                    note = c.getString(c.getColumnIndex(PeriodEntry.COLUMN_NOTE));
+                } catch (Exception e) {
+                    note = null;
+                }
 
                 SPeriod p = new SPeriod(periodShort, name, sh, sm, eh, em, g);
                 p.setNote(note);
