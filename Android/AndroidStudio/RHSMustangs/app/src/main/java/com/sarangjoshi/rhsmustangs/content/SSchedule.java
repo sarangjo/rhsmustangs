@@ -2,6 +2,7 @@ package com.sarangjoshi.rhsmustangs.content;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -54,8 +55,7 @@ public class SSchedule {
         this.mDatabase = new ScheduleDbHelper(context);
         //this.mDatabase.init();
 
-        this.mSchedulePref = context.getSharedPreferences(
-                context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
+        this.mSchedulePref = context.getSharedPreferences(context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
 
         // Sets the date
         setToday(today);
@@ -337,7 +337,7 @@ public class SSchedule {
                         addHoliday(SHoliday.newFromParse(holiday));
                     }
                     refreshWeek(mToday);
-                    mListener.updateFetchCompleted();
+                    mListener.onUpdateFetchCompleted();
                 }
                 // TODO: handle
             }
@@ -392,7 +392,7 @@ public class SSchedule {
 
     private void finishedAddingBaseDays(int size) {
         if (size == SDay.nOfBaseDays())
-            mBListener.baseDayFetchCompleted();
+            mBListener.onBaseFetchCompleted();
     }
 
     // DATABASE
@@ -491,13 +491,13 @@ public class SSchedule {
      * Listener for when updates finish.
      */
     public interface UpdateFinishedListener {
-        void updateFetchCompleted();
+        void onUpdateFetchCompleted();
     }
 
     /**
      * Listener for when base day updates finish.
      */
     public interface BaseDayUpdateFinishedListener {
-        void baseDayFetchCompleted();
+        void onBaseFetchCompleted();
     }
 }

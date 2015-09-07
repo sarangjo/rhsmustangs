@@ -31,7 +31,7 @@ public class NavigationDrawerFragment extends Fragment {
     /**
      * Remember the position of the selected item.
      */
-    private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
+    public static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
 
     /**
      * Per the design guidelines, you should show the drawer on launch until the user manually
@@ -42,7 +42,7 @@ public class NavigationDrawerFragment extends Fragment {
     /**
      * List of drawer items.
      */
-    public static final String[] DRAWER_LIST = {"Home", "Links", "Schedule", "Settings"};
+    public static final String[] DRAWER_LIST = {"Links", "Schedule", "Settings"};
 
     /**
      * A pointer to the current callbacks instance (the Activity).
@@ -59,7 +59,6 @@ public class NavigationDrawerFragment extends Fragment {
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition;
-    private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
     public NavigationDrawerFragment() {
@@ -76,7 +75,8 @@ public class NavigationDrawerFragment extends Fragment {
 
         if (savedInstanceState != null) {
             mCurrentSelectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
-            mFromSavedInstanceState = true;
+        } else {
+            mCurrentSelectedPosition = sp.getInt(STATE_SELECTED_POSITION, 0);
         }
 
         // Select either the default item (0) or the last selected item.
@@ -87,6 +87,7 @@ public class NavigationDrawerFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Indicate that this fragment would like to influence the set of actions in the action bar.
+        // In this case, this is the sandwich in the top left.
         setHasOptionsMenu(true);
     }
 
@@ -170,7 +171,7 @@ public class NavigationDrawerFragment extends Fragment {
 
         // If the user hasn't 'learned' about the drawer, open it to introduce them to the drawer,
         // per the navigation drawer design guidelines.
-        if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
+        if (!mUserLearnedDrawer) {
             mDrawerLayout.openDrawer(mFragmentContainerView);
         }
 
@@ -185,7 +186,12 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
-    private void selectItem(int position) {
+    /**
+     * Select an item in the navigation drawer.
+     *
+     * @param position the selected position
+     */
+    public void selectItem(int position) {
         mCurrentSelectedPosition = position;
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);

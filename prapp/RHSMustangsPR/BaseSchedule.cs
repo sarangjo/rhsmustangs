@@ -29,6 +29,11 @@ namespace RHSMustangsPR
                     if (results.Count() > 0)
                     {
                         ParseObject parseDay = results.ElementAt(0);
+                        
+                        // Update groups
+                        string[] gNames = Day.parseGroupNames(day.mGroups);
+                        parseDay["groupNames"] = gNames;
+                        await parseDay.SaveAsync();
 
                         // Delete old periods
                         var periodsRelation = parseDay.GetRelation<ParseObject>("periods");

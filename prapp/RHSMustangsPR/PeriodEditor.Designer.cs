@@ -52,14 +52,14 @@
             this.shortName.Location = new System.Drawing.Point(99, 18);
             this.shortName.Name = "shortName";
             this.shortName.Size = new System.Drawing.Size(36, 20);
-            this.shortName.TabIndex = 3;
+            this.shortName.TabIndex = 0;
             // 
             // periodName
             // 
             this.periodName.Location = new System.Drawing.Point(238, 18);
             this.periodName.Name = "periodName";
             this.periodName.Size = new System.Drawing.Size(87, 20);
-            this.periodName.TabIndex = 4;
+            this.periodName.TabIndex = 1;
             // 
             // shortLabel
             // 
@@ -84,28 +84,28 @@
             this.startHText.Location = new System.Drawing.Point(167, 58);
             this.startHText.Name = "startHText";
             this.startHText.Size = new System.Drawing.Size(29, 20);
-            this.startHText.TabIndex = 7;
+            this.startHText.TabIndex = 2;
             // 
             // startMText
             // 
             this.startMText.Location = new System.Drawing.Point(202, 58);
             this.startMText.Name = "startMText";
             this.startMText.Size = new System.Drawing.Size(29, 20);
-            this.startMText.TabIndex = 8;
+            this.startMText.TabIndex = 3;
             // 
             // endMText
             // 
             this.endMText.Location = new System.Drawing.Point(202, 84);
             this.endMText.Name = "endMText";
             this.endMText.Size = new System.Drawing.Size(29, 20);
-            this.endMText.TabIndex = 12;
+            this.endMText.TabIndex = 5;
             // 
             // endHText
             // 
             this.endHText.Location = new System.Drawing.Point(167, 84);
             this.endHText.Name = "endHText";
             this.endHText.Size = new System.Drawing.Size(29, 20);
-            this.endHText.TabIndex = 11;
+            this.endHText.TabIndex = 4;
             // 
             // label1
             // 
@@ -130,7 +130,7 @@
             this.savePeriodBtn.Location = new System.Drawing.Point(138, 286);
             this.savePeriodBtn.Name = "savePeriodBtn";
             this.savePeriodBtn.Size = new System.Drawing.Size(75, 23);
-            this.savePeriodBtn.TabIndex = 15;
+            this.savePeriodBtn.TabIndex = 6;
             this.savePeriodBtn.Text = "Save Period";
             this.savePeriodBtn.UseVisualStyleBackColor = true;
             this.savePeriodBtn.Click += new System.EventHandler(this.savePeriodBtn_Click);
@@ -143,14 +143,14 @@
             this.groupsListBox.Location = new System.Drawing.Point(28, 134);
             this.groupsListBox.Name = "groupsListBox";
             this.groupsListBox.Size = new System.Drawing.Size(120, 95);
-            this.groupsListBox.TabIndex = 16;
+            this.groupsListBox.TabIndex = 11;
             // 
             // newGroupBtn
             // 
             this.newGroupBtn.Location = new System.Drawing.Point(269, 151);
             this.newGroupBtn.Name = "newGroupBtn";
             this.newGroupBtn.Size = new System.Drawing.Size(56, 25);
-            this.newGroupBtn.TabIndex = 17;
+            this.newGroupBtn.TabIndex = 8;
             this.newGroupBtn.Text = "Add";
             this.newGroupBtn.UseVisualStyleBackColor = true;
             this.newGroupBtn.Click += new System.EventHandler(this.newGroupBtn_Click);
@@ -160,7 +160,7 @@
             this.newGroupText.Location = new System.Drawing.Point(159, 154);
             this.newGroupText.Name = "newGroupText";
             this.newGroupText.Size = new System.Drawing.Size(100, 20);
-            this.newGroupText.TabIndex = 18;
+            this.newGroupText.TabIndex = 7;
             // 
             // label3
             // 
@@ -176,7 +176,7 @@
             this.removeGrpBtn.Location = new System.Drawing.Point(159, 181);
             this.removeGrpBtn.Name = "removeGrpBtn";
             this.removeGrpBtn.Size = new System.Drawing.Size(75, 23);
-            this.removeGrpBtn.TabIndex = 21;
+            this.removeGrpBtn.TabIndex = 9;
             this.removeGrpBtn.Text = "Remove Selected";
             this.removeGrpBtn.UseVisualStyleBackColor = true;
             this.removeGrpBtn.Click += new System.EventHandler(this.removeGrpBtn_Click);
@@ -186,7 +186,7 @@
             this.noteText.Location = new System.Drawing.Point(28, 236);
             this.noteText.Name = "noteText";
             this.noteText.Size = new System.Drawing.Size(297, 44);
-            this.noteText.TabIndex = 22;
+            this.noteText.TabIndex = 10;
             this.noteText.Text = "";
             // 
             // PeriodEditor

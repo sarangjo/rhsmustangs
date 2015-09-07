@@ -1,25 +1,28 @@
 package com.sarangjoshi.rhsmustangs;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 
-import com.sarangjoshi.rhsmustangs.fragments.HomeFragment;
 import com.sarangjoshi.rhsmustangs.fragments.LinksFragment;
 import com.sarangjoshi.rhsmustangs.fragments.NavigationDrawerFragment;
 import com.sarangjoshi.rhsmustangs.fragments.ScheduleFragment;
 import com.sarangjoshi.rhsmustangs.fragments.SettingsFragment;
 
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
-
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, SettingsFragment.SettingsListener {
     /**
      * The section number of a fragment.
      */
     public static final String ARG_SECTION_NUMBER = "section_number";
+    private boolean overrideRefresh = false;
+
+    private NavigationDrawerFragment mNavigationDrawerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +30,7 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
 
         // Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-        NavigationDrawerFragment mNavigationDrawerFragment = (NavigationDrawerFragment)
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
 
         // Set up the drawer.
@@ -41,50 +44,51 @@ public class MainActivity extends ActionBarActivity
         // Update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment selected;
+
         switch (position) {
             case 0:
-                selected = HomeFragment.newInstance();
-                break;
-            case 1:
                 selected = LinksFragment.newInstance(position);
                 break;
-            case 2:
+            case 1:
                 selected = ScheduleFragment.newInstance(position);
+                // First sees if the schedule has been naturally initialized
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+                boolean init = sp.getBoolean(ScheduleFragment.PREF_INITIALIZED, false);
+                boolean upd = sp.getBoolean(ScheduleFragment.PREF_UPDATED, false);
+
+                ((ScheduleFragment) selected).setInitialized(!overrideRefresh && init);
+                ((ScheduleFragment) selected).setUpdated(upd);
+
+                this.overrideRefresh = false;
                 break;
-            case 3:
-                selected = SettingsFragment.newInstance(position);
+            case 2:
+                selected = SettingsFragment.newInstance(this, position);
                 break;
             default:
                 selected = null;
                 break;
         }
-        if(selected != null)
+
+        if (selected != null)
             fragmentManager.beginTransaction()
-                .replace(R.id.container, selected)
-                .commit();
+                    .replace(R.id.container, selected)
+                    .commit();
     }
 
-    public void onSectionAttached(int number) {
-        if (number == 0) {
+    /**
+     * @param position the position of the section
+     */
+    public void onSectionAttached(int position) {
+        if (position == 0) {
             setTitle(getString(R.string.app_name));
         } else {
-            setTitle(NavigationDrawerFragment.DRAWER_LIST[number]);
+            setTitle(NavigationDrawerFragment.DRAWER_LIST[position]);
         }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void refreshBase() {
+        this.overrideRefresh = true;
+        mNavigationDrawerFragment.selectItem(1);
     }
-
 }
