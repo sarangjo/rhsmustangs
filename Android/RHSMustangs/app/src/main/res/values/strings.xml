@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">RHSMustangs</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_update">Update</string>
+    <string name="action_updated_days">Updated Days</string>
+    <string name="action_holidays">Holidays</string>
+
+    <string name="group_prompt">Group</string>
+    <string name="no_updated_days">No updated days.</string>
+
+    <string name="schedule_preference_file">com.sarangjoshi.rhsmustangs.SCHEDULE_PREFERENCE_FILE</string>
+    <string name="no_holidays">No Holidays.</string>
+    <string name="action_save_base_days">Save Base Days</string>
+    <string name="pref_test">Test</string>
+    <string name="pref_schedule_refresh_base">Refresh Base</string>
+    <string name="pref_key_refresh_base">pref_key_refresh_base</string>
+    <string name="test">Test</string>
+</resources>
