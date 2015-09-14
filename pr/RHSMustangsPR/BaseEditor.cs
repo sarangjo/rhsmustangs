@@ -11,12 +11,12 @@ using System.Windows.Forms;
 
 namespace RHSMustangsPR
 {
-    public interface AddDayListener
+    public interface EditDayListener
     {
-        void dayAdded(Day day);
+        void dayEdited(Day day, int index);
     }
 
-    public partial class BaseEditor : Form, AddDayListener
+    public partial class BaseEditor : Form, EditDayListener
     {
         /// <summary>
         /// Saves the schedule.
@@ -33,27 +33,27 @@ namespace RHSMustangsPR
 
         private void mondayBtn_Click(object sender, EventArgs e)
         {
-            new AddDay(this, false, 2).Show();
+            new EditDay(this, false, 2).Show();
         }
 
         private void tuesdayBtn_Click(object sender, EventArgs e)
         {
-            new AddDay(this, false, 3).Show();
+            new EditDay(this, false, 3).Show();
         }
 
         private void wednesdayBtn_Click(object sender, EventArgs e)
         {
-            new AddDay(this, false, 4).Show();
+            new EditDay(this, false, 4).Show();
         }
 
         private void thursdayBtn_Click(object sender, EventArgs e)
         {
-            new AddDay(this, false, 5).Show();
+            new EditDay(this, false, 5).Show();
         }
 
         private void fridayBtn_Click(object sender, EventArgs e)
         {
-            new AddDay(this, false, 6).Show();
+            new EditDay(this, false, 6).Show();
         }
 
         private void saveSchedule_Click(object sender, System.EventArgs e)
@@ -62,7 +62,7 @@ namespace RHSMustangsPR
             Console.WriteLine("Saved to Parse");
         }
 
-        void AddDayListener.dayAdded(Day day)
+        void EditDayListener.dayEdited(Day day, int i)
         {
             schedule.mDays[day.mDayOfWeek - 2] = day;
             if (day.saved)

@@ -80,11 +80,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AddDay.cs">
+    <Compile Include="EditDay.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddDay.Designer.cs">
-      <DependentUpon>AddDay.cs</DependentUpon>
+    <Compile Include="EditDay.Designer.cs">
+      <DependentUpon>EditDay.cs</DependentUpon>
     </Compile>
     <Compile Include="Day.cs" />
     <Compile Include="SchedulePROld.cs">
@@ -134,8 +134,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="AddDay.resx">
-      <DependentUpon>AddDay.cs</DependentUpon>
+    <EmbeddedResource Include="EditDay.resx">
+      <DependentUpon>EditDay.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SchedulePR.resx">
       <DependentUpon>SchedulePR.cs</DependentUpon>

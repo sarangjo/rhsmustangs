@@ -15,22 +15,24 @@ namespace RHSMustangsPR
         void periodAdded(Period p, List<String> groups);
     }
 
-    public partial class AddDay : Form, AddPeriodListener
+    public partial class EditDay : Form, AddPeriodListener
     {
         public Day schedDay;
-        public AddDayListener l;
+        public EditDayListener l;
+        public int index;
         
         /// <summary>
         /// Initializes the view.
         /// </summary>
         /// <param name="dayOfWeek">the current day of the week</param>
-        public AddDay(AddDayListener l, bool updatedDay, int dayOfWeek)
+        public EditDay(EditDayListener l, bool updatedDay, int dayOfWeek)
         {
             InitializeComponent();
-            listBox1.Items.Clear();
+            periodsList.Items.Clear();
             
             this.l = l;
 
+            // Checks if the day is updated
             if (updatedDay)
             {
                 updatedDayPicker.Visible = true;
@@ -42,8 +44,34 @@ namespace RHSMustangsPR
                 this.schedDay = new Day(dayOfWeek);
             }
 
+            removePeriodBtn.Enabled = false;
+
             // Sets the label
             dayOfWeekLbl.Text = Day.intToDay(dayOfWeek);
+
+            this.index = -1;
+        }
+
+        public EditDay(EditDayListener l, Day day, int i) : this(l, day is UpdatedDay, 0)
+        {
+            this.schedDay = day;
+
+            // Date
+            if (day is UpdatedDay) {
+                updatedDayPicker.Value = ((UpdatedDay)day).mDate;
+            }
+
+            // Periods
+            periodsList.Items.Clear();
+            foreach (Period p in schedDay.mPeriods)
+            {
+                periodsList.Items.Add(p);
+            }
+
+            // Groups
+            refreshGroups();
+
+            this.index = i;
         }
 
         private void addPeriodBtn_Click(object sender, EventArgs e)
@@ -56,8 +84,8 @@ namespace RHSMustangsPR
             Console.WriteLine("Period added.");
 
             // Add period
-            schedDay.AddPeriod(p);
-            listBox1.Items.Add(p.ToString());
+            schedDay.mPeriods.Add(p);
+            periodsList.Items.Add(p.ToString());
             // Groups
             schedDay.setGroups(groups);
             refreshGroups();
@@ -86,7 +114,19 @@ namespace RHSMustangsPR
             schedDay.save();
             if (updatedDayPicker.Visible)
                 ((UpdatedDay)schedDay).mDate = updatedDayPicker.Value;
-            l.dayAdded(schedDay);
+            l.dayEdited(schedDay, index);
+        }
+
+        private void removePeriodBtn_Click(object sender, EventArgs e)
+        {
+            schedDay.mPeriods.RemoveAt(periodsList.SelectedIndex);
+            periodsList.Items.RemoveAt(periodsList.SelectedIndex);
+            periodsList.ClearSelected();
+        }
+
+        private void periodsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            removePeriodBtn.Enabled = periodsList.SelectedIndex >= 0;
         }
     }
 }

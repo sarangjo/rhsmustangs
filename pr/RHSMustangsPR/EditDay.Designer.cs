@@ -1,6 +1,6 @@
 ﻿namespace RHSMustangsPR
 {
-    partial class AddDay
+    partial class EditDay
     {
         /// <summary>
         /// Required designer variable.
@@ -30,12 +30,13 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.addPeriodBtn = new System.Windows.Forms.Button();
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.periodsList = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
             this.groupsList = new System.Windows.Forms.ListBox();
             this.dayOfWeekLbl = new System.Windows.Forms.Label();
             this.saveDayBtn = new System.Windows.Forms.Button();
             this.updatedDayPicker = new System.Windows.Forms.DateTimePicker();
+            this.removePeriodBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -49,21 +50,22 @@
             // 
             // addPeriodBtn
             // 
-            this.addPeriodBtn.Location = new System.Drawing.Point(133, 85);
+            this.addPeriodBtn.Location = new System.Drawing.Point(65, 85);
             this.addPeriodBtn.Name = "addPeriodBtn";
-            this.addPeriodBtn.Size = new System.Drawing.Size(75, 23);
+            this.addPeriodBtn.Size = new System.Drawing.Size(104, 23);
             this.addPeriodBtn.TabIndex = 1;
             this.addPeriodBtn.Text = "Add Period";
             this.addPeriodBtn.UseVisualStyleBackColor = true;
             this.addPeriodBtn.Click += new System.EventHandler(this.addPeriodBtn_Click);
             // 
-            // listBox1
+            // periodsList
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(65, 114);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(206, 95);
-            this.listBox1.TabIndex = 2;
+            this.periodsList.FormattingEnabled = true;
+            this.periodsList.Location = new System.Drawing.Point(65, 114);
+            this.periodsList.Name = "listBox1";
+            this.periodsList.Size = new System.Drawing.Size(206, 95);
+            this.periodsList.TabIndex = 2;
+            this.periodsList.SelectedIndexChanged += new System.EventHandler(this.periodsList_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -108,17 +110,28 @@
             this.updatedDayPicker.Size = new System.Drawing.Size(206, 20);
             this.updatedDayPicker.TabIndex = 8;
             // 
+            // removePeriodBtn
+            // 
+            this.removePeriodBtn.Location = new System.Drawing.Point(172, 85);
+            this.removePeriodBtn.Name = "removePeriodBtn";
+            this.removePeriodBtn.Size = new System.Drawing.Size(99, 23);
+            this.removePeriodBtn.TabIndex = 9;
+            this.removePeriodBtn.Text = "Remove Period";
+            this.removePeriodBtn.UseVisualStyleBackColor = true;
+            this.removePeriodBtn.Click += new System.EventHandler(this.removePeriodBtn_Click);
+            // 
             // AddDay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(334, 390);
+            this.Controls.Add(this.removePeriodBtn);
             this.Controls.Add(this.updatedDayPicker);
             this.Controls.Add(this.saveDayBtn);
             this.Controls.Add(this.dayOfWeekLbl);
             this.Controls.Add(this.groupsList);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.periodsList);
             this.Controls.Add(this.addPeriodBtn);
             this.Controls.Add(this.label1);
             this.Name = "AddDay";
@@ -132,11 +145,12 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button addPeriodBtn;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox periodsList;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox groupsList;
         private System.Windows.Forms.Label dayOfWeekLbl;
         private System.Windows.Forms.Button saveDayBtn;
         private System.Windows.Forms.DateTimePicker updatedDayPicker;
+        private System.Windows.Forms.Button removePeriodBtn;
     }
 }

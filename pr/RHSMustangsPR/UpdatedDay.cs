@@ -32,5 +32,12 @@ namespace RHSMustangsPR
         {
             return Updates.DateToString(mDate);
         }
+
+        public UpdatedDay Copy()
+        {
+            UpdatedDay day = new UpdatedDay(mDate);
+            // TODO: implement
+            return day;
+        }
     }
 }

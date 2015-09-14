@@ -63,15 +63,6 @@ namespace RHSMustangsPR
         }
 
         /// <summary>
-        /// Adds a period to the day.
-        /// </summary>
-        /// <param name="p"></param>
-        public void AddPeriod(Period p)
-        {
-            mPeriods.Add(p);
-        }
-
-        /// <summary>
         /// Sets the groups.
         /// </summary>
         /// <param name="groupItems"></param>
@@ -103,7 +94,7 @@ namespace RHSMustangsPR
 
             foreach (ParseObject period in parsePeriods)
             {
-                d.AddPeriod(Period.newFromParse(period));
+                d.mPeriods.Add(Period.newFromParse(period));
             }
 
             return d;
