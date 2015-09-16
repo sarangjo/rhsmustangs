@@ -2,7 +2,6 @@ package com.sarangjoshi.rhsmustangs.content;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -24,38 +23,32 @@ import java.util.List;
  *
  * @author Sarang
  */
-public class SSchedule {
+public class Schedule implements Updates.UpdatesListener {
     public static final String GROUP_N_KEY = "group_n";
     public static final int DEFAULT_GROUP_N = 1;
 
     // TODO: Decide whether a list of weeks is needed
-    private SWeek mCurrentWeek;
+    private Week mCurrentWeek;
     private Calendar mToday;
     private int mGroupN;
 
     private SharedPreferences mSchedulePref;
 
-    private final List<SUpdatedDay> mUpdatedDays;
+    private Updates mUpdates;
     private ScheduleDbHelper mDatabase;
     private UpdateFinishedListener mListener;
     private BaseDayUpdateFinishedListener mBListener;
 
-    private final List<SHoliday> mHolidays;
-
     /**
-     * Constructs a new {@link SSchedule} object.
+     * Constructs a new {@link Schedule} object.
      */
-    public SSchedule(Calendar today, UpdateFinishedListener l, BaseDayUpdateFinishedListener bl, Context context) {
-        this.mUpdatedDays = new LinkedList<>();
-        this.mHolidays = new LinkedList<>();
-
+    public Schedule(Calendar today, UpdateFinishedListener l, BaseDayUpdateFinishedListener bl, Context context) {
         this.mListener = l;
         this.mBListener = bl;
 
         this.mDatabase = new ScheduleDbHelper(context);
-        //this.mDatabase.init();
-
         this.mSchedulePref = context.getSharedPreferences(context.getString(R.string.schedule_preference_file), Context.MODE_PRIVATE);
+        this.mUpdates = new Updates(this, mSchedulePref);
 
         // Sets the date
         setToday(today);
@@ -70,8 +63,8 @@ public class SSchedule {
     /**
      * Gets the current day.
      */
-    public SDay getToday() {
-        SHoliday holiday = getHoliday();
+    public Day getToday() {
+        Holiday holiday = getHoliday();
         if (holiday != null) {
             // TODO: ???
             return holiday.getDay(mToday.get(Calendar.DAY_OF_WEEK));
@@ -84,9 +77,9 @@ public class SSchedule {
      *
      * @return null if the given day isn't in a getHoliday
      */
-    public SHoliday getHoliday() {
+    public Holiday getHoliday() {
         Calendar day = getTodayAsCalendar();
-        for (SHoliday holiday : mHolidays) {
+        for (Holiday holiday : mUpdates.getHolidays()) {
             if (holiday.contains(day)) {
                 return holiday;
             }
@@ -98,8 +91,8 @@ public class SSchedule {
      * @return the currently selected group number.
      */
     public int getGroupN() {
-        if (getToday().getClass() == SUpdatedDay.class)
-            return ((SUpdatedDay) getToday()).getGroupN();
+        if (getToday().getClass() == UpdatedDay.class)
+            return ((UpdatedDay) getToday()).getGroupN();
         else
             return mGroupN;
     }
@@ -107,7 +100,7 @@ public class SSchedule {
     /**
      * @return today's periods with the previously set group number.
      */
-    public List<SPeriod> getTodayPeriods() {
+    public List<Period> getTodayPeriods() {
         return getToday().getPeriods(getGroupN());
     }
 
@@ -125,8 +118,8 @@ public class SSchedule {
      *
      * @return a list of updated days
      */
-    public List<SUpdatedDay> getUpdatedDays() {
-        return mUpdatedDays;
+    public Updates getUpdates() {
+        return mUpdates;
     }
 
     public String getTodayAsString() {
@@ -154,10 +147,10 @@ public class SSchedule {
      */
     public boolean setGroupN(int groupN) {
         if (getToday().hasGroups()) {
-            if (groupN == SPeriod.BASE_GROUPN)
+            if (groupN == Period.BASE_GROUPN)
                 throw new IllegalArgumentException();
-            if (getToday().getClass() == SUpdatedDay.class) {
-                return ((SUpdatedDay) getToday()).setGroupN(groupN);
+            if (getToday().getClass() == UpdatedDay.class) {
+                return ((UpdatedDay) getToday()).setGroupN(groupN);
             } else if (this.mGroupN != groupN) {
                 this.mGroupN = groupN;
                 return true;
@@ -233,122 +226,17 @@ public class SSchedule {
     public void refreshWeek(Calendar today) {
         // TODO: make more efficient by not changing week appropriately
         // Based on today, establish MONDAY
-        mCurrentWeek = SWeek.getDefaultWeek();
-        mCurrentWeek.update(today, mUpdatedDays);
-    }
-
-    // UPDATED DAYS
-
-    /**
-     * Adds a new {@link SUpdatedDay} in a sorted location.
-     */
-    public void addUpdatedDay(SUpdatedDay day) {
-        synchronized (mUpdatedDays) {
-            mUpdatedDays.add(day);
-            Collections.sort(mUpdatedDays);
-        }
-    }
-
-    /**
-     * Updates the updated days list.
-     */
-    public void updateUpdatedDays() {
-        mUpdatedDays.clear();
-
-        /*SPeriod p = new SPeriod("01", 0, 30, 23, 59, 0);
-        p.setNote("Testing note system.");
-        addUpdatedDay(SUpdatedDay.test(new GregorianCalendar(2015, Calendar.SEPTEMBER, 18),
-                null, p));*/
-
-        // Queries Parse database
-        ParseQuery<ParseObject> updatedDaysQuery = ParseQuery.getQuery(SUpdatedDay.UPDATED_DAY_CLASS);
-        updatedDaysQuery.findInBackground(new FindCallback<ParseObject>() {
-            public void done(final List<ParseObject> dayObjects, ParseException e) {
-                if (e == null) {
-                    // Account for any locally added days (primarily testing)
-                    final int localDays = mUpdatedDays.size();
-
-                    // Retrieve periods for each day
-                    for (final ParseObject obj : dayObjects) {
-                        ParseRelation<ParseObject> periods = obj.getRelation(SUpdatedDay.PERIODS_KEY);
-                        periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
-                            public void done(List<ParseObject> results, ParseException e) {
-                                if (e == null) {
-                                    addUpdatedDay(SUpdatedDay.newFromParse(obj, results));
-                                    finishedAdding(dayObjects.size() + localDays);
-                                }
-                                // TODO: handle
-                            }
-                        });
-                    }
-                }
-                // TODO: handle
-            }
-        });
-        //}
-    }
-
-    /**
-     * Only finishes executing if the updated days' size matches the actual # of updated days.
-     *
-     * @param size the number of days downloaded
-     */
-    private void finishedAdding(int size) {
-        if (mUpdatedDays.size() == size) {
-            // done adding -- move on to holidays
-            updateHolidays();
-        }
-    }
-
-    /**
-     * Gets a list of holidays.
-     *
-     * @return a list
-     */
-    public List<SHoliday> getHolidays() {
-        return mHolidays;
+        mCurrentWeek = Week.getDefaultWeek();
+        mCurrentWeek.update(today, mUpdates.getUpdatedDays());
     }
 
     // HOLIDAYS
 
     /**
-     * TODO: sort
-     */
-    public void addHoliday(SHoliday day) {
-        // TODO: sort
-        synchronized (mHolidays) {
-            mHolidays.add(day);
-            Collections.sort(mHolidays);
-        }
-    }
-
-    /**
-     * Updates the holidays.
-     */
-    public void updateHolidays() {
-        mHolidays.clear();
-
-        ParseQuery<ParseObject> query = new ParseQuery<>(SHoliday.HOLIDAY_CLASS);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> holidays, ParseException e) {
-                if (e == null) {
-                    for (ParseObject holiday : holidays) {
-                        addHoliday(SHoliday.newFromParse(holiday));
-                    }
-                    refreshWeek(mToday);
-                    mListener.onUpdateFetchCompleted();
-                }
-                // TODO: handle
-            }
-        });
-    }
-
-    /**
      * @return success
      */
     public boolean goToNextHoliday() {
-        for (SHoliday day : mHolidays) {
+        for (Holiday day : mUpdates.getHolidays()) {
             if (mToday.compareTo(day.getStart()) < 0) {
                 setToday(day.getStart());
                 return true;
@@ -360,7 +248,7 @@ public class SSchedule {
     // BASE DAYS
 
     public void updateBaseDays() {
-        ParseQuery<ParseObject> baseDaysQuery = ParseQuery.getQuery(SDay.BASE_DAY_CLASS);
+        ParseQuery<ParseObject> baseDaysQuery = ParseQuery.getQuery(Day.BASE_DAY_CLASS);
         baseDaysQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> baseDays, ParseException e) {
@@ -373,15 +261,15 @@ public class SSchedule {
     }
 
     private void saveBaseDaysFromParse(final List<ParseObject> baseDays) {
-        SDay.clearBaseDays();
+        Day.clearBaseDays();
 
         for (final ParseObject obj : baseDays) {
             //final ParseObject obj = dayObjects.get(0);
-            ParseRelation<ParseObject> periods = obj.getRelation(SDay.PERIODS_KEY);
+            ParseRelation<ParseObject> periods = obj.getRelation(Day.PERIODS_KEY);
             periods.getQuery().findInBackground(new FindCallback<ParseObject>() {
                 public void done(List<ParseObject> periods, ParseException e) {
                     if (e == null) {
-                        SDay.addBaseDay(SDay.newFromParse(obj, periods));
+                        Day.addBaseDay(Day.newFromParse(obj, periods));
                         finishedAddingBaseDays(baseDays.size());
                     }
                     // TODO: handle
@@ -391,7 +279,7 @@ public class SSchedule {
     }
 
     private void finishedAddingBaseDays(int size) {
-        if (size == SDay.nOfBaseDays())
+        if (size == Day.nOfBaseDays())
             mBListener.onBaseFetchCompleted();
     }
 
@@ -401,13 +289,8 @@ public class SSchedule {
      * Saves updated days.
      */
     public void saveUpdates() {
-        if (!mUpdatedDays.isEmpty())
-            for (SUpdatedDay day : mUpdatedDays)
-                mDatabase.saveUpdatedDay(day);
-
-        if (!mHolidays.isEmpty())
-            for (SHoliday day : mHolidays)
-                mDatabase.createHoliday(day);
+        mUpdates.saveUpdatedDays(mDatabase);
+        mUpdates.saveHolidays(mDatabase);
     }
 
     /**
@@ -424,16 +307,8 @@ public class SSchedule {
      * Loads updated days from the database.
      */
     public void loadUpdates() {
-        // Gets rid of previously loaded days #rekt
-        mUpdatedDays.clear();
-        for (SUpdatedDay day : mDatabase.getUpdatedDays()) {
-            addUpdatedDay(day);
-        }
-
-        mHolidays.clear();
-        for (SHoliday day : mDatabase.getHolidays()) {
-            addHoliday(day);
-        }
+        mUpdates.loadUpdatedDays(mDatabase);
+        mUpdates.loadHolidays(mDatabase);
     }
 
     /**
@@ -453,8 +328,8 @@ public class SSchedule {
      * @return success
      */
     public boolean saveGroupN() {
-        if (getToday().getClass() == SUpdatedDay.class) {
-            return 1 == mDatabase.updateGroup((SUpdatedDay) getToday());
+        if (getToday().getClass() == UpdatedDay.class) {
+            return 1 == mDatabase.updateGroup((UpdatedDay) getToday());
         } else {
             return mSchedulePref.edit()
                     .putInt(GROUP_N_KEY, mGroupN)
@@ -474,15 +349,22 @@ public class SSchedule {
      * Saves the base days.
      */
     public void saveBaseDays() {
-        if (SDay.nOfBaseDays() == Calendar.FRIDAY - Calendar.MONDAY + 1)
-            for (SDay day : SDay.baseDays)
+        if (Day.nOfBaseDays() == Calendar.FRIDAY - Calendar.MONDAY + 1)
+            for (Day day : Day.baseDays)
                 mDatabase.saveBaseDay(day);
     }
 
     public void loadBaseDays() {
-        for (SDay day : mDatabase.getBaseDays()) {
-            SDay.addBaseDay(day);
+        for (Day day : mDatabase.getBaseDays()) {
+            Day.addBaseDay(day);
         }
+    }
+
+    @Override
+    public void updatesCompleted(boolean updatedDays, boolean holidays) {
+        if(updatedDays || holidays)
+            refreshWeek(mToday);
+        mListener.onUpdateFetchCompleted(updatedDays, holidays);
     }
 
     // MISC
@@ -491,7 +373,7 @@ public class SSchedule {
      * Listener for when updates finish.
      */
     public interface UpdateFinishedListener {
-        void onUpdateFetchCompleted();
+        void onUpdateFetchCompleted(boolean updatedDays, boolean holidays);
     }
 
     /**

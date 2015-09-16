@@ -11,7 +11,7 @@ import java.util.Calendar;
  *
  * @author Sarang
  */
-public class SPeriod implements Comparable<SPeriod> {
+public class Period implements Comparable<Period> {
     private static final String DEFAULT_NAME = "-";
 
     private String mPeriodShort;
@@ -35,8 +35,8 @@ public class SPeriod implements Comparable<SPeriod> {
      * @param em          end minute
      * @param gn          group number
      */
-    public SPeriod(String periodShort, String name, int sh, int sm,
-                   int eh, int em, int gn) {
+    public Period(String periodShort, String name, int sh, int sm,
+                  int eh, int em, int gn) {
         mPeriodShort = periodShort;
         mClassName = name;
         mStartTime = new STime(sh, sm);
@@ -45,8 +45,8 @@ public class SPeriod implements Comparable<SPeriod> {
         mNote = null;
     }
 
-    public SPeriod(String periodShort, int sh, int sm,
-                   int eh, int em, int gn) {
+    public Period(String periodShort, int sh, int sm,
+                  int eh, int em, int gn) {
         this(periodShort, DEFAULT_NAME, sh, sm, eh, em, gn);
     }
 
@@ -80,7 +80,7 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     @Override
-    public int compareTo(@NonNull SPeriod other) {
+    public int compareTo(@NonNull Period other) {
         int startD = mStartTime.compareTo(other.mStartTime);
         if (startD == 0)
             return mEndTime.compareTo(other.mEndTime);
@@ -171,19 +171,19 @@ public class SPeriod implements Comparable<SPeriod> {
     }
 
     /**
-     * Gets a getHoliday SPeriod.
+     * Gets a getHoliday Period.
      *
      * @param holName the name of the getHoliday
      */
-    public static SPeriod getHoliday(String holName) {
-        return new SPeriod("HD", holName, 0, 0, 23, 59, 0);
+    public static Period getHoliday(String holName) {
+        return new Period("HD", holName, 0, 0, 23, 59, 0);
     }
 
     /**
      * @param obj a fetched ParseObject representing a period
      */
-    public static SPeriod newFromParse(ParseObject obj) {
-        SPeriod p = new SPeriod(obj.getString(SHORT_KEY),
+    public static Period newFromParse(ParseObject obj) {
+        Period p = new Period(obj.getString(SHORT_KEY),
                 obj.getString(NAME_KEY),
                 obj.getInt(START_HR_KEY),
                 obj.getInt(START_MIN_KEY),

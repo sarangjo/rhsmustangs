@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author Sarang
  */
-public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
+public class UpdatedDay extends Day implements Comparable<UpdatedDay> {
     private Calendar mDate;
     private int mGroupN = 1;
 
@@ -24,7 +24,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
      *
      * @param groupNames do not leave the 0th element empty
      */
-    public SUpdatedDay(Calendar date, String[] groupNames) {
+    public UpdatedDay(Calendar date, String[] groupNames) {
         super(date.get(Calendar.DAY_OF_WEEK), groupNames);
         mDate = date;
     }
@@ -49,7 +49,7 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     }
 
     @Override
-    public int compareTo(@NonNull SUpdatedDay other) {
+    public int compareTo(@NonNull UpdatedDay other) {
         return compareTo(other.getDate());
     }
 
@@ -66,31 +66,31 @@ public class SUpdatedDay extends SDay implements Comparable<SUpdatedDay> {
     }
 
     /**
-     * Creates a new {@link SUpdatedDay} from Parse data.
+     * Creates a new {@link UpdatedDay} from Parse data.
      *
      * @param obj     a downloaded ParseObject of the class {@link }
      * @param periods downloaded ParseObjects of the class {@link }
      */
-    public static SUpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
+    public static UpdatedDay newFromParse(ParseObject obj, List<ParseObject> periods) {
         //Date parseDate = obj.getDate(DATE_KEY);
         String parseDate = obj.getString(DATE_KEY);
         JSONArray parseGroupNames = obj.getJSONArray(GRP_NAMES_KEY);
 
         Calendar date = SHelper.stringToCalendar(parseDate);
         String[] groupNames = SHelper.jsonArrayToStringArray(parseGroupNames);
-        SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
+        UpdatedDay uDay = new UpdatedDay(date, groupNames);
 
         for (ParseObject p : periods) {
-            uDay.addPeriod(SPeriod.newFromParse(p));
+            uDay.addPeriod(Period.newFromParse(p));
         }
 
         return uDay;
     }
 
-    public static SUpdatedDay test(Calendar date, String[] groupNames,
-                                   SPeriod... periods) {
-        SUpdatedDay uDay = new SUpdatedDay(date, groupNames);
-        for (SPeriod p : periods) {
+    public static UpdatedDay test(Calendar date, String[] groupNames,
+                                   Period... periods) {
+        UpdatedDay uDay = new UpdatedDay(date, groupNames);
+        for (Period p : periods) {
             uDay.addPeriod(p);
         }
         return uDay;

@@ -64,7 +64,7 @@
             // saveHolidaysBtn
             // 
             this.saveHolidaysBtn.Location = new System.Drawing.Point(32, 180);
-            this.saveHolidaysBtn.Name = "saveUpdatesBtn";
+            this.saveHolidaysBtn.Name = "saveHolidaysBtn";
             this.saveHolidaysBtn.Size = new System.Drawing.Size(219, 23);
             this.saveHolidaysBtn.TabIndex = 3;
             this.saveHolidaysBtn.Text = "Save";
@@ -81,7 +81,7 @@
             this.Controls.Add(this.holidaysList);
             this.Controls.Add(this.label1);
             this.Name = "HolidaysEditor";
-            this.Text = "UpdatesEditor";
+            this.Text = "HolidaysEditor";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -10,15 +10,15 @@ import java.util.List;
  * This object keeps track of a collection of days, representing a full schedule.
  * Created by Sarang on 4/6/2015.
  */
-public class SWeek {
-    private List<SDay> mDays;
+public class Week {
+    private List<Day> mDays;
     //private int currentDay;
 
-    public SWeek() {
+    public Week() {
         mDays = new ArrayList<>();
     }
 
-    public void addDay(SDay day) {
+    public void addDay(Day day) {
         mDays.add(day);
     }
 
@@ -27,14 +27,14 @@ public class SWeek {
      *
      * @param dayOfWeek based on {@link Calendar}
      */
-    public SDay getDay(int dayOfWeek) {
+    public Day getDay(int dayOfWeek) {
         return mDays.get(getIndex(dayOfWeek));
     }
 
     /**
      * Sets the day for a given day of the week.
      */
-    public void setDay(int dayOfWeek, SDay day) {
+    public void setDay(int dayOfWeek, Day day) {
         mDays.set(getIndex(dayOfWeek), day);
     }
 
@@ -57,10 +57,10 @@ public class SWeek {
      * @param today       the current day
      * @param updatedDays the list of updated days to filter and add into the current week as needed
      */
-    public void update(Calendar today, List<SUpdatedDay> updatedDays) {
+    public void update(Calendar today, List<UpdatedDay> updatedDays) {
         Calendar monday = SHelper.getRelativeDay(today, Calendar.MONDAY);
         Calendar friday = SHelper.getRelativeDay(today, Calendar.FRIDAY);
-        for (SUpdatedDay day : updatedDays) {
+        for (UpdatedDay day : updatedDays) {
             if (day.compareTo(monday) >= 0 && day.compareTo(friday) <= 0) {
                 setDay(day.getDayOfWeek(), day);
             }
@@ -68,13 +68,13 @@ public class SWeek {
     }
 
     /**
-     * Loads the default schedule based on the default periods as per the {@link SDay} default
+     * Loads the default schedule based on the default periods as per the {@link Day} default
      * periods.
      */
-    public static SWeek getDefaultWeek() {
-        SWeek week = new SWeek();
+    public static Week getDefaultWeek() {
+        Week week = new Week();
         for (int i = Calendar.MONDAY; i <= Calendar.FRIDAY; i++) {
-            week.addDay(SDay.getBaseDay(i));
+            week.addDay(Day.getBaseDay(i));
         }
         return week;
     }

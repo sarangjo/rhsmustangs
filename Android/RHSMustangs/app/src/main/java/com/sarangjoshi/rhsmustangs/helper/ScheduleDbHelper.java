@@ -8,10 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.sarangjoshi.rhsmustangs.content.SDay;
-import com.sarangjoshi.rhsmustangs.content.SHoliday;
-import com.sarangjoshi.rhsmustangs.content.SPeriod;
-import com.sarangjoshi.rhsmustangs.content.SUpdatedDay;
+import com.sarangjoshi.rhsmustangs.content.Day;
+import com.sarangjoshi.rhsmustangs.content.Holiday;
+import com.sarangjoshi.rhsmustangs.content.Period;
+import com.sarangjoshi.rhsmustangs.content.UpdatedDay;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,7 +84,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      * @param day
      * @return how many rows were updated
      */
-    public int updateGroup(SUpdatedDay day) {
+    public int updateGroup(UpdatedDay day) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -92,7 +92,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
         // Selecting the row
         String selection = UpdatedDayEntry.COLUMN_DATE + " = ?";
-        String[] args = {SHelper.dateToString(day.getDate())};
+        String[] args = {SHelper.calendarToString(day.getDate())};
 
         // Updates
         return db.update(UpdatedDayEntry.TABLE_NAME, values, selection, args);
@@ -106,11 +106,11 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      * @param day
      * @return
      */
-    public long saveUpdatedDay(SUpdatedDay day) {
+    public long saveUpdatedDay(UpdatedDay day) {
         long uday_id = createUpdatedDay(day);
 
         // Save periods
-        for (SPeriod p : day.getAllPeriods()) {
+        for (Period p : day.getAllPeriods()) {
             createUpdatedDayPeriod(p, uday_id);
         }
 
@@ -124,7 +124,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      * @param uday_id
      * @return
      */
-    public long createUpdatedDayPeriod(SPeriod p, long uday_id) {
+    public long createUpdatedDayPeriod(Period p, long uday_id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Generate values from period
@@ -143,7 +143,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      * @param day
      * @return the id of the updated day
      */
-    private long createUpdatedDay(SUpdatedDay day) {
+    private long createUpdatedDay(UpdatedDay day) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = UpdatedDayEntry.updatedDayToContentValues(day);//new ContentValues();
         return db.insert(UpdatedDayEntry.TABLE_NAME, null, values);
@@ -154,14 +154,14 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
      *
      * @return
      */
-    public List<SUpdatedDay> getUpdatedDays() {
+    public List<UpdatedDay> getUpdatedDays() {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + UpdatedDayEntry.TABLE_NAME;
 
         Log.i(LOG_ID, selectQuery);
 
         Cursor c;
-        List<SUpdatedDay> days = new ArrayList<>();
+        List<UpdatedDay> days = new ArrayList<>();
 
         try {
             c = db.rawQuery(selectQuery, null);
@@ -180,7 +180,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 Calendar date = SHelper.stringToCalendar(dateString);
                 String[] names = SHelper.stringToGroups(groupsString);
 
-                SUpdatedDay day = new SUpdatedDay(date, names);
+                UpdatedDay day = new UpdatedDay(date, names);
 
                 int groupN;
                 try {
@@ -202,7 +202,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return days;
     }
 
-    public List<SPeriod> getPeriods(String selectQuery) {
+    public List<Period> getPeriods(String selectQuery) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Log.i(LOG_ID, selectQuery);
@@ -214,7 +214,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
             return new ArrayList<>();
         }
 
-        List<SPeriod> periods = new ArrayList<>();
+        List<Period> periods = new ArrayList<>();
         if (c.moveToFirst()) {
             do {
                 String periodShort = c.getString(c.getColumnIndex(PeriodEntry.COLUMN_SHORT));
@@ -232,7 +232,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                     note = null;
                 }
 
-                SPeriod p = new SPeriod(periodShort, name, sh, sm, eh, em, g);
+                Period p = new Period(periodShort, name, sh, sm, eh, em, g);
                 p.setNote(note);
 
                 periods.add(p);
@@ -244,19 +244,19 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
     // HOLIDAYS
 
-    public long createHoliday(SHoliday holiday) {
+    public long createHoliday(Holiday holiday) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = HolidayEntry.holidayToContentValues(holiday);
         return db.insert(HolidayEntry.TABLE_NAME, null, values);
     }
 
-    public List<SHoliday> getHolidays() {
+    public List<Holiday> getHolidays() {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + HolidayEntry.TABLE_NAME;
 
         Log.i(LOG_ID, selectQuery);
 
-        List<SHoliday> holidays = new ArrayList<>();
+        List<Holiday> holidays = new ArrayList<>();
         Cursor c;
 
         try {
@@ -270,7 +270,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 String name = c.getString(c.getColumnIndex(HolidayEntry.COLUMN_NAME));
                 Calendar start = SHelper.stringToCalendar(c.getString(c.getColumnIndex(HolidayEntry.COLUMN_START_NAME)));
                 Calendar end = SHelper.stringToCalendar(c.getString(c.getColumnIndex(HolidayEntry.COLUMN_END_NAME)));
-                SHoliday h = new SHoliday(name, start, end);
+                Holiday h = new Holiday(name, start, end);
 
                 holidays.add(h);
             } while (c.moveToNext());
@@ -281,11 +281,11 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
     // BASE DAYS
 
-    public long saveBaseDay(SDay day) {
+    public long saveBaseDay(Day day) {
         long bday_id = createBaseDay(day);
 
         // Save periods
-        for (SPeriod p : day.getAllPeriods()) {
+        for (Period p : day.getAllPeriods()) {
             long l = createBaseDayPeriod(p, day.getDayOfWeek());
             Log.d("lel", l + "");
         }
@@ -293,13 +293,13 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return bday_id;
     }
 
-    public long createBaseDay(SDay day) {
+    public long createBaseDay(Day day) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = BaseDayEntry.dayToContentValues(day);
         return db.insert(BaseDayEntry.TABLE_NAME, null, values);
     }
 
-    public long createBaseDayPeriod(SPeriod p, int dayOfWeek) {
+    public long createBaseDayPeriod(Period p, int dayOfWeek) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Generate values from period
@@ -309,14 +309,14 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         return db.insert(PeriodEntry.BDAY_TABLE_NAME, null, values);
     }
 
-    public List<SDay> getBaseDays() {
+    public List<Day> getBaseDays() {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + BaseDayEntry.TABLE_NAME;
 
         Log.i(LOG_ID, selectQuery);
 
         Cursor c;
-        List<SDay> days = new ArrayList<>();
+        List<Day> days = new ArrayList<>();
 
         try {
             c = db.rawQuery(selectQuery, null);
@@ -334,7 +334,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
 
                 String[] names = SHelper.stringToGroups(groupsString);
 
-                SDay day = new SDay(dayOfWeek, names);
+                Day day = new Day(dayOfWeek, names);
 
                 day.addPeriods(getPeriods("SELECT * FROM " + PeriodEntry.BDAY_TABLE_NAME + " p WHERE p." +
                         PeriodEntry.COLUMN_DAY_OF_WEEK + " = " + dayOfWeek));
@@ -379,12 +379,12 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_END_NAME + " DATETIME"
                 + ")";
 
-        public static ContentValues holidayToContentValues(SHoliday holiday) {
+        public static ContentValues holidayToContentValues(Holiday holiday) {
             ContentValues values = new ContentValues();
 
             values.put(COLUMN_NAME, holiday.getName());
-            values.put(COLUMN_START_NAME, SHelper.dateToString(holiday.getStart()));
-            values.put(COLUMN_END_NAME, SHelper.dateToString(holiday.getEnd()));
+            values.put(COLUMN_START_NAME, SHelper.calendarToString(holiday.getStart()));
+            values.put(COLUMN_END_NAME, SHelper.calendarToString(holiday.getEnd()));
 
             return values;
         }
@@ -404,10 +404,10 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_GROUP_N + " INTEGER"
                 + ")";
 
-        public static ContentValues updatedDayToContentValues(SUpdatedDay day) {
+        public static ContentValues updatedDayToContentValues(UpdatedDay day) {
             ContentValues values = new ContentValues();
 
-            values.put(UpdatedDayEntry.COLUMN_DATE, SHelper.dateToString(day.getDate()));
+            values.put(UpdatedDayEntry.COLUMN_DATE, SHelper.calendarToString(day.getDate()));
             values.put(UpdatedDayEntry.COLUMN_GROUP_NAMES, SHelper.groupsToString(day.getGroupNames()));
             values.put(UpdatedDayEntry.COLUMN_GROUP_N, day.getGroupN());
 
@@ -419,7 +419,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
         public static final String UDAY_TABLE_NAME = "uday_period";
         public static final String BDAY_TABLE_NAME = "bday_period";
 
-        // TODO: Optimize with SPeriod's Parse constants
+        // TODO: Optimize with Period's Parse constants
         public static final String COLUMN_SHORT = "short";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_GROUP_N = "group_n";
@@ -459,7 +459,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_DAY_OF_WEEK + " INTEGER"
                 + ")";
 
-        public static ContentValues periodToContentValues(SPeriod p) {
+        public static ContentValues periodToContentValues(Period p) {
             ContentValues values = new ContentValues();
 
             values.put(PeriodEntry.COLUMN_SHORT, p.getShort().substring(0, 2));
@@ -486,7 +486,7 @@ public class ScheduleDbHelper extends SQLiteOpenHelper {
                 + COLUMN_GROUP_NAMES + " TEXT"
                 + ")";
 
-        public static ContentValues dayToContentValues(SDay day) {
+        public static ContentValues dayToContentValues(Day day) {
             ContentValues values = new ContentValues();
 
             values.put(BaseDayEntry.COLUMN_DAY_OF_WEEK, day.getDayOfWeek());

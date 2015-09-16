@@ -33,11 +33,11 @@ import android.widget.Toast;
 
 import com.sarangjoshi.rhsmustangs.MainActivity;
 import com.sarangjoshi.rhsmustangs.R;
-import com.sarangjoshi.rhsmustangs.content.SDay;
-import com.sarangjoshi.rhsmustangs.content.SHoliday;
-import com.sarangjoshi.rhsmustangs.content.SPeriod;
-import com.sarangjoshi.rhsmustangs.content.SSchedule;
-import com.sarangjoshi.rhsmustangs.content.SUpdatedDay;
+import com.sarangjoshi.rhsmustangs.content.Day;
+import com.sarangjoshi.rhsmustangs.content.Holiday;
+import com.sarangjoshi.rhsmustangs.content.Period;
+import com.sarangjoshi.rhsmustangs.content.Schedule;
+import com.sarangjoshi.rhsmustangs.content.UpdatedDay;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import java.util.Calendar;
@@ -46,12 +46,12 @@ import java.util.GregorianCalendar;
 /**
  * @author Sarang
  */
-public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinishedListener,
-        SSchedule.BaseDayUpdateFinishedListener {
+public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishedListener,
+        Schedule.BaseDayUpdateFinishedListener {
     public static final String PREF_INITIALIZED = "schedule_initialized";
     public static final String PREF_UPDATED = "schedule_updated";
 
-    private SSchedule mSchedule;
+    private Schedule mSchedule;
 
     private ScheduleAdapter mAdapter;
 
@@ -66,7 +66,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      * Whether the schedule has been initialized.
      */
     private boolean mInitialized;
-    private boolean mUpdated;
+    private boolean mInitUpdated;
 
     private SchedulePagerAdapter mSchedulePagerAdapter;
     private ViewPager mViewPager;
@@ -93,7 +93,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mSchedule = new SSchedule(SHelper.getScheduleWiseToday(), this, this, getActivity());
+        mSchedule = new Schedule(SHelper.getScheduleWiseToday(), this, this, getActivity());
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         //mInitialized = sp.getBoolean(PREF_INITIALIZED, false);
@@ -251,7 +251,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             String[] spinnerData = mSchedule.getToday().getGroupNames();
 
             if (spinnerData == null)
-                spinnerData = SDay.NO_GROUPS;
+                spinnerData = Day.NO_GROUPS;
 
             ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(getActivity(),
                     android.R.layout.simple_spinner_dropdown_item, spinnerData);
@@ -263,7 +263,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             if (mSchedule.getToday().hasGroups())
                 mGroupSpinner.setSelection(mSchedule.getGroupN() - 1);
             else
-                mGroupSpinner.setSelection(SSchedule.DEFAULT_GROUP_N - 1);
+                mGroupSpinner.setSelection(Schedule.DEFAULT_GROUP_N - 1);
         }
     }
 
@@ -308,7 +308,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
 
         // Makes the title green/yellow and bold
-        if (mSchedule.getToday().getClass() == SUpdatedDay.class) {
+        if (mSchedule.getToday().getClass() == UpdatedDay.class) {
             SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else if (mSchedule.getHoliday() != null) {
@@ -385,7 +385,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     /**
      * Private class to adapt a list of periods.
      */
-    private class ScheduleAdapter extends ArrayAdapter<SPeriod> {
+    private class ScheduleAdapter extends ArrayAdapter<Period> {
         private final Context mContext;
 
         public ScheduleAdapter(Context context) {
@@ -415,15 +415,15 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             //}
 
             // Setting view data
-            SPeriod p = getItem(pos);
+            Period p = getItem(pos);
 
             shortNameView.setText(p.getShort());
             classNameView.setText(p.getClassName());
 
             // Times
             boolean is24hr = false; //PreferenceManager.getDefaultSharedPreferences(SActivity.this).getBoolean(SettingsFragment.IS24HR_KEY,                    true);
-            startTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.START, is24hr));
-            endTimeView.setText(p.getTimeAsString(SPeriod.TimeStyle.END, is24hr));
+            startTimeView.setText(p.getTimeAsString(Period.TimeStyle.START, is24hr));
+            endTimeView.setText(p.getTimeAsString(Period.TimeStyle.END, is24hr));
 
             // Holiday coloring
             if (mSchedule.getHoliday() != null) {
@@ -442,9 +442,8 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
 
         /**
          * Given the current period, sets the correct colors for the given views.
-         *
          */
-        private void setRelativeColors(SPeriod p, TextView... views) {
+        private void setRelativeColors(Period p, TextView... views) {
             int relTime = -1;
 
             Calendar now = new GregorianCalendar();
@@ -518,7 +517,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         mDialog = ProgressDialog.show(getActivity(), "",
                 "Checking for updates...");
 
-        mSchedule.updateUpdatedDays();
+        mSchedule.getUpdates().updateUpdatedDays();
         return true;
     }
 
@@ -526,22 +525,29 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      * This is run when the update is completed.
      */
     @Override
-    public void onUpdateFetchCompleted() {
-        refreshPeriods();
-        updateSpinner();
-
+    public void onUpdateFetchCompleted(boolean updatedDays, boolean holidays) {
         mDialog.dismiss();
 
-        if (!mUpdated) {
-            mUpdated = true;
+        if (updatedDays || holidays) {
+            refreshPeriods();
+            updateSpinner();
 
-            PreferenceManager.getDefaultSharedPreferences(getActivity())
-                    .edit().putBoolean(PREF_UPDATED, true).commit();
+            // Handles the process of initialization -- saves initial updating process
+            if (!mInitUpdated) {
+                mInitUpdated = true;
+
+                PreferenceManager.getDefaultSharedPreferences(getActivity())
+                        .edit().putBoolean(PREF_UPDATED, true).commit();
+            }
+
+            // Automatically saves downloaded updated days
+            new SaveUpdatedDaysAsyncTask(getActivity(), true).execute();
+
+            if(updatedDays) showUpdatedDays();
+            else showHolidays();
+        } else {
+            Toast.makeText(getActivity(), "No updates!", Toast.LENGTH_LONG).show();
         }
-
-        // Automatically saves downloaded updated days
-        new SaveUpdatedDaysAsyncTask(getActivity(), true).execute();
-        showUpdatedDays();
     }
 
     /**
@@ -553,9 +559,9 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Updated Days");
 
-        if (mSchedule.getUpdatedDays().size() > 0) {
+        if (mSchedule.getUpdates().getUpdatedDays().size() > 0) {
             ListAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item,
-                    mSchedule.getUpdatedDays());
+                    mSchedule.getUpdates().getUpdatedDays());
             builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -573,7 +579,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      * Goes to the oliday at the given index in the list of holidays.
      */
     public void onUpdatedDaySelected(int index) {
-        SUpdatedDay day = mSchedule.getUpdatedDays().get(index);
+        UpdatedDay day = mSchedule.getUpdates().getUpdatedDays().get(index);
         setToday(day.getDate());
     }
 
@@ -588,7 +594,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         ListAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1,
-                mSchedule.getHolidays());
+                mSchedule.getUpdates().getHolidays());
         builder.setTitle("Holidays")
                 .setAdapter(adapter, new DialogInterface.OnClickListener() {
                     @Override
@@ -607,7 +613,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
      * Goes to the oliday at the given index in the list of holidays.
      */
     public void onHolidaySelected(int index) {
-        SHoliday day = mSchedule.getHolidays().get(index);
+        Holiday day = mSchedule.getUpdates().getHolidays().get(index);
         setToday(day.getStart());
     }
 
@@ -638,7 +644,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
             PreferenceManager.getDefaultSharedPreferences(getActivity())
                     .edit().putBoolean(PREF_INITIALIZED, true).commit();
 
-            if (!mUpdated)
+            if (!mInitUpdated)
                 fetchUpdates();
         }
         mSchedule.refreshWeek(mSchedule.getTodayAsCalendar());
@@ -652,7 +658,7 @@ public class ScheduleFragment extends Fragment implements SSchedule.UpdateFinish
     }
 
     public void setUpdated(boolean updated) {
-        mUpdated = updated;
+        mInitUpdated = updated;
     }
 
     // ASYNC TASKS

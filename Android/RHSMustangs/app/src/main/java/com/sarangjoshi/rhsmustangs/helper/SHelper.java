@@ -122,12 +122,14 @@ public class SHelper {
     public static Calendar dateToCalendar(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal;
     }
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yy-MM-dd, HH:mm:ss");
 
-    public static String dateToString(Calendar date) {
+    public static String calendarToString(Calendar date) {
         DATE_FORMAT.setTimeZone(date.getTimeZone());
         return DATE_FORMAT.format(date.getTime());
     }
@@ -214,5 +216,21 @@ public class SHelper {
             }
         }
         return a;
+    }
+
+    public static String dateToString(Date date) {
+        return DATE_FORMAT.format(date);
+    }
+
+    public static String dateTimeToString(Date date) {
+        return DATE_TIME_FORMAT.format(date);
+    }
+
+    public static Calendar stringToDateTimeCalendar(String string) {
+        try {
+            return dateToCalendar(DATE_TIME_FORMAT.parse(string));
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }
