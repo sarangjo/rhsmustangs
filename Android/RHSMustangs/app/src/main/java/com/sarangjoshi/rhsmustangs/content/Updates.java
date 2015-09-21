@@ -13,8 +13,10 @@ import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * TODO: add class comment
@@ -25,14 +27,15 @@ public class Updates {
     public static final String LATEST_UPDATE_KEY = "latest-update";
     private static final String LATEST_HOL_UPDATE_KEY = "latest-hol-update";
 
-    private final List<UpdatedDay> mUpdatedDays;
+    //private final List<UpdatedDay> mUpdatedDays;
+    private final Map<Integer, UpdatedDay> mUpdatedDays;
     private final List<Holiday> mHolidays;
 
     private UpdatesListener mListener;
     private SharedPreferences mSharedPref;
 
     public Updates(UpdatesListener l, SharedPreferences pref) {
-        mUpdatedDays = new LinkedList<>();
+        mUpdatedDays = new HashMap<>();
         mHolidays = new LinkedList<>();
         mListener = l;
         mSharedPref = pref;
@@ -40,7 +43,16 @@ public class Updates {
 
     // UPDATED DAYS
 
-    public List<UpdatedDay> getUpdatedDays() {
+    // TODO: phase out
+    public List<UpdatedDay> getUpdatedDaysList() {
+        List<UpdatedDay> updatedDays = new LinkedList<>();
+        for (int day : mUpdatedDays.keySet()) {
+            updatedDays.add(mUpdatedDays.get(day));
+        }
+        return updatedDays;
+    }
+
+    public Map<Integer, UpdatedDay> getUpdatedDays() {
         return mUpdatedDays;
     }
 
@@ -49,8 +61,8 @@ public class Updates {
      */
     public void addUpdatedDay(UpdatedDay day) {
         synchronized (mUpdatedDays) {
-            mUpdatedDays.add(day);
-            Collections.sort(mUpdatedDays);
+            int jDay = SHelper.getJulianDay(day.getDate());
+            mUpdatedDays.put(jDay, day);
         }
     }
 
@@ -187,8 +199,8 @@ public class Updates {
 
     public void saveUpdatedDays(ScheduleDbHelper db) {
         if (!mUpdatedDays.isEmpty())
-            for (UpdatedDay day : mUpdatedDays)
-                db.saveUpdatedDay(day);
+            for (int day : mUpdatedDays.keySet())
+                db.saveUpdatedDay(mUpdatedDays.get(day));
     }
 
     public void saveHolidays(ScheduleDbHelper db) {

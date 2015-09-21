@@ -22,6 +22,13 @@ public class Period implements Comparable<Period> {
 
     private String mNote;
 
+    /**
+     * The default group number; for example, on init, for days with no groups, etc.
+     */
+    public static final int DEFAULT_GROUP_N = 1;
+    /**
+     * The index representing no groups. Used for periods that are independent of specific groups.
+     */
     public static final int BASE_GROUPN = 0;
 
     /**
@@ -88,15 +95,15 @@ public class Period implements Comparable<Period> {
     }
 
     /**
-     *
      * @return null if empty; will never be the empty string
      */
     public String getNote() {
-        if(mNote != null && mNote.isEmpty()) return null; return mNote;
+        if (mNote != null && mNote.isEmpty()) return null;
+        return mNote;
     }
 
     public void setNote(String note) {
-        if(note != null && !note.isEmpty())
+        if (note != null && !note.isEmpty())
             mNote = note;
     }
 
@@ -192,7 +199,7 @@ public class Period implements Comparable<Period> {
                 obj.getInt(GROUP_KEY));
 
         String note = obj.getString(NOTE_KEY);
-        if(note != null && !note.isEmpty())
+        if (note != null && !note.isEmpty())
             p.setNote(note);
         return p;
     }

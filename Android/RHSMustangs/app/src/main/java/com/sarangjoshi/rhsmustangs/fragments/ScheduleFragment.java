@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -70,7 +71,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
 
     private SchedulePagerAdapter mSchedulePagerAdapter;
     private ViewPager mViewPager;
-    private boolean mPager = false;
+    private boolean mPager = true;
 
     /**
      * Default empty constructor.
@@ -263,7 +264,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
             if (mSchedule.getToday().hasGroups())
                 mGroupSpinner.setSelection(mSchedule.getGroupN() - 1);
             else
-                mGroupSpinner.setSelection(Schedule.DEFAULT_GROUP_N - 1);
+                mGroupSpinner.setSelection(Period.DEFAULT_GROUP_N - 1);
         }
     }
 
@@ -311,7 +312,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
         if (mSchedule.getToday().getClass() == UpdatedDay.class) {
             SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
-        } else if (mSchedule.getHoliday() != null) {
+        } else if (mSchedule.getHoliday(mSchedule.getTodayAsCalendar()) != null) {
             SHelper.setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
             mTitle.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
@@ -371,7 +372,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
      */
     private void setUp() {
         if (mPager) mViewPager.setCurrentItem(
-                SHelper.getAbsDay(mSchedule.getTodayAsCalendar()));
+                SHelper.getJulianDay(mSchedule.getTodayAsCalendar()));
 
         // Load all saved data
         new LoadDataAsyncTask(getActivity(), true).execute();
@@ -426,7 +427,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
             endTimeView.setText(p.getTimeAsString(Period.TimeStyle.END, is24hr));
 
             // Holiday coloring
-            if (mSchedule.getHoliday() != null) {
+            if (mSchedule.getHoliday(mSchedule.getTodayAsCalendar()) != null) {
                 SHelper.setTextColor(getResources().getColor(R.color.gold), allTextViews);
             } else {
                 setRelativeColors(p, allTextViews);
@@ -483,6 +484,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
         }
     }
 
+    // TODO: FragmentStatePagerAdapter?
     private class SchedulePagerAdapter extends FragmentPagerAdapter {
 
         public SchedulePagerAdapter(FragmentManager fm) {
@@ -493,16 +495,15 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
         public Fragment getItem(int position) {
             Toast.makeText(getActivity(), position + " created", Toast.LENGTH_SHORT)
                     .show();
-            Fragment f = new ScheduleDayFragment();
-            Bundle args = new Bundle();
-            args.putInt(ScheduleDayFragment.ARG, position);
-            f.setArguments(args);
-            return f;
+            Calendar cal = SHelper.julianDayToCalendar(position);
+            Day day = mSchedule.getDay(cal);
+            int group = mSchedule.getGroup(day);
+            return ScheduleDayFragment.newInstance(day, cal, group);
         }
 
         @Override
         public int getCount() {
-            return SHelper.getAbsDay(new GregorianCalendar()) * 2;
+            return SHelper.getJulianDay(new GregorianCalendar()) * 2;
         }
     }
 
@@ -543,7 +544,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
             // Automatically saves downloaded updated days
             new SaveUpdatedDaysAsyncTask(getActivity(), true).execute();
 
-            if(updatedDays) showUpdatedDays();
+            if (updatedDays) showUpdatedDays();
             else showHolidays();
         } else {
             Toast.makeText(getActivity(), "No updates!", Toast.LENGTH_LONG).show();
@@ -559,9 +560,9 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Updated Days");
 
-        if (mSchedule.getUpdates().getUpdatedDays().size() > 0) {
+        if (mSchedule.getUpdates().getUpdatedDaysList().size() > 0) {
             ListAdapter adapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item,
-                    mSchedule.getUpdates().getUpdatedDays());
+                    mSchedule.getUpdates().getUpdatedDaysList());
             builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -579,7 +580,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
      * Goes to the oliday at the given index in the list of holidays.
      */
     public void onUpdatedDaySelected(int index) {
-        UpdatedDay day = mSchedule.getUpdates().getUpdatedDays().get(index);
+        UpdatedDay day = mSchedule.getUpdates().getUpdatedDaysList().get(index);
         setToday(day.getDate());
     }
 

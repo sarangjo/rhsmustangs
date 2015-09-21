@@ -1,8 +1,5 @@
 package com.sarangjoshi.rhsmustangs.helper;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.text.format.Time;
 import android.widget.TextView;
 
@@ -11,7 +8,6 @@ import org.json.JSONException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -26,9 +22,23 @@ public class SHelper {
 
     public static String DEFAULT_OVERRIDE_NAME = "-";
 
-    public static int getAbsDay(Calendar time) {
-        time.set(Calendar.HOUR_OF_DAY, 0);
-        return Time.getJulianDay(time.getTimeInMillis(), time.getTimeZone().getRawOffset() / 1000);
+    /**
+     * Since a Julian Day starts at 12 pm on Day A and ends at 11:59am on Day B, this returns
+     * Day A.
+     */
+    public static int getJulianDay(Calendar time) {
+        int h = time.get(Calendar.HOUR_OF_DAY);
+        time.set(Calendar.HOUR_OF_DAY, 15);
+        int j = Time.getJulianDay(time.getTimeInMillis(), time.getTimeZone().getRawOffset() / 1000);
+        time.set(Calendar.HOUR_OF_DAY, h);
+        return j;
+    }
+
+    public static Calendar julianDayToCalendar(int position) {
+        Time time = new Time();
+        time.setJulianDay(position);
+        time.normalize(false);
+        return new GregorianCalendar(time.year, time.month, time.monthDay);
     }
 
     public static int compareAbsDays(Calendar time1, Calendar time2) {
@@ -37,47 +47,6 @@ public class SHelper {
         int monthDiff = time1.get(Calendar.MONTH) - time2.get(Calendar.MONTH);
         if (monthDiff != 0) return monthDiff;
         return time1.get(Calendar.DAY_OF_MONTH) - time2.get(Calendar.DAY_OF_MONTH);
-    }
-
-    public static String shortenCustomGrp(String string) {
-        string = string.substring(string.indexOf(" ") + 1);
-        return (string = string.substring(string.indexOf(" ") + 1));
-    }
-
-    public static Bitmap decodeBitmapFromRes(Resources res, int resId, int w,
-                                             int h) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        options.inSampleSize = calculateInSampleSize(options, w, h);
-
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
-
-    public static int calculateInSampleSize(BitmapFactory.Options options,
-                                            int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and
-            // keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
     }
 
     /**
@@ -231,6 +200,25 @@ public class SHelper {
             return dateToCalendar(DATE_TIME_FORMAT.parse(string));
         } catch (ParseException e) {
             return null;
+        }
+    }
+
+    public static String getStringDay(int dayOfWeek) {
+        switch (dayOfWeek) {
+            case 1:
+                return "Saturday";
+            case 2:
+                return "Monday";
+            case 3:
+                return "Tuesday";
+            case 4:
+                return "Wednesday";
+            case 5:
+                return "Thursday";
+            case 6:
+                return "Friday";
+            default:
+                return "Saturday";
         }
     }
 }

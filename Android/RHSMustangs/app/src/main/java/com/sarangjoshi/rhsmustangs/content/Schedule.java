@@ -13,9 +13,7 @@ import com.sarangjoshi.rhsmustangs.helper.SHelper;
 import com.sarangjoshi.rhsmustangs.helper.ScheduleDbHelper;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,7 +23,6 @@ import java.util.List;
  */
 public class Schedule implements Updates.UpdatesListener {
     public static final String GROUP_N_KEY = "group_n";
-    public static final int DEFAULT_GROUP_N = 1;
 
     // TODO: Decide whether a list of weeks is needed
     private Week mCurrentWeek;
@@ -64,12 +61,11 @@ public class Schedule implements Updates.UpdatesListener {
      * Gets the current day.
      */
     public Day getToday() {
-        Holiday holiday = getHoliday();
+        Holiday holiday = getHoliday(getTodayAsCalendar());
         if (holiday != null) {
-            // TODO: ???
-            return holiday.getDay(mToday.get(Calendar.DAY_OF_WEEK));
+            return holiday.getDay(getTodayAsCalendar().get(Calendar.DAY_OF_WEEK));
         }
-        return mCurrentWeek.getDay(mToday.get(Calendar.DAY_OF_WEEK));//mToday;
+        return mCurrentWeek.getDay(getTodayAsCalendar().get(Calendar.DAY_OF_WEEK));//mToday;
     }
 
     /**
@@ -77,8 +73,7 @@ public class Schedule implements Updates.UpdatesListener {
      *
      * @return null if the given day isn't in a getHoliday
      */
-    public Holiday getHoliday() {
-        Calendar day = getTodayAsCalendar();
+    public Holiday getHoliday(Calendar day) {
         for (Holiday holiday : mUpdates.getHolidays()) {
             if (holiday.contains(day)) {
                 return holiday;
@@ -125,7 +120,7 @@ public class Schedule implements Updates.UpdatesListener {
     public String getTodayAsString() {
         // TODO: fix
         /*Calendar now = new GregorianCalendar();
-        int diff = SHelper.getAbsDay(now) - SHelper.getAbsDay(mToday); //now.compareTo(mToday);
+        int diff = SHelper.getJulianDay(now) - SHelper.getJulianDay(mToday); //now.compareTo(mToday);
         if (diff == 0)
             return "Today";
         else if (diff == -1)
@@ -227,7 +222,7 @@ public class Schedule implements Updates.UpdatesListener {
         // TODO: make more efficient by not changing week appropriately
         // Based on today, establish MONDAY
         mCurrentWeek = Week.getDefaultWeek();
-        mCurrentWeek.update(today, mUpdates.getUpdatedDays());
+        mCurrentWeek.update(today, mUpdates.getUpdatedDaysList());
     }
 
     // HOLIDAYS
@@ -317,7 +312,7 @@ public class Schedule implements Updates.UpdatesListener {
     private void loadGroupN() {
         int groupN = mSchedulePref.getInt(GROUP_N_KEY, -1);
         if (groupN == -1)
-            mGroupN = DEFAULT_GROUP_N;
+            mGroupN = Period.DEFAULT_GROUP_N;
         else
             mGroupN = groupN;
     }
@@ -362,9 +357,36 @@ public class Schedule implements Updates.UpdatesListener {
 
     @Override
     public void updatesCompleted(boolean updatedDays, boolean holidays) {
-        if(updatedDays || holidays)
+        if (updatedDays || holidays)
             refreshWeek(mToday);
         mListener.onUpdateFetchCompleted(updatedDays, holidays);
+    }
+
+    public Day getDay(Calendar day) {
+        // Validity
+        if (day.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                || day.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+            return null;
+        // Holiday
+        Holiday holiday = getHoliday(day);
+        if (holiday != null)
+            return holiday.getDay(day.get(Calendar.DAY_OF_WEEK));
+        // UpdatedDay
+        UpdatedDay uDay = mUpdates.getUpdatedDays().get(SHelper.getJulianDay(day));
+        if (uDay != null)
+            return uDay;
+        // Base
+        return Day.getBaseDay(day.get(Calendar.DAY_OF_WEEK));
+    }
+
+    public int getGroup(Day day) {
+        if(day != null) {
+            if (day.getClass() == UpdatedDay.class)
+                return ((UpdatedDay) day).getGroupN();
+            else
+                return mGroupN;
+        }
+        return Period.DEFAULT_GROUP_N;
     }
 
     // MISC

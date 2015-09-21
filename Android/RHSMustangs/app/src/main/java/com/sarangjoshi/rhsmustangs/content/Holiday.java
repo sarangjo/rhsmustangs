@@ -8,10 +8,9 @@ import com.sarangjoshi.rhsmustangs.helper.SHelper;
 import java.util.Calendar;
 
 /**
- * An {@link Day} that is always displayed when viewing this getHoliday
- * A date range (start to end, both inclusive)
+ * Represents a holiday.
  * <p/>
- * Schedule checks holidays first, then the week
+ * Schedule checks holidays first, then the week.
  *
  * @author Sarang Joshi
  */

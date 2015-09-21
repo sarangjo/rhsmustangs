@@ -1,11 +1,14 @@
 package com.sarangjoshi.rhsmustangs.content;
 
+import android.provider.SyncStateContract;
+
 import com.parse.ParseObject;
 import com.sarangjoshi.rhsmustangs.helper.SHelper;
 
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +24,7 @@ public class Day {
     private String[] mGroupNames;
 
     /**
-     * For optimization
+     * For optimization; hidden from client
      */
     private List<Period> mTruncatedPeriods;
     private int currentGroupN = Period.BASE_GROUPN;
@@ -74,7 +77,8 @@ public class Day {
      * @param groupN the current group number
      */
     public List<Period> getPeriods(int groupN) {
-        if (groupN != -1 || this.currentGroupN != groupN) {
+        // Only refreshes truncated periods if the group number has changed
+        if (groupN >= 0 && this.currentGroupN != groupN) {
             this.currentGroupN = groupN;
             mTruncatedPeriods = new ArrayList<>();
             for (Period p : mPeriods) {
@@ -118,7 +122,6 @@ public class Day {
         return mGroupNames;
     }
 
-    public static final String[] DEFAULT_GROUPS = new String[]{"Lunch A", "Lunch B"};
     public static final String[] NO_GROUPS = new String[]{"No groups"};
 
     public boolean hasGroups() {
@@ -140,15 +143,25 @@ public class Day {
         }
     }
 
+    public Period getPeriod(int pos) {
+        return getPeriods(currentGroupN).get(pos);
+    }
+
+    @Override
+    public String toString() {
+        return SHelper.getStringDay(mDayOfWeek) + ", " + mPeriods.size() + " total periods.\n" +
+                Arrays.toString(mGroupNames);
+    }
+    // STATIC METHODS
+
     /**
      * Gets a default day, based on the day of the week.
      *
      * @return the loaded Day object. null if the base day hasn't been loaded
-     *
      */
     public static Day getBaseDay(int dayOfWeek) {
         Day day = baseDays[dayOfWeek - Calendar.MONDAY];
-        if(day == null) day = new Day(dayOfWeek, NO_GROUPS);
+        if (day == null) day = new Day(dayOfWeek, NO_GROUPS);
         return day;
 
         /*switch (dayOfWeek) {
@@ -188,7 +201,7 @@ public class Day {
      * @param name the name of the holiday
      */
     public static Day getHoliday(int dayOfWeek, String name) {
-        Day day = new Day(dayOfWeek, NO_GROUPS);
+        Day day = new Day(dayOfWeek);
 
         day.addPeriod(Period.getHoliday(name));
 
@@ -226,9 +239,5 @@ public class Day {
 
     public static void clearBaseDays() {
         for (int i = 0; i < baseDays.length; i++) baseDays[i] = null;
-    }
-
-    public Period getPeriod(int pos) {
-        return getPeriods(currentGroupN).get(pos);
     }
 }
