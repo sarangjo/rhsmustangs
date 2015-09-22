@@ -42,6 +42,8 @@ public class SHelper {
     }
 
     public static int compareAbsDays(Calendar time1, Calendar time2) {
+        if(time1 == null || time2 == null)
+            return 0;
         int yearDiff = time1.get(Calendar.YEAR) - time2.get(Calendar.YEAR);
         if (yearDiff != 0) return yearDiff;
         int monthDiff = time1.get(Calendar.MONTH) - time2.get(Calendar.MONTH);

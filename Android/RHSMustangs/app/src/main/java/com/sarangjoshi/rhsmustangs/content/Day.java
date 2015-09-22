@@ -94,23 +94,7 @@ public class Day {
      * @return day of week (Sunday - Saturday)
      */
     public String getDayOfWeekAsString() {
-        switch (mDayOfWeek) {
-            case Calendar.SUNDAY:
-                return "Sunday";
-            case Calendar.MONDAY:
-                return "Monday";
-            case Calendar.TUESDAY:
-                return "Tuesday";
-            case Calendar.WEDNESDAY:
-                return "Wednesday";
-            case Calendar.THURSDAY:
-                return "Thursday";
-            case Calendar.FRIDAY:
-                return "Friday";
-            case Calendar.SATURDAY:
-                return "Saturday";
-        }
-        return "Invalid day.";
+        return SHelper.getStringDay(mDayOfWeek);
     }
 
     /**

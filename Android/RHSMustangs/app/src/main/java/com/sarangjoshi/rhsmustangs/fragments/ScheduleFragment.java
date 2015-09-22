@@ -175,6 +175,22 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
                     .getSupportFragmentManager());
             mViewPager = (ViewPager) v.findViewById(R.id.schedulePager);
             mViewPager.setAdapter(mSchedulePagerAdapter);
+            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    setToday(SHelper.julianDayToCalendar(position));
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+
+                }
+            });
         }
 
         setUp();
@@ -238,7 +254,15 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
      * @param today
      */
     private void setToday(Calendar today) {
-        mSchedule.setToday(today);
+        int diff = mSchedule.setToday(today);
+        if (mPager) {
+            int jDay = SHelper.getJulianDay(today);
+            if (today.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                    today.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                jDay -= ((diff >= 0) ? 2 : -2);
+            }
+            mViewPager.setCurrentItem(jDay);
+        }
         refreshPeriods();
         updateSpinner();
     }
@@ -306,30 +330,39 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
      */
     private void updateUI() {
         mTitle.setText(mSchedule.getTodayAsString());
-        mDayOfWeek.setText(mSchedule.getToday().getDayOfWeekAsString());
+        Day d = mSchedule.getToday();
+        if (d != null)
+            mDayOfWeek.setText(d.getDayOfWeekAsString());
+        else
+            mDayOfWeek.setText(SHelper.getStringDay(mSchedule.getTodayAsCalendar()
+                    .get(Calendar.DAY_OF_WEEK)));
 
-        // Makes the title green/yellow and bold
-        if (mSchedule.getToday().getClass() == UpdatedDay.class) {
-            SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
-            mTitle.setTypeface(Typeface.DEFAULT_BOLD);
-        } else if (mSchedule.getHoliday(mSchedule.getTodayAsCalendar()) != null) {
-            SHelper.setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
-            mTitle.setTypeface(Typeface.DEFAULT_BOLD);
-        } else {
-            SHelper.setTextColor(Color.BLACK, mTitle, mDayOfWeek);
-            mTitle.setTypeface(Typeface.DEFAULT);
+        if (d != null) {
+            // Makes the title green/yellow and bold
+            if (d.getClass() == UpdatedDay.class) {
+                SHelper.setTextColor(getResources().getColor(R.color.dark_green), mTitle, mDayOfWeek);
+                mTitle.setTypeface(Typeface.DEFAULT_BOLD);
+            } else if (mSchedule.getHoliday(mSchedule.getTodayAsCalendar()) != null) {
+                SHelper.setTextColor(getResources().getColor(R.color.gold), mTitle, mDayOfWeek);
+                mTitle.setTypeface(Typeface.DEFAULT_BOLD);
+            } else {
+                SHelper.setTextColor(Color.BLACK, mTitle, mDayOfWeek);
+                mTitle.setTypeface(Typeface.DEFAULT);
+            }
         }
     }
 
     private class DayChangeClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            // Actual shifting - result can be captured to note week shift
+            setToday(SHelper.julianDayToCalendar(mViewPager.getCurrentItem() +
+                    ((v.getId() == mNextDay.getId()) ? 1 : -1)));
+            /*// Actual shifting - result can be captured to note week shift
             mSchedule.shiftTodayBy((v.getId() == mNextDay.getId()) ? 1 : -1);
 
             // Updating
             refreshPeriods();
-            updateSpinner();
+            updateSpinner();*/
         }
     }
 
@@ -371,8 +404,10 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
      * Sets up the schedule and such.
      */
     private void setUp() {
-        if (mPager) mViewPager.setCurrentItem(
-                SHelper.getJulianDay(mSchedule.getTodayAsCalendar()));
+        if (mPager) {
+            mViewPager.setCurrentItem(
+                    SHelper.getJulianDay(mSchedule.getTodayAsCalendar()));
+        }
 
         // Load all saved data
         new LoadDataAsyncTask(getActivity(), true).execute();
@@ -662,7 +697,7 @@ public class ScheduleFragment extends Fragment implements Schedule.UpdateFinishe
         mInitUpdated = updated;
     }
 
-    // ASYNC TASKS
+// ASYNC TASKS
 
     /**
      * Personal implementation of Async Task for simple background tasks.

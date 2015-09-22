@@ -61,11 +61,15 @@ public class Schedule implements Updates.UpdatesListener {
      * Gets the current day.
      */
     public Day getToday() {
+        Day d = getDay(mToday);
+        return d;
+
+        /*
         Holiday holiday = getHoliday(getTodayAsCalendar());
         if (holiday != null) {
             return holiday.getDay(getTodayAsCalendar().get(Calendar.DAY_OF_WEEK));
         }
-        return mCurrentWeek.getDay(getTodayAsCalendar().get(Calendar.DAY_OF_WEEK));//mToday;
+        return mCurrentWeek.getDay(getTodayAsCalendar().get(Calendar.DAY_OF_WEEK));//mToday;*/
     }
 
     /**
@@ -156,35 +160,26 @@ public class Schedule implements Updates.UpdatesListener {
 
     /**
      * Sets today for the given day.
+     *
+     * @returns the number of days changed
      */
-    public void setToday(Calendar today) {
-        Calendar oldToday = mToday;
+    public int setToday(Calendar today) {
+        int diff = SHelper.compareAbsDays(mToday, today);
         mToday = today;
 
+        return diff;
+        /*
         // Check for Saturday/Sunday overflow
-        boolean weekChanged = updateDay(true);
+        boolean weekChanged = updateDay(diff >= 0);
 
         // Check to see if the week has been completely changed
         if (oldToday != null)
             weekChanged |= !SHelper.sameWeek(oldToday, mToday);
 
         // If week changed, change the damn week
-        if (weekChanged) refreshWeek(mToday);
+        if (weekChanged) refreshWeek(mToday);*/
     }
 
-    /**
-     * Shifts the current day of the week by a single day, forward or backward.
-     */
-    public void shiftTodayBy(int n) {
-        // Shift the actual date
-        Calendar newToday = new GregorianCalendar(mToday.get(Calendar.YEAR),
-                mToday.get(Calendar.MONTH), mToday.get(Calendar.DAY_OF_MONTH));
-        newToday.add(Calendar.DAY_OF_MONTH, n);
-        mToday = newToday;
-
-        if (updateDay(n >= 0))
-            refreshWeek(mToday);
-    }
 
     /**
      * Updates the day based on whether it is a weekend.
@@ -362,25 +357,28 @@ public class Schedule implements Updates.UpdatesListener {
         mListener.onUpdateFetchCompleted(updatedDays, holidays);
     }
 
-    public Day getDay(Calendar day) {
+    /**
+     * Given a date, gets the appropriate Day object.
+     */
+    public Day getDay(Calendar date) {
         // Validity
-        if (day.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
-                || day.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+        if (date.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+                || date.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
             return null;
         // Holiday
-        Holiday holiday = getHoliday(day);
+        Holiday holiday = getHoliday(date);
         if (holiday != null)
-            return holiday.getDay(day.get(Calendar.DAY_OF_WEEK));
+            return holiday.getDay(date.get(Calendar.DAY_OF_WEEK));
         // UpdatedDay
-        UpdatedDay uDay = mUpdates.getUpdatedDays().get(SHelper.getJulianDay(day));
+        UpdatedDay uDay = mUpdates.getUpdatedDays().get(SHelper.getJulianDay(date));
         if (uDay != null)
             return uDay;
         // Base
-        return Day.getBaseDay(day.get(Calendar.DAY_OF_WEEK));
+        return Day.getBaseDay(date.get(Calendar.DAY_OF_WEEK));
     }
 
     public int getGroup(Day day) {
-        if(day != null) {
+        if (day != null) {
             if (day.getClass() == UpdatedDay.class)
                 return ((UpdatedDay) day).getGroupN();
             else
